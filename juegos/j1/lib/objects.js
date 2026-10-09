@@ -46,13 +46,16 @@ function grain(g, S, r, amt) {
   for (let i = 0; i < id.data.length; i += 4) { const k = (r() - 0.5) * amt; id.data[i] += k; id.data[i + 1] += k; id.data[i + 2] += k; }
   g.putImageData(id, 0, 0);
 }
+// Drawn in 512-unit space but rasterized at 256 px: same pattern (same seed sequence), ¼ of the pixels.
+// Objects never show larger than ~150 px, so 512 px wear maps were never sampled at full size.
 function wearTex(base, dark, light, seed, n = 220) {
-  return canvasTex(512, (g, S) => {
+  return canvasTex(256, (g, px) => {
+    const S = 512; g.scale(px / S, px / S);
     const r = rng(seed); g.fillStyle = base; g.fillRect(0, 0, S, S);
     blotches(g, S, r, n, [dark, dark, light], 0.08, 0.35, 6, 46);
     g.strokeStyle = light; g.globalAlpha = 0.22;
     for (let i = 0; i < 70; i++) { g.lineWidth = 0.4 + r(); g.beginPath(); const x = r() * S, y = r() * S; g.moveTo(x, y); g.lineTo(x + (r() - .5) * 70, y + (r() - .5) * 70); g.stroke(); }
-    g.globalAlpha = 1; grain(g, S, r, 16);
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; grain(g, px, r, 16);
   });
 }
 function roughTex(seed, lo, hi) {
@@ -255,8 +258,8 @@ function crescentShape(R) {
   s.absarc(cx, 0, ri, b0 + 2 * Math.PI, b1, true);
   return s;
 }
-export function crescentGeo(R, depth) {
-  const g = new THREE.ExtrudeGeometry(crescentShape(R), { depth, bevelEnabled: true, bevelThickness: depth * 0.35, bevelSize: R * 0.04, bevelSegments: 2, curveSegments: 24 });
+export function crescentGeo(R, depth, curveSegments = 24) {
+  const g = new THREE.ExtrudeGeometry(crescentShape(R), { depth, bevelEnabled: true, bevelThickness: depth * 0.35, bevelSize: R * 0.04, bevelSegments: 2, curveSegments });
   g.translate(0, 0, -depth / 2); g.scale(1, 1, -1);
   const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 30, uv.getY(i) * 30);
   return g;
@@ -320,10 +323,10 @@ export function buildMicrophone() {
   const ribs = [], N = 14, YS = L + 0.66 * R;
   for (let i = 0; i < N; i++) {
     const y = -YS + i * (2 * YS / (N - 1)), r = prof(y);
-    const tg = new THREE.TorusGeometry(r, 0.0021, 6, 48); tg.rotateX(Math.PI / 2); tg.scale(SX, 1, 1); tg.translate(0, y, 0); ribs.push([tg]);
+    const tg = new THREE.TorusGeometry(r, 0.0021, 4, 36); tg.rotateX(Math.PI / 2); tg.scale(SX, 1, 1); tg.translate(0, y, 0); ribs.push([tg]);
   }
   const yc = L + 0.72 * R, th = Math.acos((yc - L) / R);
-  const capT = new THREE.SphereGeometry(R, 32, 10, 0, Math.PI * 2, 0, th); capT.scale(SX, 1, 1); capT.translate(0, L, 0);
+  const capT = new THREE.SphereGeometry(R, 24, 7, 0, Math.PI * 2, 0, th); capT.scale(SX, 1, 1); capT.translate(0, L, 0);
   const capB = capT.clone(); capB.rotateX(Math.PI);
   ribs.push([capT], [capB]);
   // seam band around the silhouette
@@ -332,8 +335,8 @@ export function buildMicrophone() {
   for (const y of [L / 2, 0, -L / 2]) seamPts.push(new THREE.Vector3(-SX * Rs, y, 0));
   for (let i = 0; i <= 16; i++) { const a = Math.PI + i / 16 * Math.PI; seamPts.push(new THREE.Vector3(SX * Rs * Math.cos(a), -L + Rs * Math.sin(a), 0)); }
   for (const y of [-L / 2, 0, L / 2]) seamPts.push(new THREE.Vector3(SX * Rs, y, 0));
-  ribs.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(seamPts, true), 96, 0.0017, 8, true)]);
-  ribs.push([new THREE.SphereGeometry(0.0022, 12, 8), mtx(SX * Rs + 0.0012, 0, 0)], [new THREE.SphereGeometry(0.0022, 12, 8), mtx(-SX * Rs - 0.0012, 0, 0)]);
+  ribs.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(seamPts, true), 72, 0.0017, 6, true)]);
+  ribs.push([new THREE.SphereGeometry(0.0022, 8, 6), mtx(SX * Rs + 0.0012, 0, 0)], [new THREE.SphereGeometry(0.0022, 8, 6), mtx(-SX * Rs - 0.0012, 0, 0)]);
   g.add(M(mergeGeos(ribs).translate(0, DY, 0), m.micMetal, 'head'));
   // yoke + knob
   const yoke = mergeGeos([
@@ -350,7 +353,7 @@ export function buildMicrophone() {
   ]);
   g.add(M(fittings, m.silver, 'connector'));
   const cable = new THREE.CatmullRomCurve3([[0, -0.134, 0], [0, -0.146, 0.001], [-0.006, -0.158, 0.004], [-0.022, -0.165, 0.008], [-0.046, -0.156, 0.010], [-0.062, -0.131, 0.008], [-0.063, -0.105, 0.004], [-0.053, -0.085, -0.001], [-0.036, -0.074, -0.006], [-0.016, -0.07, -0.011]].map(p => new THREE.Vector3(...p)));
-  g.add(M(new THREE.TubeGeometry(cable, 90, 0.0042, 10, false), m.rubber, 'cable'));
+  g.add(M(new THREE.TubeGeometry(cable, 64, 0.0042, 8, false), m.rubber, 'cable'));
   g.add(M(new THREE.CylinderGeometry(0.0048, 0.0052, 0.01, 16).translate(0, -0.139, 0), m.rubber, 'strain_relief'));
   g.userData.pose = [0.1, -0.5, 0.48];
   return g;
@@ -376,9 +379,9 @@ function wrapCyl(geo, R) {
   return geo;
 }
 // Half-round relief stroke along a 2D path, radius tapering r0 → r1.
-function reliefStroke(pts, r0, r1, seg = 4) {
+function reliefStroke(pts, r0, r1, seg = 3) {
   const curve = new THREE.CatmullRomCurve3(pts.map(([x, y]) => new THREE.Vector3(x, y, 0)), false, 'centripetal');
-  const n = Math.max(8, Math.round(curve.getLength() / 0.0008)), P = [], N = [], U = [], I = [];
+  const n = Math.max(6, Math.round(curve.getLength() / 0.002)), P = [], N = [], U = [], I = [];
   for (let i = 0; i <= n; i++) {
     const t = i / n, p = curve.getPointAt(t), d = curve.getTangentAt(t), sx = -d.y, sy = d.x, r = r0 + (r1 - r0) * t;
     for (let j = 0; j <= seg; j++) {
@@ -396,7 +399,7 @@ const spiral = (cx, cy, r0, a0, turns, dir, k = 0.28, n = Math.ceil(turns * 14))
   const t = i / n, a = a0 + dir * t * turns * Math.PI * 2, r = r0 * (1 - (1 - k) * t);
   return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
 });
-const blob = (x, y, sx, sy, sz, rot = 0) => [new THREE.SphereGeometry(1, 8, 5), mtx(x, y, 0, 0, 0, rot, sx, sy, sz)];
+const blob = (x, y, sx, sy, sz, rot = 0) => [new THREE.SphereGeometry(1, 5, 3), mtx(x, y, 0, 0, 0, rot, sx, sy, sz)];
 // Baroque band: 6 repeats of mirrored C-scrolls with acanthus leaves and a rosette; the front repeat carries a fleur-de-lis.
 function baroqueBand(R, y0, h) {
   const reps = 6, w = (Math.PI * 2 * R) / reps, parts = [];
@@ -437,7 +440,7 @@ function waxDrip(phi, top, L, r0, rb, sway, wall) {
   for (let i = 1; i <= 5; i++) { const a = -Math.PI / 2 + (i / 5) * Math.PI * 0.72; p.push([Math.cos(a) * rb, -L + Math.sin(a) * rb]); }
   for (const [r, y] of [[r0 * 0.72, -L + rb * 1.9], [r0 * 0.85, -L * 0.5], [r0, -L * 0.15], [r0 * 1.2, 0], [r0 * 0.9, 0.0022], [0.0001, 0.0028]])
     if (y > p[p.length - 1][1] + 0.0002) p.push([r, y]);
-  const geo = new THREE.LatheGeometry(p.map(q => new THREE.Vector2(q[0], q[1])), 10, Math.PI);
+  const geo = new THREE.LatheGeometry(p.map(q => new THREE.Vector2(q[0], q[1])), 7, Math.PI);
   const pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i), d = Math.max(0, -y / L);
@@ -451,7 +454,7 @@ export function buildCandle() {
   const g = new THREE.Group(); g.name = 'candle';
   // glass holder: thick rolled lip, straight wall, flared foot
   const prof = [[0.001, 0], [0.043, 0], [0.0465, 0.003], [0.0468, 0.012], [0.0448, 0.015], [0.0442, 0.018], [0.0442, 0.075], [0.047, 0.0785], [0.0478, 0.082], [0.0473, 0.0856], [0.0452, 0.0873], [0.0424, 0.0875], [0.0402, 0.0859], [0.0394, 0.0835], [0.0394, 0.024], [0.001, 0.022]].map(p => new THREE.Vector2(p[0], p[1]));
-  const glassGeo = new THREE.LatheGeometry(prof, 64);
+  const glassGeo = new THREE.LatheGeometry(prof, 48);
   { const p = glassGeo.attributes.position, uv = glassGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setY(i, p.getY(i) / 0.0927); } // height-based v: mottling stays round, not streaked
   const glass = M(glassGeo, m.glass, 'glass_holder'); glass.renderOrder = 2;
   // inner surface sheen so the wall reads as thick glass
@@ -464,7 +467,7 @@ export function buildCandle() {
   const N = 26, lump = Array.from({ length: N + 1 }, () => 0.6 + dr() * 0.7);
   for (let i = 0; i <= N; i++) {
     const t = i / N, a = A0 + t * (A1 - A0) + (dr() - .5) * 0.06, taper = Math.min(1, t * 5, (1 - t) * 5) * lump[i];
-    const at = (R, y, sx, sy, sz, rz = 0) => wx.push([new THREE.SphereGeometry(1, 10, 6), mtx(Math.sin(a) * R, y, Math.cos(a) * R, 0, a, rz, sx, sy, sz)]);
+    const at = (R, y, sx, sy, sz, rz = 0) => wx.push([new THREE.SphereGeometry(1, 6, 4), mtx(Math.sin(a) * R, y, Math.cos(a) * R, 0, a, rz, sx, sy, sz)]);
     at(0.0436 + (dr() - .5) * 0.001, 0.0871 + (dr() - .5) * 0.0006, 0.0095 * Math.max(taper, 0.35), 0.0019 * taper + 0.0005, 0.0046 * Math.max(taper, 0.4), (dr() - .5) * 0.25);
     if (taper > 0.5) at(0.0402, 0.0853, 0.0085 * taper, 0.0013 * taper, 0.0024 * taper);
     if (dr() < 0.6 && taper > 0.4) at(0.047, 0.0838, 0.006 * taper, 0.0026 * taper, 0.0015 * taper);
@@ -473,9 +476,9 @@ export function buildCandle() {
     wx.push(waxDrip(phi + (dr() - .5) * 0.06, 0.0842, L * (0.9 + dr() * 0.2), r0, rb, (dr() - .5) * 0.0024, wall));
   g.add(glass, wax, M(mergeGeos(wx), m.wax, 'wax_drips'));
   // worn silver: crescent moon on the front + baroque band with rings
-  const moon = wrapCyl(flipWinding(crescentGeo(0.013, 0.002).translate(0, 0.0465, 0.0017)), 0.0442);
+  const moon = wrapCyl(flipWinding(crescentGeo(0.013, 0.002, 12).translate(0, 0.0465, 0.0017)), 0.0442);
   const band = baroqueBand(0.0441, 0.0170, 0.0156);
-  const rings = [[new THREE.TorusGeometry(0.0451, 0.0009, 6, 72), mtx(0, 0.0162, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.0446, 0.0008, 6, 72), mtx(0, 0.0338, 0, Math.PI / 2)]];
+  const rings = [[new THREE.TorusGeometry(0.0451, 0.0009, 4, 48), mtx(0, 0.0162, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.0446, 0.0008, 4, 48), mtx(0, 0.0338, 0, Math.PI / 2)]];
   g.add(M(mergeGeos([[moon], [band], ...rings]), m.wornSilver, 'silver_ornament'));
   g.add(M(new THREE.CylinderGeometry(0.0008, 0.001, 0.008, 8).translate(0, 0.0775, 0), m.wick, 'wick'));
   const fl = makeFlame(1, true, 0.012); fl.group.position.y = 0.0805; g.add(fl.group);
@@ -546,25 +549,25 @@ export function buildMedallion() {
   const m = materials();
   const g = new THREE.Group(); g.name = 'medallion';
   const RX = 0.0205, RY = 0.0285, TH = 0.0035;
-  g.add(M(new THREE.CylinderGeometry(1, 1, TH, 72).rotateX(Math.PI / 2).scale(RX, RY, 1), m.copperDark, 'medal_body'));
+  g.add(M(new THREE.CylinderGeometry(1, 1, TH, 56).rotateX(Math.PI / 2).scale(RX, RY, 1), m.copperDark, 'medal_body'));
   const faceMat = std('medal_relief', { map: T('tex/medallion-face.webp'), emissiveMap: T('tex/medallion-face.webp'), emissive: 0xffffff, emissiveIntensity: 0.22, normalMap: T('tex/medallion-normal.webp', false), normalScale: new THREE.Vector2(2.2, 2.2), metalness: 0.65, roughness: 0.45 });
-  g.add(M(new THREE.CircleGeometry(1, 72).scale(0.0171, 0.0239, 1).translate(0, 0, TH / 2 + 0.0002), faceMat, 'medal_face'));
-  const back = new THREE.CircleGeometry(1, 72).scale(RX * 0.95, RY * 0.95, 1).rotateY(Math.PI).translate(0, 0, -TH / 2 - 0.0002);
+  g.add(M(new THREE.CircleGeometry(1, 56).scale(0.0171, 0.0239, 1).translate(0, 0, TH / 2 + 0.0002), faceMat, 'medal_face'));
+  const back = new THREE.CircleGeometry(1, 56).scale(RX * 0.95, RY * 0.95, 1).rotateY(Math.PI).translate(0, 0, -TH / 2 - 0.0002);
   g.add(M(back, m.copper, 'medal_back'));
   const parts = [
-    [new THREE.TubeGeometry(new Ellipse3(RX, RY, 0.0006), 140, 0.0016, 8, true)],
-    [new THREE.TubeGeometry(new Ellipse3(0.0174, 0.0242, TH / 2), 140, 0.0006, 6, true)],
+    [new THREE.TubeGeometry(new Ellipse3(RX, RY, 0.0006), 96, 0.0016, 6, true)],
+    [new THREE.TubeGeometry(new Ellipse3(0.0174, 0.0242, TH / 2), 96, 0.0006, 4, true)],
   ];
   const nb = 52;
   for (let i = 0; i < nb; i++) {
     const a = (i / nb) * Math.PI * 2;
     const near = [0, Math.PI / 2, Math.PI, Math.PI * 1.5, Math.PI * 2].some(c => Math.abs(a - c) < 0.13);
     if (near) continue;
-    parts.push([new THREE.SphereGeometry(0.00072, 8, 6), mtx(Math.cos(a) * 0.01895, Math.sin(a) * 0.0263, TH / 2 + 0.0002)]);
+    parts.push([new THREE.SphereGeometry(0.00072, 6, 4), mtx(Math.cos(a) * 0.01895, Math.sin(a) * 0.0263, TH / 2 + 0.0002)]);
   }
   const orn = (x, y, s = 1) => {
-    parts.push([new THREE.SphereGeometry(0.001, 10, 8), mtx(x, y, TH / 2 + 0.0009, 0, 0, 0, s)]);
-    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; parts.push([new THREE.SphereGeometry(0.001, 8, 6), mtx(x + Math.cos(a) * 0.0014 * s, y + Math.sin(a) * 0.0014 * s, TH / 2 + 0.0005, 0, 0, a, 1.5 * s, 0.85 * s, 0.7 * s)]); }
+    parts.push([new THREE.SphereGeometry(0.001, 8, 6), mtx(x, y, TH / 2 + 0.0009, 0, 0, 0, s)]);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; parts.push([new THREE.SphereGeometry(0.001, 6, 4), mtx(x + Math.cos(a) * 0.0014 * s, y + Math.sin(a) * 0.0014 * s, TH / 2 + 0.0005, 0, 0, a, 1.5 * s, 0.85 * s, 0.7 * s)]); }
   };
   orn(RX - 0.0006, 0); orn(-RX + 0.0006, 0); orn(0, RY - 0.0008); orn(0, -RY + 0.0008);
   parts.push([new THREE.ConeGeometry(0.0022, 0.004, 4), mtx(0, -RY - 0.0016, 0, Math.PI, 0, 0, 1, 1, 0.5)]);
@@ -589,7 +592,7 @@ export function buildMedallion() {
       const Z = new THREE.Vector3(0, 0, 1), cz = Z.clone().addScaledVector(t, -t.dot(Z)).normalize(), b = new THREE.Vector3().crossVectors(cz, t);
       const basis = new THREE.Matrix4().makeBasis(t, b, cz);
       if ((i + (dir > 0 ? 1 : 0)) % 2) basis.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-      const lg = new THREE.TorusGeometry(0.0025, 0.0008, 6, 14); lg.scale(1.38, 1, 1);
+      const lg = new THREE.TorusGeometry(0.0025, 0.0008, 4, 10); lg.scale(1.38, 1, 1);
       links.push([lg, new THREE.Matrix4().makeTranslation(p.x, p.y, p.z).multiply(basis)]);
     }
   }
