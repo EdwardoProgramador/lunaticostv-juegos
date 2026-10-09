@@ -93,8 +93,9 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
   };
   const amp = () => (reduced ? 0 : Math.min(46, Math.min(innerWidth, innerHeight) * 0.06));
 
-  // Busca un punto libre (centro del objeto). near = preferir puntos a media distancia del actual.
-  function freeSpot(near) {
+  // Busca un punto libre (centro del objeto). near = preferir puntos a media distancia del actual;
+  // closest = el hueco más cercano (para escapar rápido cuando el contenido le pasa por debajo).
+  function freeSpot(near, closest = false) {
     const a = area();
     if (a.x1 <= a.x0 || a.y1 <= a.y0) return null;
     const half = vis / 2, wob = amp();
@@ -104,7 +105,7 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
       if (blocked(x, y, half + wob)) continue;
       const d = near ? Math.hypot(x - near.x, y - near.y) : 0;
       const ideal = Math.min(innerWidth, innerHeight) * 0.35;
-      const score = (near ? -Math.abs(d - ideal) : 0) + Math.random() * 60;
+      const score = closest ? -d : (near ? -Math.abs(d - ideal) : 0) + Math.random() * 60;
       if (score > bestScore) { bestScore = score; best = { x, y }; }
     }
     if (!best) {
@@ -120,10 +121,11 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
   // state: 'away' (invisible, sin hueco o reubicándose) · 'shown' (flotando)
   const nx = noise(Math.random() * 100), ny = noise(Math.random() * 100 + 50);
   const A = { x: 0, y: 0, vx: 0, vy: 0 }; // ancla con resorte críticamente amortiguado
-  const OMEGA = 0.9; // ~4 s para deslizarse a un punto nuevo, sin rebote
-  let W = null, nextPick = 0, state = 'away', fading = false, shy = false, collecting = false, gone = false;
+  const OMEGA = 0.9, OMEGA_ESCAPE = 2.8; // ~4 s para deslizarse a un punto nuevo; ~1.3 s para apartarse
+  let W = null, nextPick = 0, state = 'away', fading = false, shy = false, escaping = false, collecting = false, gone = false;
+  const pos = { x: 0, y: 0 };
 
-  function place(x, y) { el.style.transform = `translate3d(${(x - box / 2).toFixed(1)}px,${(y - box / 2).toFixed(1)}px,0)`; }
+  function place(x, y) { pos.x = x; pos.y = y; el.style.transform = `translate3d(${(x - box / 2).toFixed(1)}px,${(y - box / 2).toFixed(1)}px,0)`; }
   function setShy(v) {
     if (shy === v) return;
     shy = v; el.classList.toggle('is-shy', v);
@@ -142,7 +144,7 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
 
   function step(t, dt) {
     const now = performance.now();
-    if ((dirty && now - rectsAt > 80) || now - rectsAt > 600) readObstacles();
+    if (dirty || now - rectsAt > 250) readObstacles(); // durante el scroll, en cada cuadro; si no, 4 veces por segundo (carruseles, animaciones de entrada)
     if (!collecting) {
       if (state === 'away') {
         if (!fading) {
@@ -150,7 +152,11 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
           if (s) { place(s.x, s.y); appear(s); } else loop.pause('away'); // idleCheck lo despierta
         }
       } else {
-        if (blocked(W.x, W.y, vis / 2)) {
+        if (!escaping && blocked(pos.x, pos.y, vis / 2) && !reduced) {
+          // el contenido le pasó por debajo: al hueco libre más cercano, rápido
+          const s = freeSpot(pos, true);
+          if (s) { W = s; escaping = true; nextPick = now + 6500 + Math.random() * 4500; } else goAway();
+        } else if (blocked(W.x, W.y, vis / 2)) {
           // el contenido se movió bajo el punto de destino: con movimiento reducido, desvanecer y reaparecer
           const s = reduced ? null : freeSpot(A);
           if (s) { W = s; nextPick = now + 6500 + Math.random() * 4500; } else goAway();
@@ -160,14 +166,17 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
           nextPick = now + 6500 + Math.random() * 4500;
         }
         if (state === 'shown') {
-          A.vx += ((W.x - A.x) * OMEGA * OMEGA - A.vx * 2 * OMEGA) * dt;
-          A.vy += ((W.y - A.y) * OMEGA * OMEGA - A.vy * 2 * OMEGA) * dt;
+          const w0 = escaping ? OMEGA_ESCAPE : OMEGA;
+          A.vx += ((W.x - A.x) * w0 * w0 - A.vx * 2 * w0) * dt;
+          A.vy += ((W.y - A.y) * w0 * w0 - A.vy * 2 * w0) * dt;
           A.x += A.vx * dt; A.y += A.vy * dt;
           const w = W.tight ? amp() * 0.25 : amp(), a = area();
           const x = Math.min(a.x1, Math.max(a.x0, A.x + nx(t * 0.16) * w));
           const y = Math.min(a.y1, Math.max(a.y0, A.y + ny(t * 0.13) * w));
           place(x, y);
-          setShy(blocked(x, y, vis / 2));
+          const b = blocked(x, y, vis / 2);
+          if (!b) escaping = false;
+          setShy(b);
         }
       }
     }
