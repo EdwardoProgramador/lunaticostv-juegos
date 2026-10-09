@@ -113,7 +113,8 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
       it.p = { t: 0 };
     });
     tl = gsap.timeline();
-    if (dim) tl.to(dim, { opacity: 0.94, duration: 0.8, ease: 'power2.out' }, 0);
+    // 0.97 = donde deja el oscurecido la cadena 5/5: el altar entra sin volver a oscurecer (el export usaba 0.94 sobre una maqueta más oscura)
+    if (dim) tl.to(dim, { opacity: 0.97, duration: 0.8, ease: 'power2.out' }, 0);
     tl.call(showAltar, null, 0.3)
       .to(root.position, { y: 0, duration: 1.8, ease: 'power3.out' }, 0.3)
       .to(floor.material, { opacity: 1, duration: 1.2 }, 0.6)
