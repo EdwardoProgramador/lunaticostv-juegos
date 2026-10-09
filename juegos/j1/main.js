@@ -33,6 +33,14 @@ function afterIntro() {
 
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// Three.js y GSAP dejan una marca en window para detectar copias duplicadas (__THREE__, gsapVersions).
+// El juego no deja globales: se quitan en cuanto las librerías ya se registraron (si no existían antes).
+const LIB_MARKS = ['__THREE__', 'gsapVersions'];
+const preexisting = LIB_MARKS.filter((k) => k in window);
+function tidyGlobals() {
+  for (const k of LIB_MARKS) if (!preexisting.includes(k) && k in window) { try { delete window[k]; } catch (e) { /* no configurable: se deja */ } }
+}
+
 export async function start({ objectKey, config }) {
   const q = new URLSearchParams(location.search);
   if (q.has('j1reset')) progress.reset();
@@ -49,6 +57,7 @@ export async function start({ objectKey, config }) {
     const { openReward } = await import('./reward.js');
     const r = openReward({ text: t(), link, reduced, onClose: () => off() });
     const off = onLangChange((tx) => r.setText(tx));
+    requestAnimationFrame(tidyGlobals);
     return;
   }
 
@@ -83,6 +92,7 @@ export async function start({ objectKey, config }) {
   }
 
   fl = await createFloat({ key: objectKey, label: label(t()), reduced, onCollect });
+  requestAnimationFrame(tidyGlobals);
 
   // Si este es el último objeto que falta, el altar se va armando en tiempo ocioso mientras flota.
   if (isLast) {
