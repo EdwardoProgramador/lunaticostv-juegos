@@ -6,19 +6,20 @@ Cada página con juego incluye una sola línea, antes de `</body>`:
 <script type="module" src="juegos/boot.js"></script>
 ```
 
-`boot.js` lee `config.js` y, si hay juego activo para esa página, lo carga cuando la página ya terminó de cargar y el navegador está libre. Hoy la incluyen: index, estudio, proyectos, talento y contacto. Tienda, catálogo y alonso-ortiz no la llevan.
+`boot.js` lee `config.js` y, si hay juego activo para esa página, lo carga cuando la página ya terminó de cargar y el navegador está libre. Hoy la incluyen: index, estudio, proyectos, talento, contacto y alonso-ortiz. Tienda y catálogo no la llevan.
 
 ## config.js
 
 | Campo | Qué hace |
 | --- | --- |
 | `activeGame` | `'j1'` activa "Los objetos del Cholo". `null` apaga todo: solo se descargan `boot.js` y `config.js` (~2 KB) y el sitio queda igual al original. |
-| `games.j1.pages` | Página → objeto. Objetos: `cassette`, `microphone`, `candle`, `notebook`, `medallion`. |
+| `games.j1.pages` | Páginas donde aparecen objetos. En cualquiera puede salir cualquier objeto que falte. |
+| `games.j1.timing` | Segundos `[mín, máx]`: `firstAppear` (primera aparición), `visibleFor` (cuánto se queda si nadie lo recolecta), `pauseBetween` (pausa hasta el siguiente), `afterCollect` (pausa tras recolectar). Solo cuenta el tiempo con la pestaña visible. |
 | `games.j1.rewardLink` | Destino del botón "Ver contenido exclusivo". `'#'` = sin destino (el botón no hace nada). Si es de otro dominio, abre en pestaña nueva. |
 
 ## Juego 1 · Los objetos del Cholo (`j1/`)
 
-- `main.js`: orquesta (progreso, intro de video del inicio, carga diferida, idioma).
+- `main.js`: orquesta (rotación de objetos, progreso, intro de video del inicio, carga diferida, idioma). Un objeto a la vez; al cambiar de página evita repetir el último visto.
 - `float.js`: objeto flotante y recolección. `reward.js`: secuencia 5/5 → altar.
 - `lib/`: port de `Juego-1-lunaticos/lib` (modelos, materiales, luces, HUD, altar, loop).
 - `game.css`: todo con prefijo `.lj1-`. Capas: objeto 80, HUD 85, recompensa 1050.

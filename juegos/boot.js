@@ -21,9 +21,9 @@ function whenIdle() {
 
 const game = activeGame && games[activeGame];
 const page = pageKey();
-if (game && GAMES[activeGame] && game.pages && game.pages[page]) {
+if (game && GAMES[activeGame] && Array.isArray(game.pages) && game.pages.includes(page)) {
   whenIdle()
     .then(GAMES[activeGame])
-    .then((mod) => mod.start({ page, objectKey: game.pages[page], config: game }))
+    .then((mod) => mod.start({ page, config: game }))
     .catch((e) => { if (/[?&]j1debug\b/.test(location.search)) console.error(e); }); // el juego es un extra: si falla, el sitio sigue intacto
 }

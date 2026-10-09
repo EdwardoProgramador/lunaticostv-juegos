@@ -1,12 +1,16 @@
 // Juego 1 · Los objetos del Cholo — punto de entrada (lo importa juegos/boot.js cuando la página
 // ya cargó y el navegador está libre).
-// Three.js, GSAP, el CSS y las fuentes solo se descargan si en esta página hay algo que mostrar.
+// Rotación: en cada página puede salir cualquier objeto que falte. Uno a la vez; si nadie lo recolecta,
+// se despide y, tras una pausa, llega otro distinto. Al cambiar de página se evita repetir el último visto.
+// Three.js, GSAP, el CSS y las fuentes solo se descargan cuando de verdad va a aparecer un objeto.
 // Depuración: ?j1reset borra el progreso · ?j1complete abre directo la recompensa (no cambia el progreso).
 import * as progress from './progress.js';
 import { t, onLangChange } from './i18n.js';
 
 const CSS_URL = new URL('./game.css', import.meta.url).href;
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Grenze+Gotisch:wght@700&display=swap';
+const LAST_KEY = 'lunaticos_j1_last'; // último objeto mostrado (sessionStorage): la siguiente página empieza con otro
+const DEFAULT_TIMING = { firstAppear: [3, 6], visibleFor: [25, 35], pauseBetween: [8, 14], afterCollect: [12, 20] };
 
 function addStylesheet(href) {
   const found = [...document.querySelectorAll('link[rel="stylesheet"]')].find((l) => l.href === href);
@@ -32,6 +36,25 @@ function afterIntro() {
 }
 
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const between = ([a, b]) => (a + Math.random() * Math.max(0, b - a)) * 1000;
+
+// Espera ms de tiempo "útil": solo corre con la pestaña visible y mientras counts() sea verdadero.
+// .cancel() la corta (resuelve false).
+function wait(ms, counts = () => true) {
+  let left = ms, last = performance.now(), id = 0, done;
+  const p = new Promise((r) => { done = r; });
+  id = setInterval(() => {
+    const now = performance.now();
+    if (!document.hidden && counts()) left -= now - last;
+    last = now;
+    if (left <= 0) { clearInterval(id); done(true); }
+  }, 200);
+  p.cancel = () => { clearInterval(id); done(false); };
+  return p;
+}
+
+const readLast = () => { try { return sessionStorage.getItem(LAST_KEY); } catch (e) { return null; } };
+const writeLast = (k) => { try { sessionStorage.setItem(LAST_KEY, k); } catch (e) { /* sin sessionStorage: solo se pierde la variedad entre páginas */ } };
 
 // Three.js y GSAP dejan una marca en window para detectar copias duplicadas (__THREE__, gsapVersions).
 // El juego no deja globales: se quitan en cuanto las librerías ya se registraron (si no existían antes).
@@ -41,62 +64,100 @@ function tidyGlobals() {
   for (const k of LIB_MARKS) if (!preexisting.includes(k) && k in window) { try { delete window[k]; } catch (e) { /* no configurable: se deja */ } }
 }
 
-export async function start({ objectKey, config }) {
+export async function start({ config }) {
   const q = new URLSearchParams(location.search);
   if (q.has('j1reset')) progress.reset();
   const forceReward = q.has('j1complete');
-  let collected = progress.load();
-  if (!forceReward && (collected.includes(objectKey) || progress.isComplete(collected))) return; // nada que mostrar: no se descarga nada más
+  if (!forceReward && progress.isComplete(progress.load())) return; // nada que mostrar: no se descarga nada más
 
-  await afterIntro();
-  await Promise.all([addStylesheet(CSS_URL), addStylesheet(FONTS_URL)]);
-  const reduced = prefersReduced();
+  const timing = { ...DEFAULT_TIMING, ...(config.timing || {}) };
   const link = config.rewardLink || '#';
+  await afterIntro();
 
   if (forceReward) {
+    await Promise.all([addStylesheet(CSS_URL), addStylesheet(FONTS_URL)]);
     const { openReward } = await import('./reward.js');
-    const r = openReward({ text: t(), link, reduced, onClose: () => off() });
+    const r = openReward({ text: t(), link, reduced: prefersReduced(), onClose: () => off() });
     const off = onLangChange((tx) => r.setText(tx));
     requestAnimationFrame(tidyGlobals);
     return;
   }
 
+  // primera aparición: unos segundos después de que la página está lista
+  if (!(await wait(between(timing.firstAppear)))) return;
+  if (progress.isComplete(progress.load())) return; // se completó en otra pestaña mientras tanto
+  await Promise.all([addStylesheet(CSS_URL), addStylesheet(FONTS_URL)]);
   const [{ createFloat }, { createHUD }] = await Promise.all([import('./float.js'), import('./lib/hud.js')]);
-  const isLast = progress.ITEMS.every((k) => k === objectKey || collected.includes(k));
-  let graph = null, hud = null, reward = null, fl = null;
+  const reduced = prefersReduced();
 
-  const label = (tx) => tx.collect(tx.names[objectKey]);
-  const off = onLangChange((tx) => {
+  let fl = null, key = null, hud = null, reward = null, graph = null, timer = null, finished = false;
+  const label = (tx) => tx.collect(tx.names[key]);
+  onLangChange((tx) => {
     if (fl) fl.setLabel(label(tx));
     if (hud) hud.setText(tx);
     if (reward) reward.setText(tx);
   });
 
+  // siguiente objeto: cualquiera que falte, evitando repetir el último mostrado (en esta u otra página)
+  function pickNext() {
+    const left = progress.ITEMS.filter((k) => !progress.load().includes(k));
+    if (!left.length) return null;
+    const last = key || readLast();
+    const pool = left.length > 1 ? left.filter((k) => k !== last) : left;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  async function show() {
+    if (finished) return;
+    key = pickNext();
+    if (!key) return;
+    writeLast(key);
+    const isLast = progress.ITEMS.every((k) => k === key || progress.load().includes(k));
+    fl = await createFloat({ key, label: label(t()), reduced, onCollect });
+    requestAnimationFrame(tidyGlobals);
+    // si es el último que falta, el altar se va armando en tiempo ocioso mientras flota
+    if (isLast && !graph) {
+      const later = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+      later(() => { if (fl && !graph) graph = import('./reward.js').then((m) => m.prepareGraph()); });
+    }
+    // tiempo en pantalla: solo cuenta mientras se le ve flotando
+    const current = fl;
+    timer = wait(between(timing.visibleFor), () => current.shown);
+    if (!(await timer) || fl !== current) return;
+    // nadie lo recolectó: se despide y, tras una pausa, llega otro
+    await current.leave();
+    current.destroy({ keepShared: !!graph });
+    if (fl === current) fl = null;
+    timer = wait(between(timing.pauseBetween));
+    if (await timer) show();
+  }
+
   async function onCollect() {
-    const before = collected.slice();
-    collected = progress.collect(objectKey);
+    if (timer) timer.cancel();
+    const current = fl, got = key;
+    const before = progress.load().filter((k) => k !== got);
+    const collected = progress.collect(got);
     const done = progress.isComplete(collected);
-    hud = createHUD({
+    const h = hud = createHUD({
       collected: before, text: t(), reduced, holdMs: done ? Infinity : 3000,
-      onHidden: () => { if (!done && hud) { hud.destroy(); hud = null; off(); } },
+      onHidden: () => { if (!done) { h.destroy(); if (hud === h) hud = null; } },
     });
-    hud.collect(objectKey);
+    h.collect(got);
     // el efecto de recolección termina ~0.35 s después; luego se libera el renderer del objeto
-    const released = new Promise((resolve) => setTimeout(() => { fl.destroy({ keepShared: done && !!graph }); fl = null; resolve(); }, 400));
-    if (!done) return;
-    const { openReward } = await import('./reward.js');
-    reward = openReward({
-      text: t(), link, reduced, hud, graph, before: released,
-      onClose: () => { hud = null; reward = null; off(); },
-    });
+    const released = new Promise((resolve) => setTimeout(() => { current.destroy({ keepShared: done && !!graph }); if (fl === current) fl = null; resolve(); }, 400));
+    if (done) {
+      finished = true;
+      const { openReward } = await import('./reward.js');
+      reward = openReward({
+        text: t(), link, reduced, hud: h, graph, before: released,
+        onClose: () => { hud = null; reward = null; },
+      });
+      return;
+    }
+    await released;
+    timer = wait(between(timing.afterCollect));
+    if (await timer) show();
   }
 
-  fl = await createFloat({ key: objectKey, label: label(t()), reduced, onCollect });
-  requestAnimationFrame(tidyGlobals);
-
-  // Si este es el último objeto que falta, el altar se va armando en tiempo ocioso mientras flota.
-  if (isLast) {
-    const later = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
-    later(() => { if (fl) graph = import('./reward.js').then((m) => m.prepareGraph()); });
-  }
+  show();
 }
