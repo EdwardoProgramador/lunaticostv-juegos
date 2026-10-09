@@ -26,7 +26,7 @@ Cada página con juego incluye una sola línea, antes de `</body>`:
 - `vendor/`: Three.js 0.184.0 (`three.module.min.js` + `three.core.min.js`, sin modificar) y GSAP 3.12.5 (empaquetado como un ESM, sin modificar). Se sirven desde el propio sitio y solo se descargan cuando va a aparecer un objeto (nunca después de completar 5/5).
 - `assets/`: texturas e iconos del HUD en WebP.
 
-Progreso: `localStorage["lunaticos_j1_v1"]`. Idioma: sigue el selector del sitio (`ltv-lang` / evento `ltv:languagechange`).
+Progreso: `sessionStorage["lunaticos_j1_v1"]`, dura la visita. Pasar de una página a otra del sitio (menú, enlaces, atrás) lo conserva; recargar, volver a entrar (escribir la dirección, un favorito, venir de otro sitio) o cerrar la pestaña reinicia el juego en 0/5. Idioma: sigue el selector del sitio (`ltv-lang` / evento `ltv:languagechange`).
 
 Depuración (en cualquier página con juego):
 

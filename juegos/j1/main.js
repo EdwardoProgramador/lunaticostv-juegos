@@ -3,6 +3,7 @@
 // Rotación: en cada página puede salir cualquier objeto que falte. Uno a la vez; si nadie lo recolecta,
 // se despide y, tras una pausa, llega otro distinto. Al cambiar de página se evita repetir el último visto.
 // Three.js, GSAP, el CSS y las fuentes solo se descargan cuando de verdad va a aparecer un objeto.
+// Progreso: dura la visita (ver progress.js). Recargar o volver a entrar reinicia el juego.
 // Depuración: ?j1reset borra el progreso · ?j1complete abre directo la recompensa (no cambia el progreso).
 import * as progress from './progress.js';
 import { t, onLangChange } from './i18n.js';
@@ -66,7 +67,8 @@ function tidyGlobals() {
 
 export async function start({ config }) {
   const q = new URLSearchParams(location.search);
-  if (q.has('j1reset')) progress.reset();
+  // recargar o entrar de nuevo al sitio = juego nuevo; pasar de una página a otra conserva el progreso
+  if (q.has('j1reset') || progress.isFreshVisit()) progress.reset();
   const forceReward = q.has('j1complete');
   if (!forceReward && progress.isComplete(progress.load())) return; // nada que mostrar: no se descarga nada más
 
