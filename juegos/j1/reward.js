@@ -172,5 +172,6 @@ export function openReward({ text, link, reduced = false, hud = null, graph = nu
     });
   }
 
+  if (/[?&]j1debug\b/.test(location.search)) root.lj1Debug = { get altar() { return altar; }, get chain() { return chain; } };
   return { setText, close: closeReward, el: root };
 }
