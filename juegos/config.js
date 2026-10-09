@@ -15,7 +15,7 @@ export const activeGame = 'j1';
 
 export const games = {
   j1: {
-    pages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'alonso-ortiz'],
+    pages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'alonso-ortiz', 'tienda', 'catalogo'],
     timing: {
       firstAppear: [3, 6],
       visibleFor: [25, 35],

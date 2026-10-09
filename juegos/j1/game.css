@@ -1,6 +1,7 @@
 /* LunáticosTv · Juego 1 · Los objetos del Cholo
    Todo lleva prefijo .lj1- y nada toca elementos globales. Capas respecto al sitio:
-   objeto flotante 80 · HUD 85 → por debajo del scrim (90/98) y del nav (100–102).
+   objeto flotante 45 → por debajo de los menús desplegables del catálogo (50; 80 en móvil), del scrim (90/98)
+   y del nav (100–102). HUD 85 → por debajo del scrim y del nav (no recibe clics).
    Recompensa 1050 → encima del nav y del botón del carrito (900), debajo del cajón del carrito (1099/1100)
    y de la intro de video (10000). */
 
@@ -20,7 +21,7 @@
 
 /* ── Objeto flotante ─────────────────────────────────────────────────────── */
 .lj1-float {
-  position: fixed; left: 0; top: 0; z-index: 80;
+  position: fixed; left: 0; top: 0; z-index: 45;
   width: var(--lj1-box, 176px); height: var(--lj1-box, 176px);
   pointer-events: none; opacity: 0; will-change: transform, opacity;
   contain: layout size style;

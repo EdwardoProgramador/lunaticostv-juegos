@@ -6,7 +6,7 @@ Cada página con juego incluye una sola línea, antes de `</body>`:
 <script type="module" src="juegos/boot.js"></script>
 ```
 
-`boot.js` lee `config.js` y, si hay juego activo para esa página, lo carga cuando la página ya terminó de cargar y el navegador está libre. Hoy la incluyen: index, estudio, proyectos, talento, contacto y alonso-ortiz. Tienda y catálogo no la llevan.
+`boot.js` lee `config.js` y, si hay juego activo para esa página, lo carga cuando la página ya terminó de cargar y el navegador está libre. Hoy la incluyen las 8 páginas: index, estudio, proyectos, talento, contacto, alonso-ortiz, tienda y catálogo.
 
 ## config.js
 
@@ -22,7 +22,7 @@ Cada página con juego incluye una sola línea, antes de `</body>`:
 - `main.js`: orquesta (rotación de objetos, progreso, intro de video del inicio, carga diferida, idioma). Un objeto a la vez; al cambiar de página evita repetir el último visto.
 - `float.js`: objeto flotante y recolección. `reward.js`: secuencia 5/5 → altar.
 - `lib/`: port de `Juego-1-lunaticos/lib` (modelos, materiales, luces, HUD, altar, loop).
-- `game.css`: todo con prefijo `.lj1-`. Capas: objeto 80, HUD 85, recompensa 1050.
+- `game.css`: todo con prefijo `.lj1-`. Capas: objeto 45 (debajo de los menús del catálogo), HUD 85, recompensa 1050.
 - `vendor/`: Three.js 0.184.0 (`three.module.min.js` + `three.core.min.js`, sin modificar) y GSAP 3.12.5 (empaquetado como un ESM, sin modificar). Se sirven desde el propio sitio y solo se descargan cuando va a aparecer un objeto (nunca después de completar 5/5).
 - `assets/`: texturas e iconos del HUD en WebP.
 
