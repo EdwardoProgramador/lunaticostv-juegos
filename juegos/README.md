@@ -23,7 +23,7 @@ Cada página con juego incluye una sola línea, antes de `</body>`:
 - `float.js`: objeto flotante y recolección. `reward.js`: secuencia 5/5 → altar.
 - `lib/`: port de `Juego-1-lunaticos/lib` (modelos, materiales, luces, HUD, altar, loop).
 - `game.css`: todo con prefijo `.lj1-`. Capas: objeto 80, HUD 85, recompensa 1050.
-- `vendor/`: Three.js 0.184.0 (`three.module.min.js` + `three.core.min.js`, sin modificar) y GSAP 3.12.5 (empaquetado como un ESM, sin modificar). Se sirven desde el propio sitio y solo se descargan en una página cuyo objeto aún no se ha recolectado.
+- `vendor/`: Three.js 0.184.0 (`three.module.min.js` + `three.core.min.js`, sin modificar) y GSAP 3.12.5 (empaquetado como un ESM, sin modificar). Se sirven desde el propio sitio y solo se descargan cuando va a aparecer un objeto (nunca después de completar 5/5).
 - `assets/`: texturas e iconos del HUD en WebP.
 
 Progreso: `localStorage["lunaticos_j1_v1"]`. Idioma: sigue el selector del sitio (`ltv-lang` / evento `ltv:languagechange`).
