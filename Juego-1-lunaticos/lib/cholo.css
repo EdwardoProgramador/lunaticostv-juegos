@@ -1,0 +1,72 @@
+/* LunaticosTv · Los objetos del Cholo — shared brand styles */
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700;900&family=Barlow+Condensed:wght@400;500;600;700&display=swap');
+
+:root{
+  --c-bg:#060814;
+  --c-copper:#B8796A;
+  --c-peach:#F2D2BC;
+  --c-ink:#1E1A22;
+  --c-purple:#4A3550;
+  --c-candle:#FF9A3C;
+  --c-copper-dark:#6E4438;
+  --c-muted:#8C7F8E;
+  --f-title:'Grenze Gotisch', 'UnifrakturMaguntia', serif;
+  --f-ui:'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--c-bg);color:var(--c-peach);font-family:var(--f-ui)}
+a{color:var(--c-peach);text-decoration-color:var(--c-copper)}
+a:hover{color:#fff}
+
+/* Title: peach→copper fill, thick dark outline, offset purple shadow.
+   Usage: <h1 class="ch-title" data-text="Lunaticos">Lunaticos</h1> */
+.ch-title{
+  position:relative;isolation:isolate;margin:0;
+  font-family:var(--f-title);font-weight:700;line-height:1.05;letter-spacing:.01em;
+  color:var(--c-ink);-webkit-text-stroke:.18em var(--c-ink);
+}
+.ch-title::before,.ch-title::after{
+  content:attr(data-text);position:absolute;inset:0;pointer-events:none;
+}
+.ch-title::before{color:var(--c-purple);-webkit-text-stroke:.18em var(--c-purple);transform:translate(.07em,.08em);z-index:-1}
+.ch-title::after{
+  -webkit-text-stroke:0;z-index:1;color:transparent;
+  background:linear-gradient(180deg,#FBEBDD 0%,#F2D2BC 38%,#D79C82 70%,#B8796A 100%);
+  -webkit-background-clip:text;background-clip:text;
+}
+
+/* Small UI text */
+.ch-label{font-family:var(--f-ui);font-weight:600;font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--c-copper)}
+.ch-counter{font-family:var(--f-ui);font-weight:700;font-size:28px;letter-spacing:.04em;color:var(--c-peach);font-variant-numeric:tabular-nums}
+
+/* Button: worn-copper frame, dark fill */
+.ch-btn{
+  position:relative;display:inline-flex;align-items:center;gap:10px;
+  min-height:44px;padding:10px 22px;border:0;cursor:pointer;
+  font-family:var(--f-ui);font-weight:600;font-size:16px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--c-peach);
+  background:
+    linear-gradient(#140f1c,#0c0a14) padding-box,
+    linear-gradient(135deg,#F2D2BC,#B8796A 40%,#5a3a33 60%,#B8796A) border-box;
+  border:2px solid transparent;
+  box-shadow:0 0 0 1px var(--c-ink),inset 0 0 0 1px rgba(242,210,188,.12),0 6px 18px rgba(0,0,0,.5);
+  transition:box-shadow .25s,color .25s,transform .15s;
+}
+.ch-btn:hover{color:#fff;box-shadow:0 0 0 1px var(--c-ink),inset 0 0 0 1px rgba(242,210,188,.2),0 0 24px rgba(255,154,60,.35),0 6px 18px rgba(0,0,0,.5)}
+.ch-btn:active{transform:translateY(1px)}
+.ch-btn:focus-visible{outline:2px solid var(--c-candle);outline-offset:3px}
+.ch-btn.ch-btn--sm{min-height:36px;padding:6px 14px;font-size:13px;letter-spacing:.14em}
+.ch-btn.ch-btn--ghost{background:transparent;border-color:rgba(184,121,106,.5);box-shadow:none}
+.ch-btn.ch-btn--ghost:hover{border-color:var(--c-copper);box-shadow:0 0 16px rgba(255,154,60,.2)}
+
+/* Page chrome for the prototype library */
+.ch-page{min-height:100vh;display:flex;flex-direction:column}
+.ch-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 28px;border-bottom:1px solid rgba(184,121,106,.18)}
+.ch-head .ch-label{color:var(--c-muted)}
+.ch-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* Desktop / mobile switch (06, 08, 09) */
+.seg{display:inline-flex;border:1px solid rgba(184,121,106,.5)}
+.seg button{min-height:36px;padding:6px 14px;background:transparent;border:0;color:#8C7F8E;font:600 13px/1 var(--f-ui);letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.seg button[aria-pressed="true"]{background:rgba(184,121,106,.18);color:var(--c-peach)}
+.seg button:focus-visible{outline:2px solid var(--c-candle);outline-offset:-2px}

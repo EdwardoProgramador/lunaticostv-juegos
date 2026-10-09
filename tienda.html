@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#060814" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>Tienda — LunáticosTv</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Alguien invadió nuestra tienda" />
+<meta property="og:description" content="Un cholo grafiteó la tienda de LunáticosTv. Entra a ver cómo quedó antes de que la limpiemos." />
+<meta property="og:image" content="https://lunaticostv.com/img/og-tienda.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="description" content="Tienda oficial LunáticosTv — merch y ediciones limitadas." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="preload" as="image" href="img/tienda-shop.png" fetchpriority="high">
+</head>
+<body class="page-sub page-shop" data-i18n-doc="doc_shop">
+<script>window.LTV_SHOP_URL = 'https://shop.lunaticostv.com';</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+
+<main class="app app--shop-only">
+  <section class="shop-hero" aria-label="Tienda LunáticosTv">
+    <div class="shop-hero__bg asset-slot" data-bg="img/tienda-hero-orange.png" data-asset-id="tienda-shop" aria-hidden="true"></div>
+    <div class="shop-hero__overlay" aria-hidden="true"></div>
+    <div class="shop-hero__inner">
+      <h1 class="shop-hero__title" data-i18n="shop_hero_h">La tienda <span class="cholo-strike" data-spray>LunáticosTv<span class="cholo-strike__new" aria-hidden="true">del Cholo</span></span></h1>
+      <p class="shop-hero__deck" data-i18n="shop_hero_p">Merch oficial con la marca en la prenda. Compra segura y envíos a todo México.</p>
+      <div class="shop-hero__btns">
+        <a href="/catalogo" class="btn btn--shop btn--lg" data-i18n="shop_b1">Ver productos</a>
+        <a href="/contacto" class="btn btn--shop btn--lg" data-i18n="shop_b2">Edición especial</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

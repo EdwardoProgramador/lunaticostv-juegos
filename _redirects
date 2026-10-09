@@ -1,0 +1,15 @@
+/estudio    /estudio.html    200
+/proyectos  /proyectos.html  200
+/contacto   /contacto.html   200
+/tienda     /tienda.html     200
+/catalogo   /catalogo.html   200
+/talento    /talento.html    200
+/alonso-ortiz /alonso-ortiz.html 200
+/index.html /                301
+/estudio.html /estudio       301
+/proyectos.html /proyectos   301
+/contacto.html /contacto     301
+/tienda.html /tienda         301
+/catalogo.html /catalogo     301
+/talento.html /talento       301
+/alonso-ortiz.html /alonso-ortiz 301

@@ -1,0 +1,21 @@
+{
+  "rewrites": [
+    { "source": "/estudio", "destination": "/estudio.html" },
+    { "source": "/proyectos", "destination": "/proyectos.html" },
+    { "source": "/contacto", "destination": "/contacto.html" },
+    { "source": "/tienda", "destination": "/tienda.html" },
+    { "source": "/catalogo", "destination": "/catalogo.html" },
+    { "source": "/talento", "destination": "/talento.html" },
+    { "source": "/alonso-ortiz", "destination": "/alonso-ortiz.html" }
+  ],
+  "redirects": [
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/estudio.html", "destination": "/estudio", "permanent": true },
+    { "source": "/proyectos.html", "destination": "/proyectos", "permanent": true },
+    { "source": "/contacto.html", "destination": "/contacto", "permanent": true },
+    { "source": "/tienda.html", "destination": "/tienda", "permanent": true },
+    { "source": "/catalogo.html", "destination": "/catalogo", "permanent": true },
+    { "source": "/talento.html", "destination": "/talento", "permanent": true },
+    { "source": "/alonso-ortiz.html", "destination": "/alonso-ortiz", "permanent": true }
+  ]
+}

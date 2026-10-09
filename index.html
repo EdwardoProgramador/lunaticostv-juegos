@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#060814" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>LunáticosTv — productora creativa</title>
+<meta name="description" content="LunáticosTv: cine, traducción audiovisual, edición, web, identidad de marca y producción. México · Tijuana." />
+<script>
+  (function () {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    document.documentElement.classList.add('has-intro');
+    var s = document.createElement('style');
+    s.textContent = 'html.has-intro,html.has-intro body{overflow:hidden;background:#000}html.has-intro .site-intro{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#000;animation:ltv-intro-out 1.2s ease 9s forwards}html.has-intro .site-intro__video{width:min(420px,72vw);height:auto;max-height:72vh;object-fit:contain}.site-intro.is-done{opacity:0!important;visibility:hidden;pointer-events:none;transition:opacity 1.2s ease,visibility 0s linear 1.2s}@keyframes ltv-intro-out{to{opacity:0;visibility:hidden;pointer-events:none}}';
+    document.head.appendChild(s);
+  })();
+</script>
+<link rel="preload" as="image" href="img/hero-season-orange.png" fetchpriority="high">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="page-home" data-i18n-doc="doc_index">
+<script>window.LTV_SHOP_URL = '';</script>
+
+<div class="site-intro" id="site-intro" hidden aria-hidden="true">
+  <video
+    class="site-intro__video"
+    id="site-intro-video"
+    muted
+    playsinline
+    preload="auto"
+    aria-label="Introducción LunáticosTv"
+  >
+    <source src="img/logo-intro.mp4" type="video/mp4" />
+  </video>
+</div>
+<script>
+  (function () {
+    var intro = document.getElementById('site-intro');
+    var video = document.getElementById('site-intro-video');
+    if (!intro || !video) return;
+    // Sin intro (movimiento reducido): la quitamos por completo para que no se muestre ni descargue.
+    if (!document.documentElement.classList.contains('has-intro')) {
+      try { video.pause(); video.removeAttribute('src'); video.load(); } catch (e) {}
+      intro.parentNode.removeChild(intro);
+      return;
+    }
+
+    intro.hidden = false;
+    intro.setAttribute('aria-hidden', 'false');
+
+    var finished = false;
+    var started = false;
+    var stallTimer = null;
+    var FADE_MS = 1200;
+
+    // Salidas de seguridad primero, para que ningún error posterior deje la intro congelada.
+    // Si en 2.5 s no empezó a reproducirse, no esperamos más.
+    window.setTimeout(function () {
+      if (!started) finishIntro();
+    }, 2500);
+    // Tope absoluto: la intro nunca dura más de 7 s.
+    window.setTimeout(function () { finishIntro(); }, 7000);
+
+    // Termina la intro: la pantalla negra se desvanece lentamente y deja ver la página.
+    function finishIntro() {
+      if (finished) return;
+      finished = true;
+      window.__ltvIntroFinished = true;
+      window.clearTimeout(stallTimer);
+      document.documentElement.classList.remove('has-intro');
+      intro.classList.add('is-done');
+      intro.setAttribute('aria-hidden', 'true');
+      window.setTimeout(function () {
+        try { video.pause(); } catch (e) {}
+        intro.hidden = true;
+        intro.style.display = 'none';
+      }, FADE_MS + 100);
+    }
+
+    // Si el video se traba, entramos al sitio en vez de congelar la pantalla.
+    function watchStall() {
+      window.clearTimeout(stallTimer);
+      stallTimer = window.setTimeout(finishIntro, 1500);
+    }
+
+    function playNow() {
+      if (finished) return;
+      try {
+        video.muted = true;
+        var p = video.play();
+        if (p && typeof p.catch === 'function') p.catch(finishIntro);
+      } catch (e) {
+        finishIntro();
+      }
+    }
+
+    window.__ltvFinishIntro = finishIntro;
+
+    video.addEventListener('playing', function () {
+      started = true;
+      window.clearTimeout(stallTimer);
+    });
+    video.addEventListener('waiting', watchStall);
+    video.addEventListener('stalled', watchStall);
+    video.addEventListener('ended', finishIntro);
+    video.addEventListener('error', finishIntro, true);
+    // Empieza el desvanecido un poco antes del último cuadro para que se sienta continuo.
+    video.addEventListener('timeupdate', function () {
+      if (isFinite(video.duration) && video.duration > 0 && video.currentTime >= video.duration - 0.15) {
+        finishIntro();
+      }
+    });
+
+    // Un toque o tecla salta la intro en cualquier momento.
+    intro.addEventListener('click', finishIntro);
+    document.addEventListener('keydown', function (e) {
+      if (finished) return;
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        finishIntro();
+      }
+    });
+    // Al volver con "atrás" el navegador puede restaurar la página con la intro congelada.
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) finishIntro();
+    });
+
+    playNow();
+    if (video.readyState < 2) {
+      video.addEventListener('loadeddata', playNow, { once: true });
+      video.addEventListener('canplay', playNow, { once: true });
+    }
+  })();
+</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+<button type="button" class="nav-scrim" id="nav-scrim" tabindex="-1" aria-hidden="true"></button>
+
+<main class="app">
+  <!-- H1 · Hero (único asset real) -->
+  <article class="fs fs--landing hero-geo" id="home-hero">
+    <div class="fs__bg" aria-hidden="true"></div>
+    <div class="fs__media">
+      <img
+        src="img/hero-season-orange.png"
+        alt=""
+        width="1672"
+        height="941"
+        fetchpriority="high"
+        id="hero-season-image"
+      />
+    </div>
+    <div class="fs__overlay" aria-hidden="true"></div>
+    <img class="cholo-piece" src="img/cholo-intervention.png" width="1200" height="469" alt="" aria-hidden="true" data-spray />
+    <div class="fs__top hero-copy">
+      <p class="fs__eyebrow" id="hero-season-label">Temporada 01 · Señal naranja</p>
+      <h1 class="fs__title" id="hero-season-title">Productora de contenido con <span class="accent">cabeza creativa</span></h1>
+      <p class="fs__sub" id="hero-season-copy">
+        Películas, traducción cinematográfica, edición, web, identidad de marca y piezas con IA. Proyectos propios y producción para quien quiera rodar con equipo completo.
+      </p>
+      <div class="fs__btns">
+        <a href="/contacto" class="btn btn--solid btn--lg btn--pill" id="hero-season-primary">Platicar un proyecto</a>
+        <a href="/estudio" class="btn btn--ghost btn--lg btn--pill" id="hero-season-secondary">Ver capacidades</a>
+      </div>
+      <div class="hero-season__nav" id="hero-season-nav" aria-label="Historias destacadas"></div>
+    </div>
+    <p class="fs__scroll" aria-hidden="true">↓</p>
+  </article>
+
+  <!-- Puente negro (sin asset) -->
+  <section class="hero-bridge" aria-label="Mensaje institucional">
+    <div class="hero-bridge__pattern" aria-hidden="true"></div>
+    <div class="hero-bridge__inner reveal">
+      <p class="hero-bridge__line" data-i18n="idx_bridge">
+        Cine, traducción, web y marca en un mismo tejido.<br>
+        No vendemos palabras vacías: el trabajo y la forma de contarlo hablan solos.<br>
+        <strong>Buscamos alianzas con quien quiera otra mirada al cine mexicano.</strong>
+      </p>
+      <div class="hero-bridge__btns">
+        <a href="/estudio" class="btn btn--accent btn--pill" data-i18n="idx_st_b1">Ver estudio</a>
+        <a href="/proyectos" class="btn btn--outline btn--pill" data-i18n="idx_st_b2">Ver proyectos</a>
+        <a href="/contacto" class="btn btn--outline btn--pill" data-i18n="nav_contact">Contacto</a>
+      </div>
+    </div>
+    <p class="cholo-tag cholo-tag--bridge" aria-hidden="true" data-spray>Cholo</p>
+  </section>
+
+  <section class="news-feed" id="noticias" aria-labelledby="news-feed-title">
+    <div class="news-feed__inner">
+      <div class="news-feed__head reveal">
+        <div>
+          <p class="news-feed__eyebrow" id="news-feed-eyebrow">En la señal</p>
+          <h2 class="news-feed__title" id="news-feed-title">Noticias de LunáticosTv</h2>
+        </div>
+        <a class="news-feed__instagram" href="https://www.instagram.com/oficial.lunaticos/" target="_blank" rel="noopener noreferrer">
+          <span>@oficial.lunaticos</span><span aria-hidden="true">↗</span>
+        </a>
+      </div>
+      <div class="news-feed__grid" id="news-feed-grid"></div>
+    </div>
+  </section>
+
+  <!-- Tres líneas -->
+  <section class="home-lines home-lines--wall" aria-label="Qué somos">
+    <div class="home-lines__inner">
+      <p class="home-lines__p reveal" data-i18n="idx_l1">Un mismo lugar para <strong>cine, traducción audiovisual y piezas digitales</strong>.</p>
+      <p class="home-lines__p reveal" data-i18n="idx_l2">Proyectos propios y producción para terceros con el mismo cuidado visual.</p>
+      <p class="home-lines__p reveal" data-i18n="idx_l3">Experimentos con IA cuando el concepto lo amerita — nunca como relleno.</p>
+    </div>
+    <a class="wheatpaste" href="https://www.instagram.com/oficial.lunaticos/" target="_blank" rel="noopener noreferrer" aria-label="CHOLO, próximamente. Sigue el rodaje en Instagram">
+      <span class="wheatpaste__tape wheatpaste__tape--a" aria-hidden="true"></span>
+      <span class="wheatpaste__tape wheatpaste__tape--b" aria-hidden="true"></span>
+      <img src="img/cholo-poster.webp" width="640" height="960" alt="Póster de CHOLO: una película de Alonso Ortiz producida por LunáticosTv. Próximamente." loading="lazy" />
+    </a>
+    <p class="cholo-tag cholo-tag--note" aria-hidden="true" data-spray>próximamente</p>
+  </section>
+
+  <!-- S1 · Split estudio -->
+  <section class="split split--light" id="home-estudio" aria-label="Estudio">
+    <div class="split__copy reveal">
+      <p class="eyebrow" data-i18n="idx_f_k">Qué somos</p>
+      <h2 class="split__title" data-i18n="idx_f_h">Un mismo lugar para varias disciplinas</h2>
+      <p class="split__body" data-i18n="idx_f_p">
+        No vendemos la palabra “disruptivo”: la idea es que al ver el trabajo y la forma de contarlo, quede claro. Buscamos alianzas con marcas y con quien quiera impulsar cine independiente mexicano con otra mirada.
+      </p>
+      <a href="/estudio" class="btn-text" data-i18n="idx_cap_link">Ver capacidades <span class="arrow">→</span></a>
+    </div>
+    <div class="split__media asset-slot" data-bg="img/split-estudio-orange.png" data-asset-id="split-estudio" data-asset-label="split-estudio-orange.png" aria-hidden="true"></div>
+  </section>
+
+  <!-- Pilares -->
+  <section class="pillars" aria-label="Disciplinas">
+    <div class="pillars__inner">
+      <header class="pillars__head reveal">
+        <p class="eyebrow">01 · Disciplinas</p>
+        <h2 class="pillars__title">Tres frentes, <span class="accent">un criterio</span></h2>
+      </header>
+      <div class="pillars__grid">
+        <article class="pillar reveal">
+          <span class="pillar__n">01</span>
+          <h3 data-i18n="idx_c1t">Cine y narrativas</h3>
+          <p data-i18n="idx_c1p">Largometrajes, piezas seriadas y formatos que requieran cámara, sonido y post serios.</p>
+        </article>
+        <article class="pillar reveal">
+          <span class="pillar__n">02</span>
+          <h3 data-i18n="idx_c2t">Traducción y piezas audiovisuales</h3>
+          <p data-i18n="idx_c2p">Adaptación y traducción orientadas a cine; edición de video para campañas y redes.</p>
+        </article>
+        <article class="pillar reveal">
+          <span class="pillar__n">03</span>
+          <h3 data-i18n="idx_c3t">Web, marca y laboratorio</h3>
+          <p data-i18n="idx_c3p">Sitios, identidad visual y experimentos con IA cuando el concepto lo amerita.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Obra · 3 piezas en desarrollo -->
+  <section class="work-band" id="home-work" aria-label="Obra">
+    <header class="work-band__head reveal">
+      <p class="eyebrow">02 · Obra</p>
+      <h2 class="work-band__title" data-i18n="idx_work_h">En <span class="accent">desarrollo</span></h2>
+      <p class="work-band__deck" data-i18n="idx_work_deck">No publicamos catálogo: mostramos lo que está vivo. Tres piezas en escritura, rodaje o post.</p>
+    </header>
+    <div class="work-grid work-grid--three">
+      <a class="work-card reveal" href="/proyectos">
+        <div class="work-card__media asset-slot" data-bg="img/obra-01.png" data-asset-id="obra-01" data-asset-label="obra-01.png"></div>
+        <span class="cholo-cross" style="--d: 0s" aria-hidden="true" data-spray><svg viewBox="0 0 100 150" preserveAspectRatio="none"><path pathLength="1" d="M14 20 C 36 52, 64 96, 88 132" /><path pathLength="1" d="M86 16 C 64 54, 40 96, 12 134" /></svg><span class="cholo-tag cholo-tag--name">Germán</span></span>
+        <div class="work-card__cap"><span>01</span><strong data-i18n="idx_p1">Pieza en escritura</strong></div>
+      </a>
+      <a class="work-card reveal" href="/proyectos">
+        <div class="work-card__media asset-slot" data-bg="img/obra-02.png" data-asset-id="obra-02" data-asset-label="obra-02.png"></div>
+        <span class="cholo-cross" style="--d: 0.45s" aria-hidden="true" data-spray><svg viewBox="0 0 100 150" preserveAspectRatio="none"><path pathLength="1" d="M10 28 C 30 50, 70 104, 92 126" /><path pathLength="1" d="M90 22 C 70 48, 34 100, 16 140" /></svg><span class="cholo-tag cholo-tag--name">Germán</span></span>
+        <div class="work-card__cap"><span>02</span><strong data-i18n="idx_p2">Pieza en rodaje</strong></div>
+      </a>
+      <a class="work-card reveal" href="/proyectos">
+        <div class="work-card__media asset-slot" data-bg="img/obra-03-orange.png" data-asset-id="obra-03" data-asset-label="obra-03-orange.png"></div>
+        <span class="cholo-cross" style="--d: 0.9s" aria-hidden="true" data-spray><svg viewBox="0 0 100 150" preserveAspectRatio="none"><path pathLength="1" d="M18 14 C 40 60, 58 88, 84 138" /><path pathLength="1" d="M82 24 C 58 58, 44 92, 8 126" /></svg><span class="cholo-tag cholo-tag--name">Germán</span></span>
+        <div class="work-card__cap"><span>03</span><strong data-i18n="idx_p3">Pieza en post</strong></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- C1 · Cierre -->
+  <section class="home-closer home-closer--cinematic" aria-label="Contacto">
+    <div class="home-closer__bg asset-slot" data-bg="img/home-closer-orange.png" data-asset-id="home-closer" data-asset-label="home-closer-orange.png" aria-hidden="true"></div>
+    <div class="home-closer__overlay" aria-hidden="true"></div>
+    <div class="home-closer__inner reveal">
+      <p class="home-closer__q" data-i18n="idx_closer_q">¿Listo para empezar?<br><strong>Platicamos tu proyecto.</strong></p>
+      <p class="home-closer__lead" data-i18n="idx_closer_p">Brief, calendario tentativo y referencias. Respondemos en menos de 48 horas hábiles.</p>
+      <a href="mailto:contacto@lunaticostv.com?subject=Proyecto%20Lun%C3%A1ticosTv" class="home-closer__link" data-i18n="idx_closer_a">contacto@lunaticostv.com</a>
+    </div>
+  </section>
+
+  <section class="home-strip" aria-label="Base">
+    <div class="home-strip__inner">
+      <p class="home-strip__cities" data-i18n="idx_cities">México · Tijuana · Remoto</p>
+      <p class="home-strip__mail">Escríbenos a <a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="season-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0d0d0c" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>Alonso Ortiz — Talento LunáticosTv</title>
+<meta name="description" content="Alonso Ortiz: cantante y actor. Platicando con la Luna, El sueño se cumplió y 18 películas con más de 180 millones de vistas. Talento representado por LunáticosTv." />
+<meta property="og:title" content="Alonso Ortiz — Talento LunáticosTv" />
+<meta property="og:image" content="img/talento/alonso/noche-muro.jpg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="preload" as="image" href="img/talento/alonso-ortiz.jpg" fetchpriority="high">
+</head>
+<body class="page-sub page-talent page-artist" data-nav="talento" data-i18n-doc="doc_ao">
+<script>window.LTV_SHOP_URL = '';</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+<button type="button" class="nav-scrim" id="nav-scrim" tabindex="-1" aria-hidden="true"></button>
+
+<main class="app ao">
+
+  <!-- 01 · Portada -->
+  <section class="ao-hero" aria-labelledby="ao-name">
+    <img class="ao-hero__img" src="img/talento/alonso-ortiz.jpg" width="532" height="640" alt="Retrato de Alonso Ortiz" fetchpriority="high" />
+    <div class="ao-hero__shade" aria-hidden="true"></div>
+    <div class="ao-hero__inner">
+      <p class="ao-kicker"><a href="/talento" data-i18n="ao_back">Talento</a> <span aria-hidden="true">/</span> <span data-i18n="ao_k">Música · Cine</span></p>
+      <h1 class="ao-hero__name" id="ao-name">Alonso<br>Ortiz</h1>
+      <p class="ao-hero__line" data-i18n="ao_line">Canta corridos y regional mexicano, y protagoniza las películas que el público ve completas en YouTube. Dieciocho películas, una canción con la luna y una comunidad que no deja de crecer.</p>
+      <div class="ao-hero__actions">
+        <a class="ao-btn" href="mailto:alonso@lunaticostv.com?subject=Trabajar%20con%20Alonso%20Ortiz" data-i18n="ao_cta">Trabaja con Alonso Ortiz</a>
+        <a class="ao-textlink" href="#cine" data-i18n="ao_go_film">Ver sus películas</a>
+        <a class="ao-textlink" href="#luna" data-i18n="ao_go_music">Escuchar</a>
+      </div>
+    </div>
+    <p class="ao-hero__caption" data-i18n="ao_portrait">Retrato</p>
+  </section>
+
+  <!-- 02 · Números -->
+  <section class="ao-figures" aria-labelledby="ao-fig-title">
+    <h2 class="ao-sr" id="ao-fig-title" data-i18n="ao_fig_h">Alonso en números</h2>
+    <dl class="ao-figures__list">
+      <div><dt data-i18n="ao_fig1">Vistas de sus películas en YouTube</dt><dd>180M</dd></div>
+      <div><dt data-i18n="ao_fig2">Platicando con la Luna en YouTube</dt><dd>31.9M</dd></div>
+      <div><dt data-i18n="ao_fig3">Seguidores en TikTok</dt><dd>1.8M</dd></div>
+      <div><dt data-i18n="ao_fig4">Oyentes mensuales en Spotify</dt><dd>518K</dd></div>
+      <div><dt data-i18n="ao_fig5">Seguidores en Instagram</dt><dd>302K</dd></div>
+      <div><dt data-i18n="ao_fig6">Suscriptores en YouTube</dt><dd>171K</dd></div>
+    </dl>
+    <p class="ao-figures__src" data-i18n="ao_fig_src">Cifras públicas de YouTube, Spotify, TikTok e Instagram, octubre de 2026.</p>
+  </section>
+
+  <!-- 03 · Dos oficios -->
+  <section class="ao-two" aria-label="Música y cine">
+    <a class="ao-two__item" href="#luna">
+      <img src="img/talento/alonso/retrato-alter-ego.jpg" width="1600" height="673" alt="Alonso Ortiz en el video de Alter Ego" loading="lazy" />
+      <span class="ao-two__label"><span class="ao-num">A</span> <span data-i18n="ao_two_m">La música</span></span>
+      <span class="ao-two__text" data-i18n="ao_two_mp">Más de 29 lanzamientos desde 2020: corridos, románticas y colaboraciones con Ysrael Barajas, Gabriel Ssoe y Virlan García.</span>
+    </a>
+    <a class="ao-two__item" href="#cine">
+      <img src="img/talento/alonso/sueno-luz.jpg" width="1600" height="673" alt="Alonso Ortiz en El sueño se cumplió" loading="lazy" />
+      <span class="ao-two__label"><span class="ao-num">B</span> <span data-i18n="ao_two_f">El cine</span></span>
+      <span class="ao-two__text" data-i18n="ao_two_fp">Dieciocho películas completas desde 2022, de Los Envidiosos a El sueño se cumplió, su película más personal.</span>
+    </a>
+  </section>
+
+  <!-- 04 · Platicando con la Luna -->
+  <section class="ao-luna" id="luna" aria-labelledby="ao-luna-title">
+    <div class="ao-luna__art">
+      <img src="img/talento/alonso/platicando-con-la-luna.jpg" width="1000" height="1000" alt="Portada de Platicando con la Luna, de Alonso Ortiz y Ysrael Barajas" loading="lazy" />
+    </div>
+    <div class="ao-luna__copy">
+      <p class="ao-eyebrow" data-i18n="ao_luna_k">Su canción más escuchada</p>
+      <h2 class="ao-luna__title" id="ao-luna-title">Platicando<br><em>con la Luna</em></h2>
+      <p class="ao-luna__credit">Alonso Ortiz × Ysrael Barajas · 2025</p>
+      <p class="ao-luna__big">31.9M</p>
+      <p class="ao-luna__bigcap" data-i18n="ao_luna_views">reproducciones en YouTube entre el video con letra y el audio oficial</p>
+      <iframe
+        class="ao-luna__player"
+        title="Platicando con la Luna en Spotify"
+        src="https://open.spotify.com/embed/track/3lr9C5pyvp5x9Dp8xDlaBP?utm_source=generator&theme=0"
+        width="100%"
+        height="152"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+      ></iframe>
+      <a class="ao-textlink" href="https://www.youtube.com/watch?v=14Z8Tlgknzw" target="_blank" rel="noopener noreferrer" data-i18n="ao_luna_yt">Ver el video con letra</a>
+    </div>
+  </section>
+
+  <!-- 05 · Música -->
+  <section class="ao-section" id="musica" aria-labelledby="ao-music-title">
+    <header class="ao-head">
+      <p class="ao-eyebrow"><span class="ao-num">A</span> <span data-i18n="ao_m_k">Música</span></p>
+      <h2 class="ao-title" id="ao-music-title" data-i18n="ao_m_h">Más canciones</h2>
+    </header>
+    <ol class="ao-tracks">
+      <li><a href="https://www.youtube.com/watch?v=4qq4R0PZnb0" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">01</span><span class="ao-tracks__t">RS</span><span class="ao-tracks__m"><span data-i18n="ao_video">Video oficial</span> · 2023</span><span class="ao-tracks__v">4.7M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=egc2iWty_Wo" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">02</span><span class="ao-tracks__t">Hola Mi Amor</span><span class="ao-tracks__m"><span data-i18n="ao_video">Video oficial</span> · 2025</span><span class="ao-tracks__v">1.9M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=1oGHBEjPCSw" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">03</span><span class="ao-tracks__t">Pa’ No Creer en el Amor <small>ft. Gabriel Ssoe</small></span><span class="ao-tracks__m"><span data-i18n="ao_video">Video oficial</span> · 2025</span><span class="ao-tracks__v">375K</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=I9iuQZQ0E2k" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">04</span><span class="ao-tracks__t">Bella</span><span class="ao-tracks__m"><span data-i18n="ao_lyric">Video con letra</span> · 2026</span><span class="ao-tracks__v">327K</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=a1dt1uD-dcs" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">05</span><span class="ao-tracks__t">PAPARAZZIS</span><span class="ao-tracks__m"><span data-i18n="ao_lyric">Video con letra</span> · 2026</span><span class="ao-tracks__v">256K</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=_EeEg-wxmE0" target="_blank" rel="noopener noreferrer"><span class="ao-tracks__n">06</span><span class="ao-tracks__t">Alter Ego</span><span class="ao-tracks__m"><span data-i18n="ao_video">Video oficial</span> · 2026</span><span class="ao-tracks__v">192K</span></a></li>
+    </ol>
+    <p class="ao-note" data-i18n="ao_tracks_note">Vistas en YouTube.</p>
+
+    <ul class="ao-covers" role="list" aria-label="Lanzamientos recientes">
+      <li><img src="img/talento/alonso-bendito-veneno.jpg" alt="Bendito Veneno" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-bella.jpg" alt="Bella" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-paparazzis.jpg" alt="PAPARAZZIS" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-hola-mi-amor.jpg" alt="Hola Mi Amor" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-alter-ego.jpg" alt="Alter Ego" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-mi-fantasia.jpg" alt="Mi Fantasía" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-la-promesa.jpg" alt="La Promesa" width="500" height="500" loading="lazy" /></li>
+      <li><img src="img/talento/alonso-platicando-con-la-luna.jpg" alt="Platicando con la Luna" width="500" height="500" loading="lazy" /></li>
+    </ul>
+    <p class="ao-platforms">
+      <a href="https://open.spotify.com/artist/7cxq5jTv6N3KjPehEhnlXG" target="_blank" rel="noopener noreferrer">Spotify</a>
+      <a href="https://music.apple.com/us/artist/alonso-ortiz/1597048947" target="_blank" rel="noopener noreferrer">Apple Music</a>
+      <a href="https://www.youtube.com/@aalonsoortizz" target="_blank" rel="noopener noreferrer">YouTube</a>
+      <a href="https://www.deezer.com/artist/107900372" target="_blank" rel="noopener noreferrer">Deezer</a>
+    </p>
+  </section>
+
+  <!-- 06 · El sueño se cumplió -->
+  <section class="ao-film" id="cine" aria-labelledby="ao-film-title">
+    <img class="ao-film__img" src="img/talento/alonso/sueno-bodega.jpg" width="1600" height="673" alt="" loading="lazy" />
+    <div class="ao-film__shade" aria-hidden="true"></div>
+    <div class="ao-film__inner">
+      <p class="ao-eyebrow"><span class="ao-num">B</span> <span data-i18n="ao_film_k">Cine · Estreno 2026</span></p>
+      <h2 class="ao-film__title" id="ao-film-title">El sueño<br><em>se cumplió</em></h2>
+      <p class="ao-film__credit" data-i18n="ao_film_credit">Una película de Alonso Ortiz. Con Ysrael Barajas, Memo Piña, Marivic Cárdenas y Crecer Germán.</p>
+      <p class="ao-film__p" data-i18n="ao_film_p">Ortiz es un joven cansado de sentirse estancado y de decepcionar a quienes lo rodean. ¿Hasta dónde llegarías para cumplir tu sueño?</p>
+      <ul class="ao-film__facts">
+        <li><strong>8M</strong> <span data-i18n="ao_film_f1">vistas en siete semanas</span></li>
+        <li><strong>97</strong> <span data-i18n="ao_film_f2">minutos</span></li>
+      </ul>
+      <div class="ao-hero__actions">
+        <a class="ao-btn" href="https://www.youtube.com/watch?v=XUhC83s505s" target="_blank" rel="noopener noreferrer" data-i18n="ao_film_b1">Ver la película</a>
+        <a class="ao-textlink" href="https://www.youtube.com/watch?v=n1Y26rV1UrY" target="_blank" rel="noopener noreferrer" data-i18n="ao_film_b2">Ver el tráiler</a>
+      </div>
+    </div>
+  </section>
+  <div class="ao-stills" aria-label="Fotogramas de El sueño se cumplió">
+    <img src="img/talento/alonso/sueno-luz.jpg" width="1600" height="673" alt="" loading="lazy" />
+    <img src="img/talento/alonso/sueno-escena.jpg" width="1600" height="673" alt="" loading="lazy" />
+    <img src="img/talento/alonso/sueno-grupo.jpg" width="1600" height="673" alt="" loading="lazy" />
+  </div>
+
+  <!-- 07 · Filmografía -->
+  <section class="ao-section" id="filmografia" aria-labelledby="ao-filmo-title">
+    <header class="ao-head ao-head--split">
+      <div>
+        <p class="ao-eyebrow" data-i18n="ao_filmo_k">Filmografía</p>
+        <h2 class="ao-title" id="ao-filmo-title" data-i18n="ao_filmo_h">18 películas, 180 millones de vistas</h2>
+      </div>
+      <p class="ao-head__aside" data-i18n="ao_filmo_p">Todas completas y gratis en YouTube. Ordenadas de la más reciente a la primera.</p>
+    </header>
+    <ol class="ao-filmo">
+      <li><a href="https://www.youtube.com/watch?v=XUhC83s505s" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/XUhC83s505s.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2026</span><span class="ao-filmo__t">El sueño se cumplió</span><span class="ao-filmo__d">97 min</span><span class="ao-filmo__v">8.0M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=3_CnXpzmd6o" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/3_CnXpzmd6o.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2025</span><span class="ao-filmo__t">Los Ninis 3</span><span class="ao-filmo__d">97 min</span><span class="ao-filmo__v">6.5M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=7LMR3_XY7uY" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/7LMR3_XY7uY.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2025</span><span class="ao-filmo__t">Primo</span><span class="ao-filmo__d">115 min</span><span class="ao-filmo__v">7.0M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=IzKB_KqD7u4" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/IzKB_KqD7u4.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2025</span><span class="ao-filmo__t">La Promesa</span><span class="ao-filmo__d">92 min</span><span class="ao-filmo__v">4.6M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=AxbK_1tQKBI" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/AxbK_1tQKBI.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2024</span><span class="ao-filmo__t">Extssy Model</span><span class="ao-filmo__d">103 min</span><span class="ao-filmo__v">8.8M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=DrjLeindsHg" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/DrjLeindsHg.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2024</span><span class="ao-filmo__t">Más altas que bajadas</span><span class="ao-filmo__d">110 min</span><span class="ao-filmo__v">9.4M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=Qop3EcF_2HQ" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/Qop3EcF_2HQ.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2024</span><span class="ao-filmo__t">El Problema</span><span class="ao-filmo__d">114 min</span><span class="ao-filmo__v">21.7M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=L_TMY0QULLM" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/L_TMY0QULLM.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2024</span><span class="ao-filmo__t">Su padrino es el Papá de los Pollitos</span><span class="ao-filmo__d">104 min</span><span class="ao-filmo__v">6.4M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=1eRbAKhZDTw" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/1eRbAKhZDTw.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2024</span><span class="ao-filmo__t">Los Ninis 2: La People</span><span class="ao-filmo__d">99 min</span><span class="ao-filmo__v">11.6M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=JJm-7vvwUSY" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/JJm-7vvwUSY.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2023</span><span class="ao-filmo__t">Don Nadie</span><span class="ao-filmo__d">116 min</span><span class="ao-filmo__v">20.7M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=lAb9nGfRf_A" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/lAb9nGfRf_A.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2023</span><span class="ao-filmo__t">El Plebe del Camaro</span><span class="ao-filmo__d">91 min</span><span class="ao-filmo__v">8.7M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=tNML3LQjNzI" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/tNML3LQjNzI.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2023</span><span class="ao-filmo__t">Los Ninis</span><span class="ao-filmo__d">87 min</span><span class="ao-filmo__v">15.5M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=rGeybazkb0A" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/rGeybazkb0A.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2023</span><span class="ao-filmo__t">El Corrido del 10</span><span class="ao-filmo__d">93 min</span><span class="ao-filmo__v">8.5M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=nHVPZG9Ojb0" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/nHVPZG9Ojb0.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2023</span><span class="ao-filmo__t">Brindis Mortal</span><span class="ao-filmo__d">97 min</span><span class="ao-filmo__v">5.4M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=0xf0tOYkQc0" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/0xf0tOYkQc0.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2022</span><span class="ao-filmo__t">Mafia Nueva Sinaloense</span><span class="ao-filmo__d">92 min</span><span class="ao-filmo__v">8.7M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=PI1GmKJYo7o" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/PI1GmKJYo7o.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2022</span><span class="ao-filmo__t">El Elegante</span><span class="ao-filmo__d">119 min</span><span class="ao-filmo__v">10.6M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=8GtJbxB22t8" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/8GtJbxB22t8.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2022</span><span class="ao-filmo__t">Gente de Accionar</span><span class="ao-filmo__d">121 min</span><span class="ao-filmo__v">9.3M</span></a></li>
+      <li><a href="https://www.youtube.com/watch?v=DLixGRnRO5A" target="_blank" rel="noopener noreferrer"><img src="img/talento/alonso/peliculas/DLixGRnRO5A.jpg" alt="" width="480" height="270" loading="lazy" /><span class="ao-filmo__y">2022</span><span class="ao-filmo__t">Los Envidiosos</span><span class="ao-filmo__d">81 min</span><span class="ao-filmo__v">8.8M</span></a></li>
+    </ol>
+    <a class="ao-next" href="https://www.youtube.com/watch?v=SqasoWNdL8Y" target="_blank" rel="noopener noreferrer">
+      <span class="ao-next__k" data-i18n="ao_next_k">Próximamente</span>
+      <span class="ao-next__t" data-i18n="ao_next_t">Un nuevo mundo comienza, con Alonso Ortiz y Memo Piña</span>
+      <span class="ao-next__b" data-i18n="ao_next_b">Ver teaser</span>
+    </a>
+  </section>
+
+  <!-- 08 · Galería -->
+  <section class="ao-gallery" aria-label="Galería">
+    <figure class="ao-gallery__a"><img src="img/talento/alonso/lluvia-auto.jpg" width="1600" height="673" alt="Alonso Ortiz dentro de un auto bajo la lluvia" loading="lazy" /><figcaption>Hola Mi Amor</figcaption></figure>
+    <figure class="ao-gallery__b"><img src="img/talento/alonso/pa-no-creer.jpg" width="1600" height="674" alt="Alonso Ortiz y Gabriel Ssoe en un set iluminado en ámbar" loading="lazy" /><figcaption>Pa’ No Creer en el Amor</figcaption></figure>
+    <figure class="ao-gallery__c"><img src="img/talento/alonso/alter-ego-autos.jpg" width="1600" height="673" alt="Alonso Ortiz frente a autos en un estacionamiento" loading="lazy" /><figcaption>Alter Ego</figcaption></figure>
+    <figure class="ao-gallery__d"><img src="img/talento/alonso/noche-muro.jpg" width="1600" height="673" alt="Alonso Ortiz sentado sobre un muro de noche" loading="lazy" /><figcaption>Hola Mi Amor</figcaption></figure>
+  </section>
+
+  <!-- 09 · Redes -->
+  <section class="ao-section" aria-labelledby="ao-social-title">
+    <header class="ao-head">
+      <p class="ao-eyebrow" data-i18n="ao_r_k">Redes</p>
+      <h2 class="ao-title" id="ao-social-title" data-i18n="ao_r_h">Dónde seguirlo</h2>
+    </header>
+    <ul class="ao-social" role="list">
+      <li><a href="https://www.tiktok.com/@alonsooortiz" target="_blank" rel="noopener noreferrer"><span class="ao-social__n">TikTok</span><span class="ao-social__h">@alonsooortiz</span><span class="ao-social__v">1.8M</span></a></li>
+      <li><a href="https://open.spotify.com/artist/7cxq5jTv6N3KjPehEhnlXG" target="_blank" rel="noopener noreferrer"><span class="ao-social__n">Spotify</span><span class="ao-social__h" data-i18n="ao_monthly">oyentes mensuales</span><span class="ao-social__v">518K</span></a></li>
+      <li><a href="https://www.instagram.com/aalonsoortiz/" target="_blank" rel="noopener noreferrer"><span class="ao-social__n">Instagram</span><span class="ao-social__h">@aalonsoortiz</span><span class="ao-social__v">302K</span></a></li>
+      <li><a href="https://www.youtube.com/@aalonsoortizz" target="_blank" rel="noopener noreferrer"><span class="ao-social__n">YouTube</span><span class="ao-social__h">@aalonsoortizz</span><span class="ao-social__v">171K</span></a></li>
+    </ul>
+  </section>
+
+  <!-- 10 · Cierre -->
+  <section class="ao-closer" aria-labelledby="ao-closer-title">
+    <p class="ao-eyebrow" data-i18n="ao_c_k">Booking y colaboraciones</p>
+    <h2 class="ao-closer__title" id="ao-closer-title" data-i18n="ao_c_h">¿Alonso en tu próximo proyecto?</h2>
+    <p class="ao-closer__p" data-i18n="ao_c_p">Shows, colaboraciones musicales, campañas y cine. La representación es a través de LunáticosTv.</p>
+    <a class="ao-btn ao-btn--dark" href="mailto:alonso@lunaticostv.com?subject=Trabajar%20con%20Alonso%20Ortiz" data-i18n="ao_cta">Trabaja con Alonso Ortiz</a>
+    <p class="ao-closer__mail"><a href="mailto:alonso@lunaticostv.com">alonso@lunaticostv.com</a></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

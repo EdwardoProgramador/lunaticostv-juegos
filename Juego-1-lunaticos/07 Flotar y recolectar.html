@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>07 Flotar y recolectar · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<style>
+  /* mock site */
+  .site-nav{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 32px;background:rgba(6,8,20,.92);backdrop-filter:blur(6px);border-bottom:1px solid rgba(184,121,106,.18)}
+  .site-nav .logo{font-family:var(--f-title);font-size:28px;color:#B8796A;text-decoration:none;text-transform:none;letter-spacing:0;font-weight:700}
+  .site-nav ul{display:flex;gap:26px;list-style:none;margin:0;padding:0}
+  .site-nav a{font:600 14px/1 var(--f-ui);letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#c9b8bf}
+  .site-nav a:hover{color:#fff}
+  .hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;padding:56px 32px 40px;max-width:1280px;margin:0 auto}
+  .hero-copy{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .hero-copy h1{font-size:clamp(72px,10vw,140px);margin:6px 0 10px}
+  .bar{height:12px;background:rgba(242,210,188,.08)}
+  .zone{position:relative;min-height:440px}
+  .cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;padding:20px 32px 120px;max-width:1280px;margin:0 auto}
+  .card{display:flex;flex-direction:column;gap:12px}
+  .card .ph{aspect-ratio:16/10;background:rgba(242,210,188,.05);border:1px solid rgba(242,210,188,.06)}
+  /* collectible */
+  .collectible{position:absolute;left:0;top:0;width:200px;height:200px;pointer-events:none;z-index:5}
+  .collectible canvas{position:absolute;inset:0;width:100%;height:100%}
+  .col-glow{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(circle,rgba(255,170,100,.55) 0%,rgba(184,121,106,.25) 40%,rgba(184,121,106,0) 70%);opacity:.3}
+  .col-flash{position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(255,236,200,.95) 0%,rgba(255,154,60,.6) 25%,rgba(255,120,40,0) 65%);opacity:0;transform:scale(.3)}
+  .col-hit{position:absolute;left:50%;top:50%;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;border:0;background:transparent;cursor:pointer;pointer-events:auto}
+  .col-hit:focus-visible{outline:2px solid var(--c-candle);outline-offset:2px}
+  .spark{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px;border-radius:50%;background:#FFD6A0;box-shadow:0 0 8px 2px rgba(255,154,60,.8);pointer-events:none}
+  /* prototype toolbar */
+  .proto{position:fixed;left:16px;bottom:16px;z-index:70;display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(12,10,20,.95);border:1px solid rgba(184,121,106,.4)}
+  .proto select{min-height:36px;background:#0c0a14;color:var(--c-peach);border:1px solid rgba(184,121,106,.5);font:600 14px/1 var(--f-ui);letter-spacing:.08em;padding:0 10px}
+  .proto select:focus-visible{outline:2px solid var(--c-candle)}
+  @media (max-width:820px){
+    .site-nav{padding:14px 18px}.site-nav ul{display:none}
+    .hero{grid-template-columns:1fr;padding:32px 18px;gap:10px}
+    .zone{min-height:300px}
+    .cards{grid-template-columns:1fr;padding:10px 18px 120px}
+  }
+</style>
+</head>
+<body>
+<nav class="site-nav" data-avoid>
+  <a class="logo" href="#">LunaticosTv</a>
+  <ul><li><a href="#">Inicio</a></li><li><a href="#">Películas</a></li><li><a href="#">Detrás de cámaras</a></li><li><a href="#">Contacto</a></li></ul>
+  <button class="ch-btn ch-btn--sm">Suscríbete</button>
+</nav>
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="ch-label">Próxima película</span>
+      <h1 class="ch-title" data-text="Cholo">Cholo</h1>
+      <div class="bar" style="width:92%"></div><div class="bar" style="width:84%"></div><div class="bar" style="width:66%"></div>
+      <div class="ch-row" style="margin-top:20px;gap:14px" data-avoid>
+        <button class="ch-btn">Ver tráiler</button>
+        <button class="ch-btn ch-btn--ghost">Detrás de cámaras</button>
+      </div>
+    </div>
+    <div class="zone" id="zone" aria-label="Zona del objeto flotante">
+      <div class="collectible" id="col">
+        <div class="col-glow" id="glow"></div>
+        <div class="col-flash" id="flash"></div>
+        <canvas id="gl"></canvas>
+        <button class="col-hit" id="hit" aria-label="Recolectar objeto"></button>
+      </div>
+    </div>
+  </section>
+  <section class="cards" aria-hidden="true">
+    <div class="card"><div class="ph"></div><div class="bar" style="width:70%"></div><div class="bar" style="width:45%"></div></div>
+    <div class="card"><div class="ph"></div><div class="bar" style="width:62%"></div><div class="bar" style="width:50%"></div></div>
+    <div class="card"><div class="ph"></div><div class="bar" style="width:74%"></div><div class="bar" style="width:40%"></div></div>
+  </section>
+</main>
+<div class="proto">
+  <span class="ch-label">Objeto</span>
+  <select id="pick"></select>
+  <button class="ch-btn ch-btn--sm" id="replay">Repetir</button>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OBJECTS, setupRenderer, makeEnv, addLights, framed, runLoop, texturesReady } from './lib/cholo-objects.js';
+import { createHUD } from './lib/hud.js';
+
+const hud = createHUD({ mount: document.body });
+const zone = document.getElementById('zone'), col = document.getElementById('col'), hit = document.getElementById('hit');
+const glow = document.getElementById('glow'), flash = document.getElementById('flash'), canvas = document.getElementById('gl');
+const pick = document.getElementById('pick');
+OBJECTS.forEach((o, i) => pick.add(new Option(`${String(i + 1).padStart(2, '0')} ${o.name}`, i)));
+pick.selectedIndex = 4;
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(200, 200, false);
+const scene = new THREE.Scene(); scene.environment = makeEnv(renderer); addLights(scene);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 20);
+const spin = new THREE.Group(); scene.add(spin);
+const S = { scale: 0, spin: 0 };
+let current = null, collecting = false, idx = 4, driftTw = null, pulseTw = null, collectTl = null, yaw = 0;
+// Every model is normalized to the same bounding radius, so the camera never changes.
+const RADIUS = 0.5, CAM_D = RADIUS / Math.sin(THREE.MathUtils.degToRad(15)) / 0.6; // ~60% of the 200px canvas
+
+function stopAll() {
+  [collectTl, driftTw, pulseTw].forEach(t => t && t.kill());
+  collectTl = driftTw = pulseTw = null;
+  gsap.killTweensOf([S, col, glow, flash]);
+  col.querySelectorAll('.spark').forEach(s => { gsap.killTweensOf(s); s.remove(); });
+}
+function disposeModel(c) {
+  spin.remove(c.fit);
+  c.fit.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+}
+function spawn(i) {
+  stopAll();
+  idx = i; collecting = false;
+  if (current) { disposeModel(current); current = null; }
+  // reset transforms and camera before the new model goes in
+  yaw = 0; S.spin = 0; S.scale = 0;
+  spin.position.set(0, 0, 0); spin.rotation.set(0, 0, 0); spin.scale.setScalar(0.0001);
+  cam.position.set(0, CAM_D * 0.1, CAM_D); cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
+  const obj = OBJECTS[i].build(), fit = framed(obj, 1);
+  fit.scale.multiplyScalar(RADIUS / fit.userData.radius);
+  current = { obj, fit }; spin.add(fit);
+  gsap.to(S, { scale: 1, duration: 0.8, ease: 'back.out(1.6)' });
+  gsap.set(col, { opacity: 1 }); gsap.set(flash, { opacity: 0, scale: 0.3 });
+  hit.disabled = false;
+  const zw = zone.clientWidth, zh = zone.clientHeight;
+  gsap.set(col, { x: (zw - 200) * 0.55, y: (zh - 200) * 0.4 });
+  drift();
+  pulseTw = gsap.fromTo(glow, { opacity: 0.18, scale: 0.9 }, { opacity: 0.5, scale: 1.08, duration: 1.8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+}
+// slow wander inside the zone only — never over the nav or the hero buttons
+function drift() {
+  const zw = zone.clientWidth, zh = zone.clientHeight;
+  driftTw = gsap.to(col, { x: gsap.utils.random(0, Math.max(0, zw - 200)), y: gsap.utils.random(0, Math.max(0, zh - 200)), duration: gsap.utils.random(5, 8), ease: 'sine.inOut', onComplete: drift });
+}
+function burst() {
+  for (let k = 0; k < 18; k++) {
+    const s = document.createElement('span'); s.className = 'spark'; col.appendChild(s);
+    const a = Math.random() * Math.PI * 2, d = 60 + Math.random() * 70, sz = 0.6 + Math.random();
+    gsap.fromTo(s, { x: 0, y: 0, scale: sz, opacity: 1 }, { x: Math.cos(a) * d, y: Math.sin(a) * d, scale: 0, opacity: 0, duration: 0.55 + Math.random() * 0.4, ease: 'power2.out', onComplete: () => s.remove() });
+  }
+}
+function collect() {
+  if (collecting) return; collecting = true; hit.disabled = true;
+  if (driftTw) driftTw.kill(); if (pulseTw) pulseTw.kill();
+  collectTl = gsap.timeline()
+    .to(S, { scale: 1.35, duration: 0.18, ease: 'back.out(3)' })
+    .to(flash, { opacity: 1, scale: 1.25, duration: 0.18, ease: 'power2.out' }, 0)
+    .to(glow, { opacity: 1, scale: 1.6, duration: 0.18 }, 0)
+    .call(burst, null, 0.08)
+    .to(S, { spin: 14, duration: 0.55, ease: 'power2.in' }, 0.1)
+    .to(S, { scale: 0, duration: 0.34, ease: 'power3.in' }, 0.3)
+    .to(flash, { opacity: 0, scale: 0.6, duration: 0.45, ease: 'power2.in' }, 0.25)
+    .to(glow, { opacity: 0, scale: 0.4, duration: 0.4 }, 0.3)
+    .call(() => hud.collect(idx), null, 0.62);
+}
+hit.addEventListener('click', collect);
+pick.onchange = () => spawn(+pick.value);
+document.getElementById('replay').onclick = () => { hud.reset(); spawn(+pick.value); };
+addEventListener('resize', () => { if (!collecting) { if (driftTw) driftTw.kill(); drift(); } });
+
+spawn(idx);
+window.__float = { spawn, collect, S, spin, cam, render: () => renderer.render(scene, cam), get current() { return current; } };
+await texturesReady();
+runLoop((t, dt) => {
+  const sway = current && current.obj.userData.sway;
+  yaw += dt * ((sway ? 0 : 0.45) + S.spin);
+  spin.rotation.y = yaw + (sway ? Math.sin(t * 0.6) * sway : 0);
+  spin.rotation.z = Math.sin(t * 0.8) * 0.06;
+  spin.position.y = Math.sin(t * 1.4) * 0.05;
+  spin.scale.setScalar(Math.max(0.0001, S.scale));
+  if (current && current.obj.userData.tick) current.obj.userData.tick(t, dt);
+  renderer.render(scene, cam);
+});
+</script>
+</body>
+</html>

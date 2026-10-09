@@ -1,0 +1,28 @@
+/* Shared stage for 08 and 09: mock site, dim overlay, altar canvas, title + CTA, mobile frame/real-phone rules */
+body{overflow-x:hidden}
+.shell{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:24px}
+.stage{position:relative;width:100%;height:calc(100vh - 130px);min-height:420px;overflow:hidden;background:var(--c-bg);container-type:inline-size;border:1px solid rgba(184,121,106,.2)}
+.stage.is-mobile{width:390px;height:844px;min-height:0;border-radius:30px;border:9px solid #15121b;box-shadow:0 0 0 1px rgba(184,121,106,.3)}
+.mock{position:absolute;inset:0;padding:22px 28px;display:flex;flex-direction:column;gap:14px}
+.mock .row{display:flex;justify-content:space-between;align-items:center;padding-bottom:14px;border-bottom:1px solid rgba(242,210,188,.08)}
+.mock .logo{font-family:var(--f-title);font-size:24px;color:#B8796A}
+.bar{height:12px;background:rgba(242,210,188,.07)}
+.block{flex:1;max-height:280px;background:rgba(242,210,188,.04);margin-top:16px}
+.dim{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,#0a0814 0%,#020206 70%);opacity:0}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.final{position:absolute;left:0;right:0;top:5%;display:flex;justify-content:center;padding:0 6%;pointer-events:none}
+.final h1{text-align:center;font-size:clamp(34px,5.4cqi,78px);line-height:1.02;text-wrap:balance;max-width:16ch;opacity:0}
+.cta{position:absolute;left:0;right:0;bottom:5%;display:flex;justify-content:center;opacity:0}
+.stage.is-mobile .final{top:9%}
+.stage.is-mobile .cta{bottom:8%}
+/* mobile: dark overlay covers the whole viewport (safe areas, browser bars) */
+.stage.is-mobile{transform:translateZ(0)}
+.stage.is-mobile .dim{position:fixed;left:0;right:0;top:calc(-1 * env(safe-area-inset-top,0px));height:100vh;height:calc(100dvh + env(safe-area-inset-top,0px) + env(safe-area-inset-bottom,0px));min-height:100%}
+@media (max-width:640px){
+  .shell{padding:0}
+  .stage,.stage.is-mobile{position:fixed;inset:0;width:100%;height:100dvh;min-height:0;border:0;border-radius:0;box-shadow:none;transform:none}
+  .ch-head{position:fixed;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:90;padding:0;background:none;border:0}
+  .ch-head > div:first-child,.ch-head .seg{display:none}
+  .stage.is-mobile .final{top:calc(9% + env(safe-area-inset-top,0px))}
+  .stage.is-mobile .cta{bottom:calc(max(8%, 60px) + env(safe-area-inset-bottom,0px))}
+}

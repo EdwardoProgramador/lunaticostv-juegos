@@ -1,0 +1,33 @@
+# Claude Code local settings (personal, never share)
+.claude/
+*.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Node (por si más adelante le metes build tools)
+node_modules/
+dist/
+build/
+.cache/
+
+# Local dev tools (no se deployan)
+dev-server.mjs
+upload-shopify.ps1

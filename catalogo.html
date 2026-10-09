@@ -1,0 +1,2087 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>Catálogo — LunáticosTv</title>
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Alguien invadió nuestra tienda" />
+<meta property="og:description" content="Un cholo grafiteó la tienda de LunáticosTv. Entra a ver cómo quedó antes de que la limpiemos." />
+<meta property="og:image" content="https://lunaticostv.com/img/og-tienda.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="description" content="Catálogo oficial LunáticosTv — gorras Primos y más." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+/* —— Catálogo draft (solo catalogo.html) —— */
+.page-catalog .app.cat-shop {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  min-height: calc(100vh - var(--nav-h, 56px));
+  min-height: calc(100svh - var(--nav-h, 56px));
+  background: #fff;
+  padding: calc(var(--nav-h, 56px) + var(--sat, 0px) + 20px)
+    clamp(20px, 5vw, 72px)
+    clamp(48px, 6vw, 96px);
+  box-sizing: border-box;
+}
+.page-catalog .foot { margin-top: 0; }
+
+/* Nav fija: siempre legible sobre fondo blanco */
+.page-catalog .nav {
+  background: #fff;
+  color: #14121a;
+  box-shadow: 0 1px 0 #e5e5e5;
+}
+.page-catalog .nav .nav__cta {
+  background: #14121a;
+  color: #fff;
+}
+.page-catalog .nav .lang-switch {
+  background: #f4f4f6;
+  border-color: #e5e3ea;
+}
+.page-catalog .nav .lang-btn { color: #6c6578; }
+.page-catalog .nav .lang-btn.is-active {
+  background: #fff;
+  color: #14121a;
+  box-shadow: 0 0 0 1px #e5e3ea;
+}
+.page-catalog .nav .nav__link:hover { background: #f4f4f6; }
+.page-catalog {
+  overflow-x: hidden;
+}
+.page-catalog .nav.is-menu-open .nav__links {
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+}
+.page-catalog .lang-switch,
+.page-catalog .nav__menu-btn {
+  position: relative;
+  z-index: 102;
+}
+
+.cat-shop {
+  --cat-bg: #f5f5f5;
+  --cat-ink: #111;
+  --cat-muted: #707072;
+  --cat-line: #e5e5e5;
+  --cat-accent: #c45c26;
+  --cat-green: #007a3d;
+  color: var(--cat-ink);
+}
+
+.cat-view[hidden] { display: none !important; }
+
+/* — Listado — */
+.cat-view {
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.cat-list__top {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "back tools"
+    "title title";
+  gap: 12px 24px;
+  align-items: center;
+  width: 100%;
+  padding: 0 0 clamp(24px, 3vw, 36px);
+  border-bottom: 1px solid var(--cat-line);
+}
+.cat-list__back {
+  grid-area: back;
+  font-size: 14px;
+  color: var(--cat-muted);
+  transition: color 0.15s;
+}
+.cat-list__back:hover { color: var(--cat-ink); }
+.cat-list__title {
+  grid-area: title;
+  margin: 0;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+.cat-list__tools {
+  grid-area: tools;
+  justify-self: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 14px;
+}
+.cat-list__tool-wrap { position: relative; }
+.cat-list__tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--cat-ink);
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.cat-list__tool:hover { border-color: #bbb; }
+.cat-list__tool[aria-expanded="true"] {
+  border-color: var(--cat-ink);
+  box-shadow: 0 0 0 1px var(--cat-ink);
+}
+.cat-list__tool svg { opacity: 0.7; flex-shrink: 0; }
+.cat-list__tool .cat-list__chev { transition: transform 0.2s; }
+.cat-list__tool[aria-expanded="true"] .cat-list__chev { transform: rotate(180deg); }
+
+.cat-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 220px;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--cat-line);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+.cat-menu[hidden] { display: none; }
+.cat-menu__item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  text-align: left;
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+.cat-menu__item:hover { background: var(--cat-bg); }
+.cat-menu__item.is-active {
+  font-weight: 600;
+  background: #f0f0f0;
+}
+
+.cat-list__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 0 16px;
+  font-size: 13px;
+}
+.cat-list__active[hidden] { display: none; }
+.cat-list__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--cat-bg);
+  color: var(--cat-muted);
+}
+.cat-list__chip strong { color: var(--cat-ink); font-weight: 600; }
+
+.cat-list__body {
+  padding-top: clamp(28px, 4vw, 48px);
+  width: 100%;
+}
+
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: clamp(20px, 2.5vw, 36px);
+  width: 100%;
+}
+.cat-grid__empty {
+  grid-column: 1 / -1;
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--cat-muted);
+  font-size: 15px;
+}
+@media (min-width: 900px) {
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1400px) {
+  .cat-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+}
+
+.cat-card-wrap {
+  width: 100%;
+}
+.cat-card {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+  display: block;
+}
+.cat-card:focus-visible {
+  outline: 2px solid var(--cat-ink);
+  outline-offset: 4px;
+}
+.cat-card__media {
+  aspect-ratio: 1;
+  min-height: clamp(220px, 28vw, 420px);
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  position: relative;
+}
+.cat-card-wrap .cat-card__media--white,
+.cat-card-wrap .cat-card__media--black {
+  background: transparent;
+}
+.cat-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transform: translateY(var(--card-img-y, 0%)) scale(var(--card-img-scale, 1));
+  transform-origin: center center;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transition: opacity 900ms ease;
+}
+.cat-card__img--cap { opacity: 1; }
+.cat-card__img--model {
+  opacity: 0;
+  object-position: center 17%;
+}
+.cat-card__preview-btn[data-hero-view="model"] img {
+  object-position: center 17%;
+}
+.cat-card-wrap[data-product="los-primos-black"] .cat-card__img--model,
+.cat-card-wrap[data-product="los-primos-black"] .cat-card__preview-btn[data-hero-view="model"] img {
+  object-position: center 19%;
+}
+.cat-card-wrap.is-model .cat-card__img--cap { opacity: 0; }
+.cat-card-wrap.is-model .cat-card__img--model { opacity: 1; }
+.cat-card__media--white {
+  background: transparent;
+}
+.cat-card__media--black {
+  background: transparent;
+}
+.cat-card__ph {
+  font-size: clamp(48px, 8vw, 80px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  opacity: 0.35;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.cat-card__media--white .cat-card__ph { color: #333; opacity: 0.25; text-shadow: none; }
+.cat-card__previews {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.cat-card__previews::-webkit-scrollbar { display: none; }
+.cat-card__preview-btn {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 2px solid var(--cat-line);
+  border-radius: 4px;
+  background: transparent;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 280ms ease, box-shadow 280ms ease, transform 280ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cat-card__preview-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cat-card__preview-btn.is-active {
+  border-color: var(--cat-ink);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--cat-ink);
+  transform: scale(1.04);
+}
+.cat-card__preview-btn.is-active::after {
+  content: '';
+  position: absolute;
+  inset: auto 6px 6px 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cat-accent, #c45c26);
+  animation: cat-preview-pulse 1.6s ease-in-out infinite;
+}
+@keyframes cat-preview-pulse {
+  0%, 100% { opacity: 0.55; transform: scaleX(0.85); }
+  50% { opacity: 1; transform: scaleX(1); }
+}
+.cat-card__preview-btn:focus { outline: none; }
+.cat-card__preview-btn:focus-visible {
+  outline: 2px solid var(--cat-ink);
+  outline-offset: 2px;
+}
+.cat-card__pin {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 160ms ease, transform 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+.cat-card__media:hover .cat-card__pin { opacity: 1; transform: scale(1); }
+.cat-card-wrap.is-pinned .cat-card__pin {
+  opacity: 1;
+  transform: scale(1);
+  background: rgba(0, 0, 0, 0.55);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+.cat-card__pin:focus { outline: none; }
+.cat-card__pin:focus-visible { outline: 2px solid var(--cat-ink); outline-offset: 3px; }
+
+.cat-card__tag {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--cat-accent);
+}
+.cat-card__name {
+  margin: 0 0 4px;
+  font-size: clamp(17px, 1.5vw, 20px);
+  font-weight: 700;
+}
+.cat-card__sub {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+.cat-card__price {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cat-list__foot {
+  margin-top: clamp(48px, 8vw, 80px);
+  padding-top: clamp(24px, 4vw, 40px);
+  border-top: 1px solid var(--cat-line);
+  text-align: center;
+  width: 100%;
+}
+.cat-list__foot p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--cat-muted);
+}
+.cat-list__foot .btn--ghost {
+  border: 1px solid var(--cat-line);
+  color: var(--cat-ink);
+}
+
+/* — Detalle (PDP) — */
+.cat-pdp__bar {
+  padding: 16px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cat-pdp__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+.cat-pdp__back:hover { text-decoration: underline; }
+
+.cat-pdp__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 400px);
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+  width: 100%;
+}
+@media (max-width: 1024px) {
+  .cat-pdp__grid {
+    grid-template-columns: 1fr;
+    max-width: none;
+    margin: 0;
+  }
+  .cat-pdp__media { position: static; }
+}
+
+.cat-pdp__media {
+  align-items: start;
+  position: sticky;
+  top: calc(var(--nav-h, 56px) + var(--sat, 0px) + 16px);
+}
+
+@media (max-width: 767px) {
+  #cat-view-list .cat-list__top {
+    grid-template-areas:
+      "back back"
+      "title title"
+      "tools tools";
+    gap: 10px 16px;
+    padding-bottom: 20px;
+  }
+  #cat-view-list .cat-list__tools {
+    justify-self: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+  #cat-view-list .cat-list__tool-wrap {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+  #cat-view-list .cat-list__tool {
+    width: 100%;
+    justify-content: center;
+    font-size: 13px;
+    padding: 10px 8px;
+  }
+  #cat-view-list .cat-menu {
+    z-index: 80;
+    left: 0;
+    right: auto;
+    min-width: min(100vw - 40px, 280px);
+  }
+  #cat-view-list .cat-card__pin {
+    display: none !important;
+  }
+}
+
+/* — Detalle móvil / tablet (solo vista producto) — */
+@media (max-width: 1024px) {
+  #cat-view-detail {
+    --cat-mobile-gutter: clamp(16px, 4vw, 24px);
+    overflow: visible;
+  }
+
+  #cat-view-detail .cat-pdp__bar {
+    padding: 12px var(--cat-mobile-gutter) 8px;
+  }
+
+  #cat-view-detail .cat-pdp__grid {
+    grid-template-columns: 1fr;
+    max-width: none;
+    margin: 0;
+    gap: 16px;
+    overflow: visible;
+  }
+
+  #cat-view-detail .cat-pdp__media {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    position: static;
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+    padding: 0 var(--cat-mobile-gutter);
+    box-sizing: border-box;
+    overflow: visible;
+  }
+
+  #cat-view-detail .cat-pdp__hero-wrap {
+    order: 1;
+    width: 100%;
+  }
+
+  #cat-view-detail .cat-pdp__hero {
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: min(100%, 320px);
+    max-height: min(68vw, 320px);
+    min-height: 200px;
+    border-radius: 0;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #cat-view-detail .cat-pdp__hero-img {
+    position: relative;
+    inset: auto;
+    flex: 0 1 auto;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain !important;
+    object-position: center center !important;
+    transform: none !important;
+  }
+
+  #cat-view-detail .cat-pdp__hero--white,
+  #cat-view-detail .cat-pdp__hero--black {
+    background: transparent;
+  }
+
+  #cat-view-detail .cat-pdp__slide-meta,
+  #cat-view-detail .cat-pdp__dots,
+  #cat-view-detail .cat-pdp__nav {
+    display: none !important;
+  }
+
+  #cat-view-detail .cat-pdp__thumbs {
+    order: 2;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: scroll !important;
+    overflow-y: hidden !important;
+    padding: 6px 0 12px;
+    gap: 10px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    touch-action: pan-x;
+  }
+
+  #cat-view-detail .cat-pdp__thumbs::-webkit-scrollbar {
+    display: none;
+  }
+
+  #cat-view-detail .cat-pdp__thumb {
+    flex: 0 0 72px !important;
+    width: 72px;
+    height: 72px;
+    min-width: 72px;
+    scroll-snap-align: start;
+    border-radius: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+  }
+
+  #cat-view-detail .cat-pdp__thumb-img {
+    object-fit: contain !important;
+    object-position: center center !important;
+    transform: none !important;
+  }
+
+  #cat-view-detail .cat-pdp__info {
+    padding: 8px var(--cat-mobile-gutter) 32px;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  #cat-view-detail .cat-pdp__promo {
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  #cat-view-detail .cat-pdp__size {
+    flex: 1 1 100%;
+    min-width: 0;
+    text-align: center;
+  }
+
+  #cat-view-detail .cat-pdp__title {
+    font-size: 26px;
+  }
+
+  /* Botones en el flujo de la página — no fijos encima del contenido */
+  #cat-view-detail .cat-pdp__dock {
+    position: static;
+    margin: 20px 0 24px;
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+    z-index: auto;
+  }
+
+  #cat-view-detail .cat-pdp__dock .cat-pdp__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+  }
+
+  #cat-view-detail .cat-pdp__buy,
+  #cat-view-detail .cat-pdp__fav {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  #cat-view-detail .cat-pdp__buy {
+    padding: 16px 20px;
+    font-size: 15px;
+  }
+
+  #cat-view-detail .cat-pdp__buy.is-added {
+    background: var(--cat-green);
+  }
+
+  #cat-view-detail .cat-pdp__fav {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
+}
+@media (min-width: 1025px) {
+  #cat-view-detail .cat-pdp__dock {
+    position: static;
+    margin: 0 0 32px;
+    padding: 0;
+    background: none;
+    border: 0;
+    box-shadow: none;
+  }
+  #cat-view-detail .cat-pdp__dock .cat-pdp__actions {
+    margin-bottom: 0;
+  }
+}
+@media (max-width: 1024px) {
+  .cat-pdp__slide-meta,
+  .cat-pdp__dots { display: none; }
+}
+
+.cat-pdp__thumbs {
+  display: flex;
+  gap: 8px;
+}
+@media (min-width: 1025px) {
+  .cat-pdp__media {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 16px;
+    position: sticky;
+    top: calc(var(--nav-h, 56px) + var(--sat, 0px) + 16px);
+  }
+  .cat-pdp__thumbs {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    max-height: min(640px, calc(100vh - var(--nav-h, 56px) - 48px));
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    scrollbar-width: thin;
+  }
+}
+.cat-pdp__thumb {
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cat-pdp__thumb:focus { outline: none; }
+.cat-pdp__thumb.is-active { border-color: var(--cat-ink); }
+.cat-pdp__thumb.is-active .cat-pdp__thumb-inner::after {
+  content: '';
+  position: absolute;
+  inset: auto 6px 6px 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--cat-accent, #c45c26);
+}
+.cat-pdp__thumb-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+}
+.cat-pdp__thumb-inner.cat-card__media--white { background: transparent; }
+.cat-pdp__thumb-inner.cat-card__media--black { background: transparent; }
+.cat-pdp__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transform: translateY(var(--card-img-y, 0%)) scale(var(--card-img-scale, 1));
+  transform-origin: center center;
+  display: block;
+  border: 0;
+  box-shadow: none;
+}
+
+.cat-pdp__hero-wrap {
+  position: relative;
+  min-width: 0;
+}
+.cat-pdp__hero {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  background: transparent;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cat-pdp__hero-wrap.is-zoom-ready .cat-pdp__hero {
+  cursor: crosshair;
+}
+.cat-pdp__hero--white { background: transparent; }
+.cat-pdp__hero--black { background: transparent; }
+.cat-pdp__hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transform: translateY(var(--card-img-y, 0%)) scale(var(--card-img-scale, 1));
+  transform-origin: center center;
+  border: 0;
+  box-shadow: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  will-change: transform;
+}
+@media (hover: none), (pointer: coarse) {
+  .cat-pdp__hero-wrap.is-zoom-ready .cat-pdp__hero { cursor: default; }
+}
+.cat-pdp__hero-ph {
+  font-size: clamp(64px, 12vw, 120px);
+  font-weight: 700;
+  opacity: 0.2;
+  color: #fff;
+}
+.cat-pdp__hero--white .cat-pdp__hero-ph { color: #222; }
+.cat-pdp__slide-meta,
+.cat-pdp__dots { display: none; }
+.cat-pdp__nav {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  pointer-events: none;
+}
+.cat-pdp__nav button {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  line-height: 0;
+}
+.cat-pdp__nav button svg {
+  display: block;
+  flex-shrink: 0;
+}
+.cat-pdp__nav button:hover { background: #fff; }
+
+.cat-pdp__info { padding-top: 8px; }
+.cat-pdp__badge {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--cat-accent);
+}
+.cat-pdp__title {
+  margin: 0 0 6px;
+  font-size: clamp(26px, 4vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.cat-pdp__subtitle {
+  margin: 0 0 16px;
+  font-size: 16px;
+  color: var(--cat-muted);
+}
+.cat-pdp__price {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.cat-pdp__promo {
+  margin: 0 0 24px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--cat-green);
+}
+
+.cat-pdp__sizes-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.cat-pdp__sizes-head a {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--cat-muted);
+  text-decoration: underline;
+}
+.cat-pdp__sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.cat-pdp__size {
+  min-width: 72px;
+  padding: 12px 20px;
+  border: 1px solid var(--cat-line);
+  border-radius: 4px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cat-pdp__size:hover { border-color: #aaa; }
+.cat-pdp__size.is-selected {
+  border: 2px solid var(--cat-ink);
+  padding: 11px 19px;
+}
+
+.cat-pdp__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.cat-pdp__dock {
+  margin-bottom: 32px;
+}
+.cat-pdp__buy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 18px 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--cat-ink);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.cat-pdp__buy:hover { background: #333; }
+.cat-pdp__fav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 16px 24px;
+  border: 1px solid var(--cat-line);
+  border-radius: 999px;
+  background: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  box-sizing: border-box;
+}
+.cat-pdp__fav svg {
+  flex-shrink: 0;
+}
+.cat-pdp__fav:hover { border-color: #aaa; }
+
+.cat-pdp__box {
+  padding: 20px;
+  margin-bottom: 24px;
+  background: var(--cat-bg);
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cat-muted);
+}
+.cat-pdp__desc {
+  margin: 0 0 24px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--cat-ink);
+}
+.cat-pdp__meta {
+  margin: 0 0 24px;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.8;
+}
+.cat-pdp__meta strong { font-weight: 600; }
+.cat-pdp__link {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 15px;
+  text-decoration: underline;
+  color: var(--cat-ink);
+}
+
+.cat-pdp__acc {
+  border-top: 1px solid var(--cat-line);
+}
+.cat-pdp__acc-item { border-bottom: 1px solid var(--cat-line); }
+.cat-pdp__acc-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+  border: 0;
+  background: none;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  color: var(--cat-ink);
+}
+.cat-pdp__acc-btn svg { transition: transform 0.2s; flex-shrink: 0; }
+.cat-pdp__acc-item.is-open .cat-pdp__acc-btn svg { transform: rotate(180deg); }
+.cat-pdp__acc-panel {
+  display: none;
+  padding: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--cat-muted);
+}
+.cat-pdp__acc-item.is-open .cat-pdp__acc-panel { display: block; }
+
+/* —— Campo de código oculto (solo pruebas) —— */
+.ltv-promo {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  z-index: 200;
+  background: #14121a;
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  padding: 12px 14px;
+  max-width: calc(100vw - 24px);
+}
+.ltv-promo[hidden] { display: none; }
+.ltv-promo__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.ltv-promo__label { width: 100%; font-size: 12px; opacity: 0.7; }
+.ltv-promo__input {
+  flex: 1 1 200px;
+  min-width: 180px;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #14121a;
+}
+.ltv-promo__btn {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #c45c26;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ltv-promo__close {
+  background: none;
+  border: 0;
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.ltv-promo__msg { width: 100%; margin: 4px 0 0; font-size: 12px; opacity: 0.85; }
+</style>
+</head>
+<body class="page-sub page-catalog" data-i18n-doc="doc_catalog">
+<script>window.LTV_SHOP_URL = 'https://shop.lunaticostv.com';</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav is-light" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+<button type="button" class="nav-scrim" id="nav-scrim" tabindex="-1" aria-hidden="true"></button>
+
+<main class="app cat-shop">
+
+  <!-- Vista listado (estilo grid Nike) -->
+  <div id="cat-view-list" class="cat-view">
+    <div class="cat-list__top">
+      <a href="/tienda" class="cat-list__back">← Volver a tienda</a>
+      <h1 class="cat-list__title" id="cat-list-heading">Catálogo <span class="cholo-strike" data-spray>LunáticosTv<span class="cholo-strike__new" aria-hidden="true">del Cholo</span></span></h1>
+      <div class="cat-list__tools">
+        <div class="cat-list__tool-wrap">
+          <button type="button" class="cat-list__tool" id="cat-btn-filters" aria-expanded="false" aria-haspopup="listbox" aria-controls="cat-menu-filters">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            <span id="cat-btn-filters-label">Filtros</span>
+            <svg class="cat-list__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <ul class="cat-menu" id="cat-menu-filters" role="listbox" hidden>
+            <li><button type="button" class="cat-menu__item is-active" role="option" data-filter="all">Todos los productos</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-filter="gorras">Gorras</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-filter="clara">Edición clara</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-filter="oscura">Edición oscura</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-filter="primos">Colección Primos</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-filter="accesorios">Accesorios</button></li>
+          </ul>
+        </div>
+        <div class="cat-list__tool-wrap">
+          <button type="button" class="cat-list__tool" id="cat-btn-sort" aria-expanded="false" aria-haspopup="listbox" aria-controls="cat-menu-sort">
+            <span id="cat-btn-sort-label">Ordenar por</span>
+            <svg class="cat-list__chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <ul class="cat-menu" id="cat-menu-sort" role="listbox" hidden>
+            <li><button type="button" class="cat-menu__item is-active" role="option" data-sort="featured">Destacados</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-sort="newest">Más recientes</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-sort="price-asc">Precio: menor a mayor</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-sort="price-desc">Precio: mayor a menor</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-sort="name-asc">Nombre A–Z</button></li>
+            <li><button type="button" class="cat-menu__item" role="option" data-sort="name-desc">Nombre Z–A</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="cat-list__active" id="cat-list-active" hidden>
+      <span class="cat-list__chip">Filtro: <strong id="cat-active-filter">Todos</strong></span>
+      <span class="cat-list__chip">Orden: <strong id="cat-active-sort">Destacados</strong></span>
+    </div>
+
+    <div class="cat-list__body">
+      <div class="cat-grid" id="cat-grid" role="list"></div>
+    </div>
+
+    <footer class="cat-list__foot">
+      <p>Hecho en México · LunáticosTv</p>
+    </footer>
+  </div>
+
+  <!-- Vista detalle (PDP estilo Nike) -->
+  <div id="cat-view-detail" class="cat-view" hidden>
+    <div class="cat-pdp__bar">
+      <button type="button" class="cat-pdp__back" id="cat-pdp-back" aria-label="Volver al catálogo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+        Volver al catálogo
+      </button>
+    </div>
+
+    <div class="cat-pdp__grid">
+      <div class="cat-pdp__media" aria-label="Producto">
+        <div class="cat-pdp__thumbs" id="cat-pdp-thumbs" aria-label="Galería"></div>
+
+        <div class="cat-pdp__hero-wrap" id="cat-pdp-hero-wrap">
+          <div class="cat-pdp__hero" id="cat-pdp-hero">
+            <img class="cat-pdp__hero-img" id="cat-pdp-hero-img" alt="" hidden decoding="async">
+            <span class="cat-pdp__hero-ph" id="cat-pdp-hero-ph">P</span>
+          </div>
+          <div class="cat-pdp__nav" aria-label="Imágenes">
+            <button type="button" id="cat-pdp-prev" aria-label="Anterior">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button type="button" id="cat-pdp-next" aria-label="Siguiente">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+          <p class="cat-pdp__slide-meta" id="cat-pdp-slide-meta" aria-live="polite"></p>
+          <div class="cat-pdp__dots" id="cat-pdp-dots" aria-label="Indicador de imagen"></div>
+        </div>
+      </div>
+
+      <div class="cat-pdp__info">
+        <p class="cat-pdp__badge" id="cat-pdp-badge"></p>
+        <h1 class="cat-pdp__title" id="cat-pdp-title"></h1>
+        <p class="cat-pdp__subtitle" id="cat-pdp-subtitle"></p>
+        <p class="cat-pdp__price" id="cat-pdp-price"></p>
+        <p class="cat-pdp__promo" id="cat-pdp-promo">Compra segura — pagos y envíos gestionados por LunáticosTv.</p>
+
+        <div class="cat-pdp__sizes-head">
+          <span>Selecciona tu talla</span>
+          <a href="#">Guía de tallas</a>
+        </div>
+        <div class="cat-pdp__sizes" id="cat-pdp-sizes">
+          <button type="button" class="cat-pdp__size is-selected" data-size="one">Unitalla</button>
+        </div>
+
+        <div class="cat-pdp__dock" id="cat-pdp-dock" aria-label="Acciones de compra">
+          <div class="cat-pdp__actions">
+            <a class="cat-pdp__buy" id="cat-pdp-buy" href="#" target="_blank" rel="noopener noreferrer">Agregar a la bolsa de compra</a>
+            <button type="button" class="cat-pdp__fav" id="cat-pdp-fav">
+              Favoritos
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="cat-pdp__box" id="cat-pdp-box"></div>
+        <p class="cat-pdp__desc" id="cat-pdp-desc"></p>
+        <ul class="cat-pdp__meta" id="cat-pdp-meta"></ul>
+
+        <div class="cat-pdp__acc">
+          <div class="cat-pdp__acc-item">
+            <button type="button" class="cat-pdp__acc-btn" aria-expanded="false">
+              Envíos y devoluciones
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="cat-pdp__acc-panel">
+              Envíos e inventario según tu región. Políticas de devolución y tiempos de entrega aplican según la tienda oficial LunáticosTv.
+            </div>
+          </div>
+          <div class="cat-pdp__acc-item">
+            <button type="button" class="cat-pdp__acc-btn" aria-expanded="false">
+              Detalles del producto
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="cat-pdp__acc-panel" id="cat-pdp-acc-details"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var FILTER_LABELS = {
+    all: 'Todos los productos',
+    gorras: 'Gorras',
+    clara: 'Edición clara',
+    oscura: 'Edición oscura',
+    primos: 'Colección Primos',
+    accesorios: 'Accesorios'
+  };
+  var SORT_LABELS = {
+    featured: 'Destacados',
+    newest: 'Más recientes',
+    'price-asc': 'Precio: menor a mayor',
+    'price-desc': 'Precio: mayor a menor',
+    'name-asc': 'Nombre A–Z',
+    'name-desc': 'Nombre Z–A'
+  };
+
+  var PRODUCTS = [
+    {
+      id: 'primos-a-white',
+      tag: 'Lo nuevo',
+      name: 'Primos A White',
+      subtitle: 'Gorra estructurada · edición clara',
+      price: '$999 MXN',
+      priceNum: 999,
+      order: 1,
+      filters: ['gorras', 'clara', 'primos'],
+      theme: 'white',
+      ph: 'P·A',
+      image: 'img/A BLANCO ChatGPT Image 25 may 2026, 10_34_27 p.m..png',
+      imageScale: 1.12,
+      gallery: [
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_26_04 p.m..png',
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_34_27 p.m..png',
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_21_36 p.m..png',
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_21_54 p.m..png',
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_25_58 p.m..png',
+        'img/A BLANCO ChatGPT Image 25 may 2026, 10_26_02 p.m..png'
+      ],
+      desc: 'Versión clara de la colección Primos — blanca, limpia y con el carácter LunáticosTv bordado. Unitalla con ajuste trasero y visera curva.',
+      box: 'Gorra de 6 paneles con bordado LunáticosTv. Ajuste trasero metálico. Hecha para uso diario y colección.',
+      color: 'Blanco / Blanco',
+      style: 'PRIMOS-A-WHT',
+      origin: 'México',
+      cart: 'https://shop.lunaticostv.com/cart/52425361588536:1',
+      preview: 'img/PHOTO-2026-05-25-23-51-17.jpg'
+    },
+    {
+      id: 'los-primos-black',
+      tag: 'Colección Primos',
+      name: 'Los Primos Black',
+      subtitle: 'Gorra estructurada · edición oscura',
+      price: '$999 MXN',
+      priceNum: 999,
+      order: 2,
+      filters: ['gorras', 'oscura', 'primos'],
+      theme: 'black',
+      ph: 'P·B',
+      image: 'img/06865ef3-4d96-448e-87e7-be6556ab94dd.png',
+      imageScale: 1.098,
+      imageY: -4,
+      gallery: [
+        'img/gorra negro ChatGPT Image 25 may 2026, 07_15_59 p.m..png',
+        'img/06865ef3-4d96-448e-87e7-be6556ab94dd.png',
+        'img/gorra negro ChatGPT Image 25 may 2026, 07_15_46 p.m..png',
+        'img/gorra negro ChatGPT Image 25 may 2026, 07_15_50 p.m..png',
+        'img/gorra negro ChatGPT Image 25 may 2026, 07_15_41 p.m..png',
+        { src: 'img/gorra negro ChatGPT Image 25 may 2026, 07_15_43 p.m..png', scale: 1.0, y: 0 }
+      ],
+      desc: 'Contraparte oscura — negro cerrado, discreta por fuera, con todo el peso de LunáticosTv por dentro. Unitalla con ajuste trasero.',
+      box: 'Gorra de 6 paneles en negro profundo. Bordado tonal LunáticosTv. Ajuste trasero — una talla.',
+      color: 'Negro / Negro',
+      style: 'PRIMOS-BLK',
+      origin: 'México',
+      cart: 'https://shop.lunaticostv.com/cart/52425361621304:1',
+      preview: 'img/PHOTO-2026-05-25-23-56-00.jpg'
+    }
+  ];
+
+  var listEl = document.getElementById('cat-view-list');
+  var detailEl = document.getElementById('cat-view-detail');
+  var gridEl = document.getElementById('cat-grid');
+  var currentId = null;
+  var slideIndex = 0;
+  var activeFilter = 'all';
+  var activeSort = 'featured';
+  var openMenu = null;
+
+  function isTouchCatalog() {
+    return window.matchMedia('(max-width: 1024px)').matches;
+  }
+
+  function touchGalleryStyle(p, item) {
+    if (isTouchCatalog()) return '--card-img-scale:1;--card-img-y:0%';
+    return galleryItemStyle(p, item);
+  }
+
+  function productById(id) {
+    for (var i = 0; i < PRODUCTS.length; i++) {
+      if (PRODUCTS[i].id === id) return PRODUCTS[i];
+    }
+    return null;
+  }
+
+  function matchesFilter(p) {
+    if (activeFilter === 'all') return true;
+    return p.filters.indexOf(activeFilter) !== -1;
+  }
+
+  function sortProducts(list) {
+    var items = list.slice();
+    items.sort(function (a, b) {
+      if (activeSort === 'featured') return a.order - b.order;
+      if (activeSort === 'newest') return b.order - a.order;
+      if (activeSort === 'price-asc') return a.priceNum - b.priceNum || a.order - b.order;
+      if (activeSort === 'price-desc') return b.priceNum - a.priceNum || a.order - b.order;
+      if (activeSort === 'name-asc') return a.name.localeCompare(b.name, 'es');
+      if (activeSort === 'name-desc') return b.name.localeCompare(a.name, 'es');
+      return 0;
+    });
+    return items;
+  }
+
+  function productScale(p) {
+    return p.imageScale != null ? p.imageScale : 1;
+  }
+
+  function productImageY(p) {
+    return p.imageY != null ? p.imageY : 0;
+  }
+
+  function productImageStyle(p) {
+    return '--card-img-scale:' + productScale(p) + ';--card-img-y:' + productImageY(p) + '%';
+  }
+
+  function galleryItemSrc(item) {
+    return typeof item === 'string' ? item : item.src;
+  }
+
+  function galleryItemScale(p, item) {
+    if (item && typeof item === 'object' && item.scale != null) return item.scale;
+    return productScale(p);
+  }
+
+  function galleryItemY(p, item) {
+    if (item && typeof item === 'object' && item.y != null) return item.y;
+    return productImageY(p);
+  }
+
+  function galleryItemStyle(p, item) {
+    return '--card-img-scale:' + galleryItemScale(p, item) + ';--card-img-y:' + galleryItemY(p, item) + '%';
+  }
+
+  function productGallery(p) {
+    if (p.gallery && p.gallery.length) return p.gallery;
+    if (p.image) return [p.image];
+    return [];
+  }
+
+  var HERO_HOLD_MS = 5800;
+
+  function cardHeroImageStyle(p, isModel) {
+    if (isModel) return '--card-img-scale:1.03;--card-img-y:0%';
+    return productImageStyle(p);
+  }
+
+  function cardMediaHtml(p) {
+    if (p.image) {
+      var capImg =
+        '<img class="cat-card__img cat-card__img--cap" src="' +
+        encodeURI(p.image) +
+        '" alt="' +
+        p.name +
+        '" loading="lazy" decoding="async" style="' +
+        cardHeroImageStyle(p, false) +
+        '">';
+
+      if (p.preview) {
+        var modelImg =
+          '<img class="cat-card__img cat-card__img--model" src="' +
+          encodeURI(p.preview) +
+          '" alt="' +
+          p.name +
+          ' — modelo" loading="lazy" decoding="async" style="' +
+          cardHeroImageStyle(p, true) +
+          '">';
+        return capImg + modelImg;
+      }
+
+      return '<img class="cat-card__img" src="' + encodeURI(p.image) + '" alt="' + p.name + '" loading="lazy" decoding="async" style="' + productImageStyle(p) + '">';
+    }
+    return '<span class="cat-card__ph" aria-hidden="true">' + p.ph + '</span>';
+  }
+
+  function cardPreviewsHtml(p) {
+    if (!p.preview || !p.image) return '';
+    return (
+      '<div class="cat-card__previews" role="group" aria-label="Vista del producto">' +
+        '<button type="button" class="cat-card__preview-btn" data-hero-view="cap" aria-label="Ver gorra" aria-pressed="false">' +
+          '<img src="' + encodeURI(p.image) + '" alt="" loading="lazy" decoding="async">' +
+        '</button>' +
+        '<button type="button" class="cat-card__preview-btn is-active" data-hero-view="model" aria-label="Ver modelo" aria-pressed="true">' +
+          '<img src="' + encodeURI(p.preview) + '" alt="" loading="lazy" decoding="async">' +
+        '</button>' +
+      '</div>'
+    );
+  }
+
+  function resetPdpZoom() {
+    var wrap = document.getElementById('cat-pdp-hero-wrap');
+    var heroImg = document.getElementById('cat-pdp-hero-img');
+    if (wrap) wrap.classList.remove('is-zooming');
+    if (heroImg) {
+      heroImg.style.transformOrigin = '';
+      heroImg.style.transform = '';
+    }
+  }
+
+  function updatePdpHero(p, index) {
+    var gallery = productGallery(p);
+    var heroImg = document.getElementById('cat-pdp-hero-img');
+    var heroPh = document.getElementById('cat-pdp-hero-ph');
+    resetPdpZoom();
+    if (!gallery.length) {
+      heroImg.hidden = true;
+      heroPh.hidden = false;
+      heroPh.textContent = p.ph;
+      return;
+    }
+    var item = gallery[index != null ? index : 0];
+    heroImg.src = encodeURI(galleryItemSrc(item));
+    heroImg.alt = p.name + ' — imagen ' + ((index != null ? index : 0) + 1);
+    heroImg.style.cssText = touchGalleryStyle(p, item);
+    heroImg.hidden = false;
+    heroPh.hidden = true;
+  }
+
+  function updatePdpSlideUI(p) {
+    var gallery = productGallery(p);
+    var n = gallery.length;
+    var meta = document.getElementById('cat-pdp-slide-meta');
+    var dots = document.getElementById('cat-pdp-dots');
+    if (meta) meta.textContent = n > 1 ? (slideIndex + 1) + ' / ' + n : '';
+    if (!dots) return;
+    if (n < 2) {
+      dots.innerHTML = '';
+      return;
+    }
+    var dotsHtml = '';
+    for (var d = 0; d < n; d++) {
+      dotsHtml +=
+        '<button type="button" class="cat-pdp__dot' + (d === slideIndex ? ' is-active' : '') + '" data-slide="' + d + '" aria-label="Imagen ' + (d + 1) + '"></button>';
+    }
+    dots.innerHTML = dotsHtml;
+  }
+
+  function scrollActivePdpThumb() {
+    var strip = document.getElementById('cat-pdp-thumbs');
+    if (!strip) return;
+    var active = strip.querySelector('.cat-pdp__thumb.is-active');
+    if (!active) return;
+
+    // Solo mover la tira de miniaturas — no hacer scroll de toda la página.
+    var isHorizontal = strip.scrollWidth > strip.clientWidth + 2;
+    if (isHorizontal) {
+      var targetX = active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2;
+      strip.scrollTo({ left: Math.max(0, targetX), behavior: 'smooth' });
+    } else if (strip.scrollHeight > strip.clientHeight + 2) {
+      var targetY = active.offsetTop - (strip.clientHeight - active.offsetHeight) / 2;
+      strip.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    }
+  }
+
+  function setupPdpZoom() {
+    var wrap = document.getElementById('cat-pdp-hero-wrap');
+    var hero = document.getElementById('cat-pdp-hero');
+    var heroImg = document.getElementById('cat-pdp-hero-img');
+    var nav = document.querySelector('.cat-pdp__nav');
+    if (!wrap || !hero || !heroImg) return;
+
+    var zoomFactor = 2.2;
+    var canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (canHover) wrap.classList.add('is-zoom-ready');
+
+    function updateZoom(e) {
+      if (!canHover || heroImg.hidden) return;
+      if (e.target.closest('.cat-pdp__nav')) return;
+      var rect = hero.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+
+      var px = (x / rect.width) * 100;
+      var py = (y / rect.height) * 100;
+      var cs = getComputedStyle(heroImg);
+      var baseScale = parseFloat(cs.getPropertyValue('--card-img-scale')) || 1;
+      var ty = cs.getPropertyValue('--card-img-y').trim() || '0%';
+
+      wrap.classList.add('is-zooming');
+      heroImg.style.transformOrigin = px + '% ' + py + '%';
+      heroImg.style.transform = 'translateY(' + ty + ') scale(' + (baseScale * zoomFactor) + ')';
+    }
+
+    hero.addEventListener('mousemove', updateZoom);
+    hero.addEventListener('mouseleave', resetPdpZoom);
+    if (nav) {
+      nav.addEventListener('mouseenter', resetPdpZoom);
+      nav.addEventListener('mousedown', resetPdpZoom);
+    }
+  }
+
+  function setupPdpSwipe() {
+    var hero = document.getElementById('cat-pdp-hero');
+    if (!hero) return;
+    var startX = 0;
+    var startY = 0;
+    hero.addEventListener(
+      'touchstart',
+      function (e) {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      },
+      { passive: true }
+    );
+    hero.addEventListener(
+      'touchend',
+      function (e) {
+        var dx = e.changedTouches[0].clientX - startX;
+        var dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx < 0) setSlide(slideIndex + 1);
+        else setSlide(slideIndex - 1);
+      },
+      { passive: true }
+    );
+  }
+
+  function cardHtml(p) {
+    var hasAlt = !!(p.preview && p.image);
+    if (!hasAlt) {
+      return (
+        '<button type="button" class="cat-card" role="listitem" data-open="' + p.id + '" aria-label="Ver ' + p.name + '">' +
+          '<div class="cat-card__media cat-card__media--' + p.theme + '">' +
+            cardMediaHtml(p) +
+          '</div>' +
+          (p.tag ? '<p class="cat-card__tag">' + p.tag + '</p>' : '') +
+          '<h2 class="cat-card__name">' + p.name + '</h2>' +
+          '<p class="cat-card__sub">' + p.subtitle + '</p>' +
+          '<p class="cat-card__price">' + p.price.replace(' MXN', '') + '</p>' +
+        '</button>'
+      );
+    }
+
+    return (
+      '<article class="cat-card-wrap is-model" role="listitem" data-open="' + p.id + '" data-product="' + p.id + '">' +
+        '<div class="cat-card" tabindex="0" role="button" aria-label="Ver ' + p.name + '">' +
+          '<div class="cat-card__media cat-card__media--' + p.theme + '">' +
+            cardMediaHtml(p) +
+            '<span class="cat-card__pin" role="button" tabindex="0" data-hero-pin aria-label="Fijar o reanudar alternancia" aria-pressed="false">F</span>' +
+          '</div>' +
+          (p.tag ? '<p class="cat-card__tag">' + p.tag + '</p>' : '') +
+          '<h2 class="cat-card__name">' + p.name + '</h2>' +
+          '<p class="cat-card__sub">' + p.subtitle + '</p>' +
+          '<p class="cat-card__price">' + p.price.replace(' MXN', '') + '</p>' +
+        '</div>' +
+        cardPreviewsHtml(p) +
+      '</article>'
+    );
+  }
+
+  var heroFlipTimers = new Map();
+
+  function stopHeroAlternationForAll() {
+    heroFlipTimers.forEach(function (id) { clearInterval(id); });
+    heroFlipTimers.clear();
+  }
+
+  function stopHeroAlternationForCard(card) {
+    if (!heroFlipTimers.has(card)) return;
+    clearInterval(heroFlipTimers.get(card));
+    heroFlipTimers.delete(card);
+  }
+
+  function syncHeroPreviews(wrap) {
+    var isModel = wrap.classList.contains('is-model');
+    wrap.querySelectorAll('[data-hero-view]').forEach(function (btn) {
+      var active = btn.getAttribute('data-hero-view') === (isModel ? 'model' : 'cap');
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function setHeroView(wrap, view, pin) {
+    var isModel = view === 'model';
+    wrap.classList.toggle('is-model', isModel);
+    syncHeroPreviews(wrap);
+
+    if (pin) {
+      wrap.dataset.heroPinned = '1';
+      wrap.classList.add('is-pinned');
+      stopHeroAlternationForCard(wrap);
+      var pinEl = wrap.querySelector('[data-hero-pin]');
+      if (pinEl) pinEl.setAttribute('aria-pressed', 'true');
+    }
+  }
+
+  function startHeroAlternation(wrap) {
+    if (!wrap) return;
+    if (heroFlipTimers.has(wrap)) return;
+    var id = setInterval(function () {
+      if (wrap.dataset.heroPinned === '1') return;
+      wrap.classList.toggle('is-model');
+      syncHeroPreviews(wrap);
+    }, HERO_HOLD_MS);
+    heroFlipTimers.set(wrap, id);
+  }
+
+  function setHeroPinned(wrap, pinned) {
+    wrap.dataset.heroPinned = pinned ? '1' : '0';
+    wrap.classList.toggle('is-pinned', pinned);
+
+    var pinEl = wrap.querySelector('[data-hero-pin]');
+    if (pinEl) pinEl.setAttribute('aria-pressed', pinned ? 'true' : 'false');
+
+    stopHeroAlternationForCard(wrap);
+    if (!pinned) startHeroAlternation(wrap);
+  }
+
+  function setupHeroAlternation() {
+    stopHeroAlternationForAll();
+
+    if (!gridEl) return;
+    gridEl.querySelectorAll('.cat-card-wrap').forEach(function (wrap) {
+      if (!wrap.querySelector('.cat-card__img--model')) return;
+
+      wrap.dataset.heroPinned = '0';
+      wrap.classList.remove('is-pinned');
+      wrap.classList.add('is-model');
+      syncHeroPreviews(wrap);
+
+      var pinEl = wrap.querySelector('[data-hero-pin]');
+      if (pinEl) {
+        pinEl.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          setHeroPinned(wrap, !wrap.classList.contains('is-pinned'));
+        });
+        pinEl.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          e.stopPropagation();
+          setHeroPinned(wrap, !wrap.classList.contains('is-pinned'));
+        });
+      }
+
+      wrap.querySelectorAll('[data-hero-view]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var view = btn.getAttribute('data-hero-view');
+          var alreadyActive = btn.classList.contains('is-active');
+          if (alreadyActive && wrap.dataset.heroPinned === '1') {
+            setHeroPinned(wrap, false);
+            btn.blur();
+            return;
+          }
+          setHeroView(wrap, view, true);
+          btn.blur();
+        });
+      });
+
+      startHeroAlternation(wrap);
+    });
+  }
+
+  function renderGrid() {
+    var filtered = sortProducts(PRODUCTS.filter(matchesFilter));
+    if (!filtered.length) {
+      gridEl.innerHTML = '<p class="cat-grid__empty">No hay productos con este filtro. Prueba otra categoría.</p>';
+    } else {
+      gridEl.innerHTML = filtered.map(cardHtml).join('');
+    }
+    var showChips = activeFilter !== 'all' || activeSort !== 'featured';
+    document.getElementById('cat-list-active').hidden = !showChips;
+    document.getElementById('cat-active-filter').textContent = FILTER_LABELS[activeFilter];
+    document.getElementById('cat-active-sort').textContent = SORT_LABELS[activeSort];
+
+    setupHeroAlternation();
+  }
+
+  function closeMenus() {
+    if (!openMenu) return;
+    openMenu.btn.setAttribute('aria-expanded', 'false');
+    openMenu.menu.hidden = true;
+    openMenu = null;
+  }
+
+  function toggleMenu(btn, menu) {
+    if (openMenu && openMenu.menu === menu) {
+      closeMenus();
+      return;
+    }
+    closeMenus();
+    btn.setAttribute('aria-expanded', 'true');
+    menu.hidden = false;
+    openMenu = { btn: btn, menu: menu };
+  }
+
+  function setFilter(key) {
+    activeFilter = key;
+    document.querySelectorAll('#cat-menu-filters .cat-menu__item').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-filter') === key);
+    });
+    document.getElementById('cat-btn-filters-label').textContent =
+      key === 'all' ? 'Filtros' : FILTER_LABELS[key];
+    renderGrid();
+    closeMenus();
+  }
+
+  function setSort(key) {
+    activeSort = key;
+    document.querySelectorAll('#cat-menu-sort .cat-menu__item').forEach(function (el) {
+      el.classList.toggle('is-active', el.getAttribute('data-sort') === key);
+    });
+    document.getElementById('cat-btn-sort-label').textContent =
+      key === 'featured' ? 'Ordenar por' : SORT_LABELS[key];
+    renderGrid();
+    closeMenus();
+  }
+
+  function showList(push) {
+    closeMenus();
+    resetPdpZoom();
+    listEl.hidden = false;
+    detailEl.hidden = true;
+    currentId = null;
+    document.title = 'Catálogo — LunáticosTv';
+    if (push !== false) history.pushState({ view: 'list' }, '', '/catalogo');
+  }
+
+  function showDetail(id, push) {
+    var p = productById(id);
+    if (!p) return;
+    closeMenus();
+    currentId = id;
+    slideIndex = 0;
+    listEl.hidden = true;
+    detailEl.hidden = false;
+    document.title = p.name + ' — LunáticosTv';
+
+    document.getElementById('cat-pdp-badge').textContent = p.tag;
+    document.getElementById('cat-pdp-title').textContent = p.name;
+    document.getElementById('cat-pdp-subtitle').textContent = p.subtitle;
+    document.getElementById('cat-pdp-price').textContent = p.price;
+    document.getElementById('cat-pdp-desc').textContent = p.desc;
+    document.getElementById('cat-pdp-box').textContent = p.box;
+    document.getElementById('cat-pdp-buy').href = withDiscount(p.cart);
+    document.getElementById('cat-pdp-buy').textContent = 'Agregar a la bolsa de compra';
+    document.getElementById('cat-pdp-buy').classList.remove('is-added');
+
+    document.getElementById('cat-pdp-meta').innerHTML =
+      '<li><strong>Color:</strong> ' + p.color + '</li>' +
+      '<li><strong>Estilo:</strong> ' + p.style + '</li>' +
+      '<li><strong>Origen:</strong> ' + p.origin + '</li>';
+
+    document.getElementById('cat-pdp-acc-details').textContent = p.desc;
+
+    var hero = document.getElementById('cat-pdp-hero');
+    hero.className = 'cat-pdp__hero cat-pdp__hero--' + p.theme;
+    document.getElementById('cat-pdp-hero-ph').textContent = p.ph;
+    updatePdpHero(p, 0);
+
+    var gallery = productGallery(p);
+    var thumbsHtml = '';
+    for (var t = 0; t < gallery.length; t++) {
+      var thumbItem = gallery[t];
+      thumbsHtml +=
+        '<button type="button" class="cat-pdp__thumb' + (t === 0 ? ' is-active' : '') + '" data-slide="' + t + '" aria-label="Imagen ' + (t + 1) + '">' +
+          '<span class="cat-pdp__thumb-inner cat-card__media--' + p.theme + '">' +
+            '<img class="cat-pdp__thumb-img" src="' + encodeURI(galleryItemSrc(thumbItem)) + '" alt="" loading="lazy" decoding="async" style="' + touchGalleryStyle(p, thumbItem) + '">' +
+          '</span>' +
+        '</button>';
+    }
+    document.getElementById('cat-pdp-thumbs').innerHTML = thumbsHtml;
+    updatePdpSlideUI(p);
+    scrollActivePdpThumb();
+
+    if (push !== false) history.pushState({ view: 'detail', id: id }, '', '/catalogo#' + id);
+    if (push !== false) window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  function setSlide(i) {
+    var p = productById(currentId);
+    if (!p) return;
+    var gallery = productGallery(p);
+    var n = gallery.length;
+    if (!n) return;
+    slideIndex = (i + n) % n;
+    updatePdpHero(p, slideIndex);
+    var thumbs = document.querySelectorAll('.cat-pdp__thumb');
+    thumbs.forEach(function (btn, idx) {
+      btn.classList.toggle('is-active', idx === slideIndex);
+    });
+    updatePdpSlideUI(p);
+    scrollActivePdpThumb();
+  }
+
+  window.addEventListener('resize', function () {
+    if (!currentId) return;
+    var p = productById(currentId);
+    if (p) updatePdpHero(p, slideIndex);
+  }, { passive: true });
+
+  renderGrid();
+  setupPdpZoom();
+  setupPdpSwipe();
+
+  var navToggle = document.getElementById('nav-toggle');
+  var siteHeader = document.getElementById('site-header');
+  if (navToggle) {
+    navToggle.addEventListener('click', function () {
+      closeMenus();
+      resetPdpZoom();
+    });
+  }
+  if (siteHeader) {
+    var navObserver = new MutationObserver(function () {
+      if (siteHeader.classList.contains('is-menu-open')) closeMenus();
+    });
+    navObserver.observe(siteHeader, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  document.getElementById('cat-btn-filters').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toggleMenu(this, document.getElementById('cat-menu-filters'));
+  });
+  document.getElementById('cat-btn-sort').addEventListener('click', function (e) {
+    e.stopPropagation();
+    toggleMenu(this, document.getElementById('cat-menu-sort'));
+  });
+
+  document.getElementById('cat-menu-filters').addEventListener('click', function (e) {
+    var item = e.target.closest('[data-filter]');
+    if (!item) return;
+    setFilter(item.getAttribute('data-filter'));
+  });
+  document.getElementById('cat-menu-sort').addEventListener('click', function (e) {
+    var item = e.target.closest('[data-sort]');
+    if (!item) return;
+    setSort(item.getAttribute('data-sort'));
+  });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#site-header') || e.target.closest('#nav-scrim')) return;
+    closeMenus();
+  });
+  document.querySelectorAll('.cat-list__tool-wrap').forEach(function (wrap) {
+    wrap.addEventListener('click', function (e) { e.stopPropagation(); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeMenus();
+  });
+
+  gridEl.addEventListener('click', function (e) {
+    if (e.target.closest('[data-hero-view]') || e.target.closest('[data-hero-pin]')) return;
+    var card = e.target.closest('[data-open]');
+    if (!card) return;
+    if (card.classList.contains('cat-card-wrap') && !e.target.closest('.cat-card')) return;
+    showDetail(card.getAttribute('data-open'));
+  });
+
+  document.getElementById('cat-pdp-back').addEventListener('click', function () {
+    showList();
+  });
+
+  document.getElementById('cat-pdp-prev').addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetPdpZoom();
+    setSlide(slideIndex - 1);
+  });
+  document.getElementById('cat-pdp-next').addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    resetPdpZoom();
+    setSlide(slideIndex + 1);
+  });
+
+  document.getElementById('cat-pdp-thumbs').addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-slide]');
+    if (!btn) return;
+    resetPdpZoom();
+    setSlide(parseInt(btn.getAttribute('data-slide'), 10));
+    btn.blur();
+  });
+
+  document.getElementById('cat-pdp-buy').addEventListener('click', function () {
+    var btn = this;
+    btn.textContent = 'Agregado ✓';
+    btn.classList.add('is-added');
+    setTimeout(function () {
+      btn.textContent = 'Agregar a la bolsa de compra';
+      btn.classList.remove('is-added');
+    }, 1800);
+  });
+
+  document.getElementById('cat-pdp-dots').addEventListener('click', function (e) {
+    var dot = e.target.closest('[data-slide]');
+    if (!dot) return;
+    resetPdpZoom();
+    setSlide(parseInt(dot.getAttribute('data-slide'), 10));
+  });
+
+  document.querySelectorAll('.cat-pdp__acc-item').forEach(function (item) {
+    var btn = item.querySelector('.cat-pdp__acc-btn');
+    btn.addEventListener('click', function () {
+      var open = item.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+  });
+
+  document.getElementById('cat-pdp-fav').addEventListener('click', function () {
+    this.classList.toggle('is-active');
+  });
+
+  // —— Código de descuento oculto (solo para pruebas) ——
+  function getPromo() {
+    try { return sessionStorage.getItem('ltv_promo') || ''; } catch (e) { return ''; }
+  }
+  function setPromo(v) {
+    try { v ? sessionStorage.setItem('ltv_promo', v) : sessionStorage.removeItem('ltv_promo'); } catch (e) {}
+  }
+  function withDiscount(url) {
+    var code = getPromo();
+    if (!code) return url;
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'discount=' + encodeURIComponent(code);
+  }
+
+  var promoPanel = null;
+  function buildPromoPanel() {
+    var panel = document.createElement('div');
+    panel.className = 'ltv-promo';
+    panel.hidden = true;
+    panel.innerHTML =
+      '<form class="ltv-promo__form">' +
+        '<label class="ltv-promo__label" for="ltv-promo-input">Código (modo pruebas) — separa varios con coma</label>' +
+        '<input class="ltv-promo__input" id="ltv-promo-input" type="text" autocomplete="off" spellcheck="false" placeholder="PRUEBA1,PRUEBAENVIO">' +
+        '<button class="ltv-promo__btn" type="submit">Aplicar</button>' +
+        '<button class="ltv-promo__close" type="button" aria-label="Cerrar">&times;</button>' +
+        '<p class="ltv-promo__msg" aria-live="polite"></p>' +
+      '</form>';
+    document.body.appendChild(panel);
+    var input = panel.querySelector('.ltv-promo__input');
+    var msg = panel.querySelector('.ltv-promo__msg');
+    input.value = getPromo();
+    panel.querySelector('.ltv-promo__form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = input.value.trim();
+      setPromo(v);
+      if (currentId) {
+        var p = productById(currentId);
+        if (p) document.getElementById('cat-pdp-buy').href = withDiscount(p.cart);
+      }
+      msg.textContent = v ? ('✓ Código activo: ' + v) : 'Código quitado';
+    });
+    panel.querySelector('.ltv-promo__close').addEventListener('click', function () {
+      panel.hidden = true;
+    });
+    return panel;
+  }
+  function togglePromo() {
+    if (!promoPanel) promoPanel = buildPromoPanel();
+    promoPanel.hidden = !promoPanel.hidden;
+    if (!promoPanel.hidden) promoPanel.querySelector('.ltv-promo__input').focus();
+  }
+  (function () {
+    var brand = document.querySelector('.foot__brand');
+    if (brand) {
+      var taps = 0, timer = null;
+      brand.addEventListener('click', function () {
+        taps++;
+        clearTimeout(timer);
+        timer = setTimeout(function () { taps = 0; }, 1200);
+        if (taps >= 3) { taps = 0; togglePromo(); }
+      });
+    }
+    if (/[?&]promo=1/.test(location.search)) togglePromo();
+  })();
+
+  window.addEventListener('popstate', function () {
+    var hash = location.hash.replace('#', '');
+    if (hash && productById(hash)) showDetail(hash, false);
+    else showList(false);
+  });
+
+  var initial = location.hash.replace('#', '');
+  if (initial && productById(initial)) {
+    showDetail(initial, false);
+  } else {
+    showList(false);
+  }
+})();
+</script>
+<script src="script.js"></script>
+</body>
+</html>

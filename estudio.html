@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#060814" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>Estudio — LunáticosTv</title>
+<meta name="description" content="Servicios LunáticosTv: cine, traducción, edición, web, marca, IA y producción para terceros." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="preload" as="image" href="img/estudio-hero.png" fetchpriority="high">
+</head>
+<body class="page-sub" data-i18n-doc="doc_studio">
+<script>window.LTV_SHOP_URL = '';</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+
+<main class="app">
+  <!-- Page hero -->
+  <article class="fs fs--short">
+    <div class="fs__bg" aria-hidden="true"></div>
+    <div class="fs__media asset-slot" data-bg="img/estudio-hero-orange.png" data-asset-id="estudio-hero" data-asset-label="estudio-hero-orange.png" aria-hidden="true"></div>
+    <div class="fs__overlay" aria-hidden="true"></div>
+    <div class="fs__top hero-copy">
+      <p class="fs__eyebrow">01 · Estudio</p>
+      <h1 class="fs__title" data-i18n="est_h1"><span class="accent">Capacidades</span> del taller</h1>
+      <p class="fs__sub" data-i18n="est_lead">De la idea a la entrega: cine, servicios audiovisuales, web y marca. Puedes traer tu proyecto o sumarte a los nuestros.</p>
+      <div class="fs__btns">
+        <a href="/contacto" class="btn btn--solid btn--lg btn--pill" data-i18n="btn_talk">Escríbenos</a>
+        <a href="/proyectos" class="btn btn--ghost btn--lg btn--pill" data-i18n="nav_projects">Proyectos</a>
+      </div>
+    </div>
+  </article>
+
+  <!-- Puente -->
+  <section class="hero-bridge" aria-label="Tesis estudio">
+    <div class="hero-bridge__pattern" aria-hidden="true"></div>
+    <div class="hero-bridge__inner reveal">
+      <p class="hero-bridge__line">
+        No vendemos servicios sueltos.<br>
+        <strong>Vendemos un mismo criterio aplicado a varias disciplinas.</strong>
+      </p>
+    </div>
+  </section>
+
+  <!-- Alcance · adentro / afuera -->
+  <section class="def-grid" aria-label="Alcance">
+    <div class="def-grid__inner">
+      <header class="def-grid__head reveal">
+        <p class="def-grid__eyebrow">01 · Alcance</p>
+        <h2 class="def-grid__title">Adentro del taller. <span class="accent">Fuera del taller.</span></h2>
+        <p class="def-grid__deck">Trabajamos donde podemos sostener el resultado. Lo demás lo derivamos a quien lo haga mejor.</p>
+      </header>
+      <div class="def-grid__cols reveal">
+        <article class="def-grid__col">
+          <div class="def-grid__head-col">
+            <span class="def-grid__sign">+</span>
+            <span class="def-grid__label">Adentro</span>
+          </div>
+          <ul class="def-grid__list">
+            <li>Cine, ficción y documental con criterio narrativo.</li>
+            <li>Traducción y subtitulado para festivales y distribución.</li>
+            <li>Edición y post: offline, online, versiones por plataforma.</li>
+            <li>Web e identidad para productoras, marcas y festivales.</li>
+            <li><strong>Pruebas controladas con IA</strong> cuando el concepto lo pide.</li>
+          </ul>
+        </article>
+        <article class="def-grid__col def-grid__col--no">
+          <div class="def-grid__head-col">
+            <span class="def-grid__sign">−</span>
+            <span class="def-grid__label">Fuera</span>
+          </div>
+          <ul class="def-grid__list">
+            <li>Publicidad masiva sin idea detrás.</li>
+            <li>Bodas, eventos sociales y cobertura tipo agencia.</li>
+            <li>Catálogo de stock o ediciones genéricas en serie.</li>
+            <li>Trabajos con plazo imposible o brief sin objetivo.</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Capacidades grid -->
+  <section class="pillars pillars--studio" aria-label="Servicios">
+    <div class="pillars__glow" aria-hidden="true"></div>
+    <div class="pillars__inner">
+      <header class="pillars__head reveal">
+        <p class="eyebrow" data-i18n="est_sk">Mapa de servicios</p>
+        <h2 class="pillars__title" data-i18n="est_sh">Lo que podemos hacer <span class="accent">contigo</span></h2>
+        <p class="pillars__deck">Ocho frentes bajo un mismo criterio narrativo y de entrega.</p>
+      </header>
+      <div class="pillars__grid">
+        <article class="pillar reveal" style="--pillar-i: 0">
+          <span class="pillar__n">01</span>
+          <h3 data-i18n="est_p1t">Películas</h3>
+          <p data-i18n="est_p1p">Producción propia o para terceros: desarrollo, rodaje, post y masters.</p>
+          <ul class="pillar__tags"><li>Ficción</li><li>Documental</li><li>Masters</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 1">
+          <span class="pillar__n">02</span>
+          <h3 data-i18n="est_p2t">Traducción para cine</h3>
+          <p data-i18n="est_p2p">Adaptación y traducción audiovisual con criterio de exhibición y festival.</p>
+          <ul class="pillar__tags"><li>Subtitulado</li><li>Festival</li><li>DCP</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 2">
+          <span class="pillar__n">03</span>
+          <h3 data-i18n="est_p3t">Edición de video</h3>
+          <p data-i18n="est_p3p">Offline, online, piezas para redes y versiones por plataforma.</p>
+          <ul class="pillar__tags"><li>Offline</li><li>Redes</li><li>Versiones</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 3">
+          <span class="pillar__n">04</span>
+          <h3 data-i18n="est_p4t">Sitios web</h3>
+          <p data-i18n="est_p4p">Páginas y experiencias digitales alineadas a la identidad del proyecto.</p>
+          <ul class="pillar__tags"><li>UX</li><li>CMS</li><li>Landing</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 4">
+          <span class="pillar__n">05</span>
+          <h3 data-i18n="est_p5t">Identidad de marca</h3>
+          <p data-i18n="est_p5p">Sistemas visuales y narrativa gráfica para estudios y campañas.</p>
+          <ul class="pillar__tags"><li>Logo</li><li>Sistema</li><li>Guía</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 5">
+          <span class="pillar__n">06</span>
+          <h3 data-i18n="est_p6t">Cine con IA</h3>
+          <p data-i18n="est_p6p">Cuando el concepto lo pide: piezas y pruebas con flujos creativos con IA.</p>
+          <ul class="pillar__tags"><li>Concepto</li><li>Pruebas</li><li>VFX</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 6">
+          <span class="pillar__n">07</span>
+          <h3 data-i18n="est_p7t">Tu película, nuestro equipo</h3>
+          <p data-i18n="est_p7p">Material humano y técnico para producir lo que ya llevas escrito o en preproducción.</p>
+          <ul class="pillar__tags"><li>Crew</li><li>Prepro</li><li>Set</li></ul>
+        </article>
+        <article class="pillar reveal" style="--pillar-i: 7">
+          <span class="pillar__n">08</span>
+          <h3 data-i18n="est_p8t">Equipo completo</h3>
+          <p data-i18n="est_p8p">Cámara, sonido, luces, post y producción ejecutiva bajo un mismo techo.</p>
+          <ul class="pillar__tags"><li>Cámara</li><li>Sonido</li><li>Post</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quote -->
+  <section class="quote-band" aria-label="Cita">
+    <div class="quote-band__bg has-img asset-slot" data-bg="img/estudio-quote.png" data-asset-id="estudio-quote" data-asset-label="estudio-quote.png" aria-hidden="true"></div>
+    <div class="quote-band__overlay" aria-hidden="true"></div>
+    <div class="quote-band__inner reveal">
+      <p class="quote-band__q">El estándar narrativo no es negociable.<br><strong>El plazo, todo lo demás, se conversa.</strong></p>
+      <div class="quote-band__sig">— Criterio interno</div>
+    </div>
+  </section>
+
+  <!-- Pipeline creativo · escritura / rodaje / post -->
+  <section class="process-pipeline" id="estudio-proceso" aria-label="Pipeline creativo">
+    <div class="process-pipeline__glow" aria-hidden="true"></div>
+    <div class="process-pipeline__inner">
+      <header class="process-pipeline__head reveal">
+        <p class="eyebrow">03 · Pipeline</p>
+        <h2 class="process-pipeline__title">De la idea al <span class="accent">master</span></h2>
+        <p class="process-pipeline__deck">Tres etapas de producción. Sin imágenes de relleno: solo lo que mueve tu pieza.</p>
+      </header>
+      <ol class="process-pipeline__track reveal">
+        <li class="process-pipeline__step">
+          <span class="process-pipeline__n" aria-hidden="true">01</span>
+          <div class="process-pipeline__body">
+            <h3>Escritura</h3>
+            <p>Desarrollo, estructura y versiones del guion hasta dejarlo listo para set.</p>
+            <ul class="process-pipeline__tags">
+              <li>Brief</li>
+              <li>Beat sheet</li>
+              <li>Guion</li>
+            </ul>
+          </div>
+        </li>
+        <li class="process-pipeline__step">
+          <span class="process-pipeline__n" aria-hidden="true">02</span>
+          <div class="process-pipeline__body">
+            <h3>Rodaje</h3>
+            <p>Cámara, sonido y luces con hitos diarios y revisiones en sitio.</p>
+            <ul class="process-pipeline__tags">
+              <li>Prepro</li>
+              <li>Set</li>
+              <li>Dailies</li>
+            </ul>
+          </div>
+        </li>
+        <li class="process-pipeline__step">
+          <span class="process-pipeline__n" aria-hidden="true">03</span>
+          <div class="process-pipeline__body">
+            <h3>Post</h3>
+            <p>Edición, color, mezcla y masters por plataforma.</p>
+            <ul class="process-pipeline__tags">
+              <li>Offline</li>
+              <li>Color</li>
+              <li>Entrega</li>
+            </ul>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Proceso · fases -->
+  <section class="steps steps--studio" aria-label="Proceso">
+    <div class="steps__glow" aria-hidden="true"></div>
+    <div class="steps__inner">
+      <header class="steps__head reveal">
+        <p class="eyebrow" data-i18n="est_proc_k">Proceso</p>
+        <h2 class="steps__title" data-i18n="est_proc_h">Cuatro fases, sin <span class="accent">sorpresas</span></h2>
+        <p class="steps__deck" data-i18n="est_proc_p">Sabes qué toca en cada etapa y qué necesitamos de tu lado.</p>
+      </header>
+      <div class="steps__list reveal">
+        <div class="steps__row">
+          <span class="steps__n">FASE 01</span>
+          <div class="steps__body">
+            <h3 data-i18n="est_st1t">Descubrimiento</h3>
+            <p data-i18n="est_st1p">Brief, objetivo y supuestos. Alineamos tono, alcance y calendario tentativo.</p>
+          </div>
+        </div>
+        <div class="steps__row">
+          <span class="steps__n">FASE 02</span>
+          <div class="steps__body">
+            <h3 data-i18n="est_st2t">Propuesta</h3>
+            <p data-i18n="est_st2p">Alcance por escrito, hitos y responsables. Acuerdos antes de set cuando aplique.</p>
+          </div>
+        </div>
+        <div class="steps__row">
+          <span class="steps__n">FASE 03</span>
+          <div class="steps__body">
+            <h3 data-i18n="est_st3t">Producción</h3>
+            <p data-i18n="est_st3p">Rodaje, post o entregas parciales con revisiones en fechas acordadas.</p>
+          </div>
+        </div>
+        <div class="steps__row">
+          <span class="steps__n">FASE 04</span>
+          <div class="steps__body">
+            <h3 data-i18n="est_st4t">Entrega</h3>
+            <p data-i18n="est_st4p">Masters, adaptaciones y cierre del ciclo con tu equipo o distribuidor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-band" aria-label="FAQ">
+    <div class="faq-band__inner">
+      <header class="def-grid__head reveal">
+        <p class="def-grid__eyebrow" data-i18n="est_faq_k">FAQ</p>
+        <h2 class="def-grid__title" data-i18n="est_faq_h">Preguntas frecuentes</h2>
+      </header>
+      <details>
+        <summary data-i18n="est_f1q">¿Solo cine o también comercial?</summary>
+        <div class="answer"><p data-i18n="est_f1a">Ambos: ficción, documental, branded y piezas web. Lo acotamos en la propuesta.</p></div>
+      </details>
+      <details>
+        <summary data-i18n="est_f2q">¿Dónde operan?</summary>
+        <div class="answer"><p data-i18n="est_f2a">México, con foco creativo en narrativas desde Tijuana y rutas con CDMX y foráneo según proyecto.</p></div>
+      </details>
+      <details>
+        <summary data-i18n="est_f3q">¿Qué mandan para cotizar?</summary>
+        <div class="answer"><p data-i18n="est_f3a">Referencias, duración tentativa, fecha deseada y un párrafo de objetivo.</p></div>
+      </details>
+      <details>
+        <summary data-i18n="est_f4q">¿La tienda es oficial?</summary>
+        <div class="answer"><p data-i18n="est_f4a">Sí: merch y producto físico están en nuestra tienda oficial. Aquí no hay catálogo OTT.</p></div>
+      </details>
+    </div>
+  </section>
+
+  <!-- Closer -->
+  <section class="home-closer home-closer--cinematic" aria-label="Siguiente paso">
+    <div class="home-closer__bg asset-slot" data-bg="img/estudio-closer.png" data-asset-id="estudio-closer" data-asset-label="estudio-closer.png" aria-hidden="true"></div>
+    <div class="home-closer__overlay" aria-hidden="true"></div>
+    <div class="home-closer__inner reveal">
+      <p class="home-closer__q" data-i18n="est_closer_q">Del taller a tu mesa.<br><strong>Escríbenos con tu brief.</strong></p>
+      <p class="home-closer__lead" data-i18n="est_closer_p">Fechas tentativas y referencias. Respondemos en menos de 48 horas hábiles.</p>
+      <a href="mailto:contacto@lunaticostv.com?subject=Proyecto%20Lun%C3%A1ticosTv" class="home-closer__link" data-i18n="est_closer_a">contacto@lunaticostv.com</a>
+    </div>
+  </section>
+
+  <section class="home-strip" aria-label="Base">
+    <div class="home-strip__inner">
+      <p class="home-strip__cities" data-i18n="idx_cities">México · Tijuana · Remoto</p>
+      <p class="home-strip__mail">Escríbenos a <a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

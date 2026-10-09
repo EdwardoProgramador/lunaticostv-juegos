@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>00 Estilo · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<style>
+  .tile{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:1px;background:rgba(184,121,106,.18);border-bottom:1px solid rgba(184,121,106,.18)}
+  .cell{background:var(--c-bg);padding:32px;display:flex;flex-direction:column;gap:18px;min-width:0}
+  .c-title{grid-column:span 8}
+  .c-sphere{grid-column:span 4;grid-row:span 2}
+  .c-palette{grid-column:span 8}
+  .c-type{grid-column:span 6}
+  .c-ui{grid-column:span 6}
+  .sw{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+  .sw div{display:flex;flex-direction:column;gap:8px}
+  .sw i{display:block;aspect-ratio:1/1.1;border:1px solid rgba(242,210,188,.12)}
+  .sw b{font:600 13px/1.1 var(--f-ui);letter-spacing:.08em;color:var(--c-peach)}
+  .sw small{font:500 12px/1 var(--f-ui);letter-spacing:.12em;color:#8C7F8E;text-transform:uppercase}
+  .big{font-size:clamp(72px,11vw,150px)}
+  .spec{font:500 14px/1.5 var(--f-ui);color:#b9aab4;letter-spacing:.03em;margin:0;max-width:60ch;text-wrap:pretty}
+  .spec b{color:var(--c-peach);font-weight:600}
+  #sphere{width:100%;aspect-ratio:1/1;display:block}
+  .type-row{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+  @media (max-width:900px){.c-title,.c-sphere,.c-palette,.c-type,.c-ui{grid-column:1/-1;grid-row:auto}.sw{grid-template-columns:repeat(3,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="ch-page">
+  <header class="ch-head">
+    <span class="ch-label">00 · Estilo — LunaticosTv · Los objetos del Cholo</span>
+    <span class="ch-label">Fondo del sitio #060814</span>
+  </header>
+  <main class="tile">
+    <section class="cell c-title">
+      <span class="ch-label">Título</span>
+      <h1 class="ch-title big" data-text="Lunaticos">Lunaticos</h1>
+      <p class="spec"><b>Grenze Gotisch 700.</b> Relleno degradado durazno → cobre, contorno grueso #1E1A22 y sombra morada #4A3550 desplazada abajo a la derecha. Clase <b>.ch-title</b> con <b>data-text</b> igual al texto.</p>
+    </section>
+    <section class="cell c-sphere">
+      <span class="ch-label">Material 3D · cobre gastado</span>
+      <canvas id="sphere" aria-label="Esfera de cobre gastado"></canvas>
+      <p class="spec"><b>Luz principal cálida</b> #FFB27A arriba a la izquierda y <b>luz de contorno morada</b> #9466FF por detrás, para que el objeto se despegue del fondo. Metal 1.0, rugosidad 0.3–0.75 con manchas de desgaste.</p>
+    </section>
+    <section class="cell c-palette">
+      <span class="ch-label">Paleta</span>
+      <div class="sw">
+        <div><i style="background:#060814"></i><b>#060814</b><small>Fondo</small></div>
+        <div><i style="background:#B8796A"></i><b>#B8796A</b><small>Cobre</small></div>
+        <div><i style="background:#F2D2BC"></i><b>#F2D2BC</b><small>Durazno</small></div>
+        <div><i style="background:#1E1A22"></i><b>#1E1A22</b><small>Contorno</small></div>
+        <div><i style="background:#4A3550"></i><b>#4A3550</b><small>Morado</small></div>
+        <div><i style="background:radial-gradient(circle at 50% 60%,#FFE2B0 0%,#FF9A3C 35%,#7a3510 100%)"></i><b>#FF9A3C</b><small>Vela · brillo</small></div>
+      </div>
+    </section>
+    <section class="cell c-type">
+      <span class="ch-label">Texto de interfaz · Barlow Condensed</span>
+      <div class="type-row">
+        <span class="ch-counter" style="font-size:44px">2<span style="color:#8C7F8E">/5</span></span>
+        <span class="ch-label">Objetos del Cholo</span>
+      </div>
+      <p class="spec" style="font-size:18px;color:var(--c-peach)">Encuentra los cinco objetos escondidos en el sitio.</p>
+      <p class="spec">Etiquetas 600, mayúsculas, espaciado 0.22em. Contadores 700 con números tabulares.</p>
+    </section>
+    <section class="cell c-ui">
+      <span class="ch-label">Botón</span>
+      <div class="ch-row" style="gap:16px">
+        <button class="ch-btn">Ver contenido exclusivo</button>
+        <button class="ch-btn ch-btn--sm ch-btn--ghost">Repetir</button>
+      </div>
+      <p class="spec">Marco de cobre gastado sobre relleno oscuro. Al pasar el cursor se enciende un brillo de vela. Altura mínima 44 px.</p>
+    </section>
+  </main>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { materials, setupRenderer, makeEnv, addLights, runLoop } from './lib/cholo-objects.js';
+const canvas = document.getElementById('sphere');
+const r = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
+setupRenderer(r); r.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene(); scene.environment = makeEnv(r); addLights(scene);
+const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 48), materials().copper); scene.add(ball);
+const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 20); cam.position.set(0, 0.2, 4.4); cam.lookAt(0, 0, 0);
+const size = () => { const w = canvas.clientWidth; r.setSize(w, w, false); };
+size(); addEventListener('resize', size);
+runLoop((t, dt) => { ball.rotation.y += dt * 0.25; r.render(scene, cam); });
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#060814" />
+<link rel="icon" href="favicon.ico" sizes="32x32" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="site.webmanifest" />
+<meta name="apple-mobile-web-app-title" content="LunáticosTv" />
+<title>Proyectos — LunáticosTv</title>
+<meta name="description" content="Proyectos y ejemplos visuales LunáticosTv." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="preload" as="image" href="img/proyectos-hero.png" fetchpriority="high">
+</head>
+<body class="page-sub" data-i18n-doc="doc_projects">
+<script>window.LTV_SHOP_URL = '';</script>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="ltv-moon-cut" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="62" cy="42" r="38" fill="black"/>
+    </mask>
+    <symbol id="mark" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="currentColor" mask="url(#ltv-moon-cut)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<nav class="nav" id="site-header" aria-label="Principal">
+  <a class="nav__brand" href="/">
+    <svg class="nav__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+    <span class="nav__brand-name">Lunáticos<em>Tv</em></span>
+  </a>
+  <div class="nav__links" id="site-nav">
+    <a class="nav__link" href="/estudio" data-i18n="nav_studio">Estudio</a>
+    <a class="nav__link" href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+    <a class="nav__link" href="/talento" data-i18n="nav_talent">Talento</a>
+    <a class="nav__link" href="/contacto" data-i18n="nav_contact">Contacto</a>
+    <a class="nav__link" href="/tienda" data-i18n="nav_shop">Tienda</a>
+  </div>
+  <div class="nav__right">
+    <div class="lang-switch" role="group" aria-label="Idioma">
+      <button type="button" class="lang-btn is-active" data-set-lang="es" aria-pressed="true">ES</button>
+      <button type="button" class="lang-btn" data-set-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <a class="nav__cta" href="/contacto" data-i18n="btn_talk">Escríbenos</a>
+    <button type="button" class="nav__menu-btn" id="nav-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Menú"><span></span></button>
+  </div>
+</nav>
+
+<main class="app">
+  <!-- Page hero -->
+  <article class="fs fs--short">
+    <div class="fs__bg" aria-hidden="true"></div>
+    <div class="fs__media asset-slot" data-bg="img/proyectos-hero-orange.png" data-asset-id="proyectos-hero" data-asset-label="proyectos-hero-orange.png" aria-hidden="true"></div>
+    <div class="fs__overlay" aria-hidden="true"></div>
+    <div class="fs__top hero-copy">
+      <p class="fs__eyebrow">02 · Obra</p>
+      <h1 class="fs__title" data-i18n="pr_hero_h">Lo que estamos <span class="accent">rodando</span></h1>
+      <p class="fs__sub" data-i18n="pr_hero_p">No publicamos catálogo. Aquí solo aparece la obra que está viva: en escritura, en rodaje o en post.</p>
+      <div class="fs__btns">
+        <a href="/contacto" class="btn btn--solid btn--lg btn--pill" data-i18n="pr_hero_a1">Platicar un proyecto</a>
+        <a href="/estudio" class="btn btn--ghost btn--lg btn--pill" data-i18n="pr_hero_a2">Ver estudio</a>
+      </div>
+    </div>
+  </article>
+
+  <!-- Etapas (puente claro entre hero y pósters) -->
+  <section class="page-lead page-lead--pipeline" aria-label="Etapas de obra">
+    <div class="page-lead__inner reveal">
+      <ul class="page-lead__pipeline">
+        <li class="page-lead__pipe">
+          <span class="page-lead__n">01</span>
+          <span class="page-lead__body">
+            <strong data-i18n="pr_pipe1_t">Escritura</strong>
+            <span data-i18n="pr_pipe1_s">Guion, tono y estructura antes de preproducción.</span>
+          </span>
+        </li>
+        <li class="page-lead__pipe">
+          <span class="page-lead__n">02</span>
+          <span class="page-lead__body">
+            <strong data-i18n="pr_pipe2_t">Rodaje</strong>
+            <span data-i18n="pr_pipe2_s">Captura en set con equipo y calendario acordado.</span>
+          </span>
+        </li>
+        <li class="page-lead__pipe">
+          <span class="page-lead__n">03</span>
+          <span class="page-lead__body">
+            <strong data-i18n="pr_pipe3_t">Post</strong>
+            <span data-i18n="pr_pipe3_s">Montaje, color y entrega para estreno o festival.</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Tres piezas en desarrollo -->
+  <section class="work-band" aria-label="En desarrollo">
+    <header class="work-band__head reveal">
+      <p class="eyebrow">01 · Estado</p>
+      <h2 class="work-band__title">Tres piezas, tres <span class="accent">etapas</span></h2>
+      <p class="work-band__deck">Lunáticos 2026, Cholo y <em>Donde sueña la noche</em> — pósters del catálogo.</p>
+    </header>
+    <div class="work-grid">
+      <a class="work-card reveal" href="/contacto">
+        <div class="work-card__media asset-slot" data-bg="img/poster-01.png" data-asset-id="poster-01" data-asset-label="poster-01.png"></div>
+        <div class="work-card__cap"><span>01</span><strong data-i18n="pr_s1">OUT NOW</strong></div>
+      </a>
+      <a class="work-card reveal" href="/contacto">
+        <div class="work-card__media asset-slot" data-bg="img/poster-02.png" data-asset-id="poster-02" data-asset-label="poster-02.png"></div>
+        <div class="work-card__cap"><span>02</span><strong data-i18n="pr_s2">En rodaje</strong></div>
+      </a>
+      <a class="work-card reveal" href="/contacto">
+        <div class="work-card__media asset-slot" data-bg="img/poster-03.png" data-asset-id="poster-03" data-asset-label="Donde sueña la noche · poster-03.png"></div>
+        <div class="work-card__cap"><span>03</span><strong data-i18n="pr_s3">Próximamente</strong></div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Banda visual (imagen now-feature + fade para texto) -->
+  <section class="quote-band quote-band--cinematic" aria-label="Cita">
+    <div class="quote-band__bg has-img asset-slot" data-bg="img/proyectos-quote.png" data-asset-id="proyectos-quote" data-asset-label="proyectos-quote.png" aria-hidden="true"></div>
+    <div class="quote-band__overlay" aria-hidden="true"></div>
+    <div class="quote-band__inner reveal">
+      <p class="quote-band__q">No es la cantidad de proyectos.<br><strong>Es la cantidad de proyectos que valió la pena terminar.</strong></p>
+      <div class="quote-band__sig">— Criterio editorial</div>
+    </div>
+  </section>
+
+  <section class="home-strip" aria-label="Base">
+    <div class="home-strip__inner">
+      <p class="home-strip__cities" data-i18n="idx_cities">México · Tijuana · Remoto</p>
+      <p class="home-strip__mail">Escríbenos a <a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="foot__inner">
+    <nav class="foot__cols" aria-label="Pie">
+      <a href="/" data-i18n="nav_home">Inicio</a>
+      <a href="/estudio" data-i18n="nav_studio">Estudio</a>
+      <a href="/proyectos" data-i18n="nav_projects">Proyectos</a>
+      <a href="/talento" data-i18n="nav_talent">Talento</a>
+      <a href="/contacto" data-i18n="nav_contact">Contacto</a>
+      <a href="/tienda" data-i18n="nav_shop">Tienda</a>
+    </nav>
+    <div class="foot__bot">
+      <p class="foot__mail"><a href="mailto:contacto@lunaticostv.com">contacto@lunaticostv.com</a></p>
+      <span class="foot__brand">
+        <svg class="foot__mark" viewBox="0 0 100 100" aria-hidden="true"><use href="#mark"/></svg>
+        <strong>LunáticosTv</strong> © 2026
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
