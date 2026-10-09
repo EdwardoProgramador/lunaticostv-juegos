@@ -39,11 +39,13 @@ export function openReward({ text, link, reduced = false, hud = null, graph = nu
   } catch (e) { /* href relativo raro: se queda como está */ }
   btn.addEventListener('click', (e) => { if (!link || link === '#') e.preventDefault(); });
 
+  let altar = null, chain = null, closed = false, live = false;
   function setText(tx) {
     title.textContent = tx.title; title.setAttribute('data-text', tx.title);
     btn.textContent = tx.cta;
     close.setAttribute('aria-label', tx.close);
     if (hud) hud.setText(tx);
+    if (altar) altar.frame(); // en móvil el encuadre depende del alto del título
   }
   setText(text);
   document.body.appendChild(root);
@@ -71,7 +73,6 @@ export function openReward({ text, link, reduced = false, hud = null, graph = nu
   document.addEventListener('keydown', onKey, true);
   close.addEventListener('click', () => closeReward());
 
-  let altar = null, chain = null, closed = false, live = false;
   const altarReady = Promise.all([graph || buildAltarGraph(idle), before]).then(([g]) => {
     if (closed) return null;
     altar = createAltarScene({ graph: g, stage: root, canvas, title, cta, dim, reduced });
