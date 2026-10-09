@@ -1,0 +1,190 @@
+/* LunáticosTv · Juego 1 · Los objetos del Cholo
+   Todo lleva prefijo .lj1- y nada toca elementos globales. Capas respecto al sitio:
+   objeto flotante 80 · HUD 85 → por debajo del scrim (90/98) y del nav (100–102).
+   Recompensa 1050 → encima del nav y del botón del carrito (900), debajo del cajón del carrito (1099/1100)
+   y de la intro de video (10000). */
+
+.lj1-scope {
+  --lj1-bg: #060814;
+  --lj1-copper: #B8796A;
+  --lj1-peach: #F2D2BC;
+  --lj1-ink: #1E1A22;
+  --lj1-purple: #4A3550;
+  --lj1-candle: #FF9A3C;
+  --lj1-muted: #8C7F8E;
+  --lj1-f-title: 'Grenze Gotisch', 'UnifrakturMaguntia', Georgia, serif;
+  --lj1-f-ui: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  box-sizing: border-box;
+}
+.lj1-scope *, .lj1-scope *::before, .lj1-scope *::after { box-sizing: border-box; }
+
+/* ── Objeto flotante ─────────────────────────────────────────────────────── */
+.lj1-float {
+  position: fixed; left: 0; top: 0; z-index: 80;
+  width: var(--lj1-box, 176px); height: var(--lj1-box, 176px);
+  pointer-events: none; opacity: 0; will-change: transform, opacity;
+  contain: layout size style;
+}
+.lj1-float__canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.lj1-float__glow {
+  position: absolute; inset: 18%; border-radius: 50%; pointer-events: none; opacity: .3;
+  background: radial-gradient(circle, rgba(255,170,100,.55) 0%, rgba(184,121,106,.25) 40%, rgba(184,121,106,0) 70%);
+}
+.lj1-float__flash {
+  position: absolute; inset: -12%; border-radius: 50%; pointer-events: none; opacity: 0; transform: scale(.3);
+  background: radial-gradient(circle, rgba(255,236,200,.95) 0%, rgba(255,154,60,.6) 25%, rgba(255,120,40,0) 65%);
+}
+.lj1-float__hit {
+  position: absolute; left: 50%; top: 50%;
+  width: var(--lj1-hit, 88px); height: var(--lj1-hit, 88px);
+  margin: calc(var(--lj1-hit, 88px) / -2) 0 0 calc(var(--lj1-hit, 88px) / -2);
+  padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit;
+  cursor: pointer; pointer-events: auto; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  appearance: none; -webkit-appearance: none;
+}
+.lj1-float__hit:focus { outline: none; }
+.lj1-float__hit:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: 2px; }
+.lj1-float.is-shy .lj1-float__hit, .lj1-float__hit:disabled { pointer-events: none; cursor: default; }
+.lj1-spark {
+  position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%;
+  background: #FFD6A0; box-shadow: 0 0 8px 2px rgba(255,154,60,.8); pointer-events: none;
+}
+
+/* ── HUD ─────────────────────────────────────────────────────────────────── */
+.lj1-hud-root {
+  position: fixed; inset: 0; z-index: 85; pointer-events: none; overflow: hidden;
+  container-type: inline-size;
+}
+.lj1-hud {
+  position: absolute; top: var(--lj1-hud-top, 72px); right: 22px; padding: 12px 14px 14px; visibility: hidden;
+  font-family: var(--lj1-f-ui); line-height: 1; text-align: left;
+  background: linear-gradient(180deg, rgba(28,20,36,.94), rgba(9,8,17,.94));
+  border: 1px solid rgba(184,121,106,.6);
+  box-shadow: 0 0 0 1px #1E1A22, 0 14px 40px rgba(0,0,0,.65), inset 0 1px 0 rgba(242,210,188,.14), inset 0 0 0 3px rgba(10,8,16,.9), inset 0 0 0 4px rgba(184,121,106,.22);
+}
+.lj1-hud__head { display: flex; justify-content: space-between; align-items: baseline; gap: 18px; margin: 0 2px 10px; }
+.lj1-hud__label { font: 600 12px/1 var(--lj1-f-ui); letter-spacing: .24em; text-transform: uppercase; color: #B8796A; white-space: nowrap; }
+.lj1-hud__count { display: inline-block; font: 700 24px/1 var(--lj1-f-ui); letter-spacing: .02em; color: #F2D2BC; font-variant-numeric: tabular-nums; transform-origin: 100% 70%; }
+.lj1-hud__count b { font-weight: 700; }
+.lj1-hud__count span { color: #8C7F8E; font-weight: 600; }
+.lj1-hud__slots { display: flex; gap: 8px; list-style: none; margin: 0; padding: 0; }
+.lj1-hud__slot {
+  position: relative; width: 64px; height: 64px; margin: 0; padding: 0; border: 2px solid transparent;
+  background:
+    radial-gradient(circle at 4px 4px, #F2D2BC 0 1.4px, transparent 2px),
+    radial-gradient(circle at calc(100% - 4px) 4px, #F2D2BC 0 1.4px, transparent 2px),
+    radial-gradient(circle at 4px calc(100% - 4px), #F2D2BC 0 1.4px, transparent 2px),
+    radial-gradient(circle at calc(100% - 4px) calc(100% - 4px), #F2D2BC 0 1.4px, transparent 2px),
+    radial-gradient(ellipse at 50% 42%, #4a3a58 0%, #251b30 55%, #0e0a14 100%) padding-box,
+    linear-gradient(135deg, #F2D2BC, #B8796A 30%, #4f3029 52%, #B8796A 76%, #e7b9a0) border-box;
+  box-shadow: 0 0 0 1px #1E1A22, inset 0 0 0 1px #1E1A22, inset 0 0 0 3px rgba(184,121,106,.28);
+  transition: box-shadow .4s;
+}
+.lj1-hud__slot img {
+  position: absolute; inset: 5px; width: calc(100% - 10px); height: calc(100% - 10px);
+  max-width: none; object-fit: contain; display: block; margin: 0; border: 0;
+}
+.lj1-hud__col { opacity: 0; }
+.lj1-hud__slot.is-got .lj1-hud__col { opacity: 1; }
+.lj1-hud__slot.is-got { box-shadow: 0 0 0 1px #1E1A22, inset 0 0 0 1px #1E1A22, inset 0 0 0 3px rgba(184,121,106,.28), inset 0 0 18px rgba(255,154,60,.22), 0 0 12px rgba(255,154,60,.18); }
+.lj1-hud__sflash {
+  position: absolute; inset: -18px; border-radius: 50%; pointer-events: none; opacity: 0; z-index: 2; mix-blend-mode: screen;
+  background: radial-gradient(circle, rgba(255,240,210,.95) 0%, rgba(255,170,80,.6) 28%, rgba(255,120,40,0) 66%);
+}
+@container (max-width: 640px) {
+  .lj1-hud { right: auto; left: 50%; top: var(--lj1-hud-top, 64px); padding: 10px 10px 11px; }
+  .lj1-hud__slot { width: 52px; height: 52px; }
+  .lj1-hud__slots { gap: 6px; }
+  .lj1-hud__count { font-size: 21px; }
+}
+@container (max-width: 359px) {
+  .lj1-hud__slot { width: 46px; height: 46px; }
+  .lj1-hud__slots { gap: 5px; }
+}
+
+/* ── Recompensa: 5/5 → altar ─────────────────────────────────────────────── */
+.lj1-reward {
+  position: fixed; left: 0; top: 0; z-index: 1050;
+  width: 100%; height: 100vh; height: 100dvh;
+  overflow: hidden; overscroll-behavior: contain; touch-action: none;
+  color: var(--lj1-peach); font-family: var(--lj1-f-ui); line-height: 1.2; text-align: center;
+  container-type: inline-size;
+}
+/* el oscurecido se sale del viewport para que las barras del navegador móvil nunca dejen un hueco */
+.lj1-reward__dim {
+  position: fixed; left: 0; right: 0; top: -120px; bottom: -120px; opacity: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 60%, #0a0814 0%, #020206 70%);
+}
+.lj1-reward__gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; visibility: hidden; }
+.lj1-reward__glow {
+  position: absolute; left: 50%; top: 50%; width: 560px; height: 560px; margin: -280px 0 0 -280px; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, rgba(255,214,160,.75) 0%, rgba(255,154,60,.42) 22%, rgba(184,121,106,.18) 45%, rgba(184,121,106,0) 68%);
+}
+.lj1-reward .lj1-hud-root { position: absolute; z-index: auto; }
+.lj1-reward__flash {
+  position: absolute; left: 50%; top: 50%; width: 900px; height: 900px; margin: -450px 0 0 -450px; border-radius: 50%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle, #FFF6E6 0%, rgba(255,226,180,.98) 14%, rgba(255,170,90,.75) 32%, rgba(255,120,40,.25) 52%, rgba(255,120,40,0) 70%);
+}
+.lj1-reward__final {
+  position: absolute; left: 0; right: 0; top: calc(5% + env(safe-area-inset-top, 0px));
+  display: flex; justify-content: center; padding: 0 6%; pointer-events: none;
+}
+.lj1-reward__cta {
+  position: absolute; left: 0; right: 0; bottom: calc(5% + env(safe-area-inset-bottom, 0px));
+  display: flex; justify-content: center; padding: 0 16px; opacity: 0;
+}
+.lj1-reward__close {
+  position: absolute; z-index: 3;
+  top: calc(14px + env(safe-area-inset-top, 0px)); right: calc(14px + env(safe-area-inset-right, 0px));
+  width: 48px; height: 48px; padding: 0; margin: 0; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; opacity: 0;
+  color: var(--lj1-peach); background: rgba(12,10,20,.72);
+  border: 1px solid rgba(184,121,106,.55);
+  box-shadow: 0 0 0 1px #1E1A22, 0 6px 18px rgba(0,0,0,.5);
+  transition: border-color .25s, box-shadow .25s, color .25s;
+  appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
+}
+.lj1-reward__close svg { width: 18px; height: 18px; display: block; }
+.lj1-reward__close:hover { color: #fff; border-color: var(--lj1-copper); box-shadow: 0 0 0 1px #1E1A22, 0 0 18px rgba(255,154,60,.3); }
+.lj1-reward__close:focus { outline: none; }
+.lj1-reward__close:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: 3px; }
+
+/* Título: relleno durazno→cobre, contorno oscuro y sombra morada desplazada (de cholo.css .ch-title) */
+.lj1-title {
+  position: relative; isolation: isolate; margin: 0; padding: 0;
+  font-family: var(--lj1-f-title); font-weight: 700; line-height: 1.02; letter-spacing: .01em; text-transform: none;
+  text-align: center; text-wrap: balance; max-width: 16ch; opacity: 0;
+  font-size: clamp(34px, 5.4cqi, 78px);
+  color: var(--lj1-ink); -webkit-text-stroke: .18em var(--lj1-ink);
+}
+.lj1-title::before, .lj1-title::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; }
+.lj1-title::before { color: var(--lj1-purple); -webkit-text-stroke: .18em var(--lj1-purple); transform: translate(.07em, .08em); z-index: -1; }
+.lj1-title::after {
+  -webkit-text-stroke: 0; z-index: 1; color: transparent;
+  background: linear-gradient(180deg, #FBEBDD 0%, #F2D2BC 38%, #D79C82 70%, #B8796A 100%);
+  -webkit-background-clip: text; background-clip: text;
+}
+
+/* Botón: marco de cobre gastado, relleno oscuro (de cholo.css .ch-btn) */
+.lj1-btn {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 10px 22px; margin: 0; cursor: pointer; text-decoration: none;
+  font: 600 16px/1.1 var(--lj1-f-ui); letter-spacing: .16em; text-transform: uppercase; text-align: center;
+  color: var(--lj1-peach);
+  background: linear-gradient(#140f1c, #0c0a14) padding-box, linear-gradient(135deg, #F2D2BC, #B8796A 40%, #5a3a33 60%, #B8796A) border-box;
+  border: 2px solid transparent; border-radius: 0;
+  box-shadow: 0 0 0 1px var(--lj1-ink), inset 0 0 0 1px rgba(242,210,188,.12), 0 6px 18px rgba(0,0,0,.5);
+  transition: box-shadow .25s, color .25s, transform .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.lj1-btn:hover { color: #fff; box-shadow: 0 0 0 1px var(--lj1-ink), inset 0 0 0 1px rgba(242,210,188,.2), 0 0 24px rgba(255,154,60,.35), 0 6px 18px rgba(0,0,0,.5); }
+.lj1-btn:active { transform: translateY(1px); }
+.lj1-btn:focus { outline: none; }
+.lj1-btn:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: 3px; }
+
+/* Móvil (≤640 px de ancho): título más abajo, CTA por encima de la barra inferior */
+@container (max-width: 640px) {
+  .lj1-reward__final { top: calc(9% + env(safe-area-inset-top, 0px)); padding: 0 7%; }
+  .lj1-reward__cta { bottom: calc(max(8%, 60px) + env(safe-area-inset-bottom, 0px)); }
+  .lj1-btn { font-size: 15px; letter-spacing: .14em; padding: 10px 18px; }
+}
