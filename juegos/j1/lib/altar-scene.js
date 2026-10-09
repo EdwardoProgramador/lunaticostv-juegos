@@ -56,7 +56,7 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
   // Highest altar points per depth (y, z): arch top, pillar caps/candles, top tier, front tier.
   const TOPS = [[2.02, -0.5], [1.6, -0.3], [0.72, -0.06], [0.3, 0.45]];
   const ndc = new THREE.Vector3();
-  let startY = -2.4, dead = false;
+  let startY = -2.4, dead = false, live = false; // live: shaders compilados y texturas en la GPU
   function frame() {
     if (dead) return;
     const w = stage.clientWidth, h = stage.clientHeight, a = w / h;
@@ -87,12 +87,16 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
     let off = Infinity;
     for (const [y, z] of TOPS) off = Math.min(off, C.y + d.y * (z - C.z) / d.z - y);
     startY = a < 0.8 ? Math.min(-2.4, off - 0.25) : -2.4;
-    renderer.render(scene, cam);
+    if (live) renderer.render(scene, cam); // antes de estar listo no se dibuja: un render síncrono compilaría todo de golpe
   }
   const ro = new ResizeObserver(() => frame()); ro.observe(stage); frame();
   if (document.fonts) document.fonts.ready.then(() => frame());
-  const hideAltar = () => { root.visible = false; gsap.set(canvas, { opacity: 0, visibility: 'hidden' }); };
-  const showAltar = () => { root.visible = true; gsap.set(canvas, { opacity: 1, visibility: 'visible' }); };
+  // Nada se oculta con .visible: el número de luces visibles forma parte del programa de cada material,
+  // y cambiarlo a mitad de la secuencia obligaría a recompilar todos los shaders (tirones de 60–200 ms).
+  // El altar se oculta con el canvas y los objetos con escala casi cero hasta que vuelan a su sitio.
+  const hideAltar = () => { gsap.set(canvas, { opacity: 0, visibility: 'hidden' }); };
+  const showAltar = () => { gsap.set(canvas, { opacity: 1, visibility: 'visible' }); };
+  const HIDDEN = 1e-4;
 
   let tl;
   function reset() {
@@ -101,9 +105,21 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
     root.position.y = startY; floor.material.opacity = 0; backGlow.material.opacity = 0; altar.group.userData.smoke = 0;
     altar.flames.forEach(f => (f.state.flare = 0));
     gsap.set(title, { opacity: 0, y: 24, filter: 'blur(8px)' }); gsap.set(cta, { opacity: 0, y: 12 });
-    items.forEach(it => { it.holder.visible = false; it.hit.material.opacity = 0; it.light.intensity = 0; });
+    items.forEach(it => { it.holder.scale.setScalar(HIDDEN); it.hit.material.opacity = 0; it.light.intensity = 0; });
+  }
+  // Render de calentamiento con todo en su sitio y el canvas aún oculto: sube la geometría a la GPU
+  // (three.js la sube en el primer dibujo) para que no cueste nada cuando el altar entra en cuadro.
+  // La cadena 5/5 lo llama bajo el destello de vela; si no, play() lo hace al empezar.
+  let warmed = false;
+  function warm() {
+    if (warmed || !live || dead) return;
+    warmed = true;
+    root.position.y = 0; items.forEach((it) => it.holder.scale.setScalar(1));
+    renderer.render(scene, cam);
+    root.position.y = startY; items.forEach((it) => it.holder.scale.setScalar(HIDDEN));
   }
   function play({ fromDark = false } = {}) {
+    warm();
     reset();
     if (dim && !fromDark) gsap.set(dim, { opacity: 0 });
     items.forEach((it, i) => {
@@ -123,8 +139,7 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
     altar.flames.forEach((f, i) => tl.to(f.state, { flare: 1, duration: 0.5, ease: 'power2.out' }, 1.1 + i * 0.09));
     items.forEach((it, i) => {
       const at = 2.1 + i * 0.68, B = (a, c, b, t) => a * (1 - t) * (1 - t) + 2 * c * (1 - t) * t + b * t * t;
-      tl.call(() => { it.holder.visible = true; }, null, at)
-        .to(it.p, { t: 1, duration: 0.85, ease: 'power2.inOut', onUpdate: () => {
+      tl.to(it.p, { t: 1, duration: 0.85, ease: 'power2.inOut', onUpdate: () => {
           const t = it.p.t, s = it.start, c = it.ctrl, e = it.rest.pos;
           it.holder.position.set(B(s.x, c.x, e.x, t), B(s.y, c.y, e.y, t), B(s.z, c.z, e.z, t));
           it.holder.rotation.set(it.rest.rot.x + (1 - t) * 0.8, it.rest.rot.y + (1 - t) * Math.PI * 2, it.rest.rot.z);
@@ -149,12 +164,25 @@ export function createAltarScene({ graph, stage, canvas, title, cta, dim, reduce
   const loop = createLoop((t, dt) => { tickAll(t, dt); renderer.render(scene, cam); });
   if (reduced) ro.observe(canvas); // frame() ya vuelve a dibujar al cambiar el tamaño
 
+  // Compila los shaders sin bloquear (KHR_parallel_shader_compile) antes de la primera aparición.
+  // compileAsync solo recorre lo visible y a tamaño real: se compila con todo en su sitio, luego reset() lo esconde.
+  items.forEach((it) => it.holder.scale.setScalar(1));
+  const compiled = renderer.compileAsync ? renderer.compileAsync(scene, cam).catch(() => {}) : null;
   reset();
-  // compila los shaders sin bloquear (KHR_parallel_shader_compile) antes de la primera aparición
-  const ready = Promise.all([graph.textures, renderer.compileAsync ? renderer.compileAsync(scene, cam).catch(() => {}) : null]).then(() => { if (!reduced && !dead) loop.start(); });
+  // texturas a la GPU de una en una, entre cuadros, para que el primer render no las suba todas juntas
+  const upload = () => {
+    const tex = new Set();
+    scene.traverse((o) => { if (o.material) [].concat(o.material).forEach((m) => { for (const k in m) if (m[k] && m[k].isTexture) tex.add(m[k]); }); });
+    return [...tex].reduce((p, t) => p.then(() => new Promise((r) => requestAnimationFrame(() => { if (!dead) renderer.initTexture(t); r(); }))), Promise.resolve());
+  };
+  const ready = Promise.all([graph.textures, compiled]).then(upload).then(() => {
+    if (dead) return;
+    live = true;
+    if (!reduced) loop.start();
+  });
 
   return {
-    ready, play, reset, frame,
+    ready, play, reset, frame, warm,
     get timeline() { return tl; },
     dispose() {
       if (dead) return; dead = true;

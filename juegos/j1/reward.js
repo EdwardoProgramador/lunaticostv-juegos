@@ -149,6 +149,7 @@ export function openReward({ text, link, reduced = false, hud = null, graph = nu
     tl.to(dim, { opacity: 0.97, duration: 0.3, ease: 'power2.in' }, last)
       .call(() => { if (!live) { tl.pause(); altarReady.then((a) => { if (a && !closed) tl.resume(); }); } }, null, last + 0.07)
       .to(flash, { opacity: 1, scale: 1.6, duration: 0.24, ease: 'power2.out' }, last + 0.08)
+      .call(() => altar.warm(), null, last + 0.2) // bajo el destello: el calentamiento de GPU no se nota
       .to([hud.el, glow], { opacity: 0, duration: 0.18 }, last + 0.2)
       .call(() => startAltar(true), null, last + 0.3)
       .to(flash, { opacity: 0, scale: 2.4, duration: 0.7, ease: 'power2.in' }, last + 0.32);
