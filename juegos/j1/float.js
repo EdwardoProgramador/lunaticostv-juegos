@@ -21,7 +21,7 @@ const AVOID = [
   '[role="button"]', '[role="link"]', '[role="tab"]', '[role="menuitem"]', '[contenteditable="true"]',
   '[tabindex]:not([tabindex="-1"])', 'form', '.nav', '.site-header', '.lang-switch',
   // tienda (shop.js / Shopify): botón y cajón del carrito, modales, controles de producto
-  '[class*="cart"]', '[class*="modal"]', '[class*="shop-btn"]', '[data-product]', '[data-variant]',
+  '[class*="cart"]', '[class*="modal"]', '[class*="shop-btn"]', '[data-product]', '[data-variant-id]', '.shop-card__cta',
 ].join(',');
 
 // Ruido de gradiente 1D (Perlin) con dos octavas: deriva orgánica, nunca periódica.
