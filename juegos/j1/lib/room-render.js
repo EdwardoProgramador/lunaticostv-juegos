@@ -83,6 +83,9 @@ export function createRoomRenderer({ renderer, scene, cam }) {
     hp.fragmentShader = hp.fragmentShader.replace(/gl_FragColor\s*=\s*mix\(\s*outputColor,\s*texel,\s*alpha\s*\);/,
       `vec3 ex = texel.rgb * (max(v - luminosityThreshold, 0.0) / max(v, 1e-4)); ex /= 1.0 + luminance(ex) / ${BLOOM.cap.toFixed(2)}; gl_FragColor = vec4(ex, 1.0);`);
     hp.needsUpdate = true;
+    // el bloom suma luz pero nunca opacidad: el alfa de la escena llega intacto al final (con un lienzo transparente el
+    // halo no forma un rectángulo). Mismo color que el AdditiveBlending original (SRC_ALPHA, ONE).
+    Object.assign(bloomPass.blendMaterial, { blending: THREE.CustomBlending, blendEquation: THREE.AddEquation, blendSrc: THREE.SrcAlphaFactor, blendDst: THREE.OneFactor, blendSrcAlpha: THREE.ZeroFactor, blendDstAlpha: THREE.OneFactor });
     composer.addPass(bloomPass);
     composer.addPass(new OutputPass());
     shrink();

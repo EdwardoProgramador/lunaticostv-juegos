@@ -33,6 +33,9 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
   const box = mobile() ? 140 : 176; // lienzo; el modelo ocupa ~62 % (≈ 87 / 109 px)
   const vis = Math.round(box * 0.62); // tamaño visible del objeto
   const hitPx = Math.max(56, Math.round(box * 0.5));
+  // El lienzo mide SPAN × la caja (sobresale por igual a los lados; la cámara se aleja lo mismo, así el objeto conserva su
+  // tamaño) y lleva una máscara radial (game.css): los halos de luz se desvanecen del todo antes de llegar al borde.
+  const SPAN = 1.3;
 
   const el = document.createElement('div');
   el.className = 'lj1-scope lj1-float';
@@ -44,12 +47,12 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
 
   // ── escena ──
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, detectQuality(renderer) === 'minimal' ? 1.5 : 2)); renderer.setSize(box, box, false); // lienzo pequeño: 2× es barato
+  setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, detectQuality(renderer) === 'minimal' ? 1.5 : 2)); renderer.setSize(Math.round(box * SPAN), Math.round(box * SPAN), false); // lienzo pequeño: 2× es barato
   renderer.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
   const env = makeEnv(renderer); scene.environment = env; addLights(scene);
   const cam = new THREE.PerspectiveCamera(30, 1, 0.01, 20);
-  const RADIUS = 0.5, CAM_D = RADIUS / Math.sin(THREE.MathUtils.degToRad(15)) / 0.6;
+  const RADIUS = 0.5, CAM_D = RADIUS / Math.sin(THREE.MathUtils.degToRad(15)) / 0.6 * SPAN;
   cam.position.set(0, CAM_D * 0.1, CAM_D); cam.lookAt(0, 0, 0); cam.updateProjectionMatrix();
   const spin = new THREE.Group(); scene.add(spin);
   const obj = BUILDERS[key](), fit = framed(obj, 1);

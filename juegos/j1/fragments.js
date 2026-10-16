@@ -18,6 +18,7 @@ const AVOID = [
   '[tabindex]:not([tabindex="-1"])', 'form', '.nav', '.site-header', '.lang-switch',
 ].join(',');
 const HIT = 48;
+const FREE = 48; // margen sin recorte alrededor del fragmento (px)
 
 // SVG del fragmento i: la textura del cristal (512 px) recortada por su polígono, borde de cobre y destello
 function art(i, reduced) {
@@ -109,8 +110,11 @@ export function createSiteFragment({ index, spots = [], reduced = false, onColle
     el.style.setProperty('--lj1-fs', `${q.size}px`); el.style.setProperty('--lj1-fr', `${q.rot}deg`);
     el.style.transform = `translate(${q.cx.toFixed(1)}px,${q.cy.toFixed(1)}px)`;
     const L = q.cx - q.size / 2, T = q.cy - q.size / 2;
-    const ins = [q.box.t - T, L + q.size - q.box.r, T + q.size - q.box.b, q.box.l - L].map((v) => `${Math.max(0, v).toFixed(1)}px`);
-    clip.style.clipPath = `inset(${ins.join(' ')})`;
+    // solo se recorta el lado por el que asoma (tuck); los demás quedan muy por fuera, así la sombra, el brillo y las puntas
+    // del fragmento girado nunca se cortan en línea recta
+    const ins = [q.box.t - T, L + q.size - q.box.r, T + q.size - q.box.b, q.box.l - L].map((v) => (v > 0.5 ? v : -FREE));
+    const [it, ir, ib, il] = ins.map((v) => `${v.toFixed(1)}px`);
+    clip.style.clipPath = ins.every((v) => v < 0) ? 'none' : `polygon(${il} ${it}, calc(100% - ${ir}) ${it}, calc(100% - ${ir}) calc(100% - ${ib}), ${il} calc(100% - ${ib}))`;
     Object.assign(hit.style, { left: `${(q.hit[0] - L).toFixed(1)}px`, top: `${(q.hit[1] - T).toFixed(1)}px`, width: `${(q.hit[2] - q.hit[0]).toFixed(1)}px`, height: `${(q.hit[3] - q.hit[1]).toFixed(1)}px` });
   }
   let raf = 0;
