@@ -7,7 +7,7 @@
 export const ITEMS = ['cassette', 'microphone', 'candle', 'notebook', 'medallion'];
 const KEY = 'lunaticos_j1_v2';
 const OLD = ['lunaticos_j1_v1', 'lunaticos_j1_last']; // versiones anteriores: se borran
-const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [] };
+const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false };
 let memory = { ...EMPTY };
 
 const clean = (s) => ({
@@ -16,6 +16,7 @@ const clean = (s) => ({
   clue: !!s.clue,
   altar: !!s.altar,
   fragments: [0, 1, 2, 3, 4].filter((i) => Array.isArray(s.fragments) && s.fragments.includes(i)),
+  gathered: !!s.gathered, // ya se vio la reunión de los fragmentos antes del puzzle
   puzzle: !!s.puzzle,
   key: !!s.key,
   tips: Array.isArray(s.tips) ? [...new Set(s.tips.filter((k) => typeof k === 'string'))].slice(0, 32) : [], // instrucciones ya mostradas (lib/notice.js)

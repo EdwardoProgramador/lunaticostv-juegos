@@ -46,9 +46,47 @@ function particles(room) {
   return room._burst;
 }
 
+// Copper trail (fragments gathering before the shadow puzzle): soft embers, bigger than the burst sparks, that drift up a
+// little and fade in ~0.7 s. Same material setup as the burst (same shader program: nothing new to compile).
+function trailPool(room) {
+  if (room._trail) return room._trail;
+  const N = 260, pos = new Float32Array(N * 3), col = new Float32Array(N * 3), vel = new Float32Array(N * 3), life = new Float32Array(N), base = new Float32Array(N * 3);
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.075, map: glowTexture(), vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  pts.frustumCulled = false; room.scene.add(pts);
+  const copper = new THREE.Color(0xc87a52), ember = new THREE.Color(0xff9a50);
+  let active = false, next = 0;
+  room.onTick((t, dt) => {
+    if (!active) return; let alive = 0;
+    const damp = Math.exp(-dt * 2.4);
+    for (let i = 0; i < N; i++) {
+      if (life[i] <= 0) { col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = 0; continue; }
+      vel[i * 3 + 1] += 0.05 * dt; for (let k = 0; k < 3; k++) { vel[i * 3 + k] *= damp; pos[i * 3 + k] += vel[i * 3 + k] * dt; }
+      life[i] -= dt * 1.4; const a = Math.max(0, life[i]); const f = a * a;
+      for (let k = 0; k < 3; k++) col[i * 3 + k] = base[i * 3 + k] * f;
+      if (a > 0) alive++;
+    }
+    if (!alive) active = false;
+    geo.attributes.position.needsUpdate = geo.attributes.color.needsUpdate = true;
+  });
+  room._trail = {
+    emit(at, n = 2, spread = 0.03) {
+      active = true;
+      for (let m = 0; m < n; m++) {
+        const i = next; next = (next + 1) % N; life[i] = 0.7 + Math.random() * 0.3;
+        pos.set([at.x + (Math.random() - 0.5) * spread, at.y + (Math.random() - 0.5) * spread, at.z + (Math.random() - 0.5) * spread], i * 3);
+        vel.set([(Math.random() - 0.5) * 0.15, Math.random() * 0.08, (Math.random() - 0.5) * 0.15], i * 3);
+        const c = copper.clone().lerp(ember, Math.random() * 0.6).multiplyScalar(0.5 + Math.random() * 0.3); base.set([c.r, c.g, c.b], i * 3);
+      }
+    },
+    clear() { life.fill(0); col.fill(0); geo.attributes.color.needsUpdate = true; active = false; },
+  };
+  return room._trail;
+}
+
 // Called by createRoom: the crystal light exists (at 0) from the start, so the light count never changes in play, and the
 // particle shader is compiled in the room's warm-up.
-export function prepareCrystalFX(room) { particles(room); crystalLight(room); }
+export function prepareCrystalFX(room) { particles(room); trailPool(room); crystalLight(room); }
 function crystalLight(room) {
   if (room._clight) return room._clight;
   const light = new THREE.PointLight(0xffa860, 0, 0, 2), glow = glowSprite(0xffa060, 1.2, 0), flash = glowSprite(0xfff0d8, 2.4, 0);
@@ -134,4 +172,4 @@ export function playFuse(room, crystal, center, tl = gsap.timeline(), at = 0, sc
     .to(crystal.materials.crack, { emissiveIntensity: 0.35, duration: 1.6, ease: 'power2.out' }, E + 0.1);
   return tl;
 }
-export function crystalFX(room) { return { particles: particles(room), light: crystalLight(room) }; }
+export function crystalFX(room) { return { particles: particles(room), trail: trailPool(room), light: crystalLight(room) }; }

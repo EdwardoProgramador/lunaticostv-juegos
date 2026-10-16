@@ -5,7 +5,7 @@
 //   altar     → bandeja con los 5 objetos (y la hoja arrancada si ya se leyó), colocar en orden
 //               acierto → el cristal sube, estalla, los fragmentos salen de pantalla, "Encuentra los fragmentos"
 //   fragments → altar encendido, el vacío brilla frente al cuadro, "Encuentra los fragmentos"
-//   puzzle    → puzzle de sombras (lunas gemelas) → el cristal se funde, entra al cuadro, el cuadro se abre, aparece la llave
+//   puzzle    → (la 1.ª vez) los 5 fragmentos llegan desde los bordes y se reúnen frente al cuadro, luego puzzle de sombras (lunas gemelas) → el cristal se funde, entra al cuadro, el cuadro se abre, aparece la llave
 //   key       → cuadro abierto con la llave, "Toma la llave"
 //   box       → nicho vacío, la llave en la bandeja, "Ve a la caja en Inicio"
 // Crear la UI ya crea el cuarto y lo prepara en segundo plano (room.ready): main.js la crea antes de que haga falta.
@@ -98,7 +98,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     },
   });
   const puzzle = createShadowPuzzle({
-    room, crystal, page: P, variant: 'lunas',
+    room, crystal, page: P, variant: 'lunas', reduced,
     onSolved: () => { progress.save({ puzzle: true }); if (onProgress) onProgress(); P.hint(''); playKeyReveal(); },
   });
   puzzle.hide();
@@ -205,7 +205,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     }
     tray.hide(true); order.fill(ALTAR_ORDER, { lit: true }); pads(40); P.setHintBottom(34);
     if (st === 'fragments') { room.setPaintingLight(0.22); room.setVoid(1); room.setFocus('painting', keepBig ? 1.2 : 0); if (keepBig) P.tip('tipFragments', { delay: 2.8, then: 'hintFragments' }); else P.hint('hintFragments'); }
-    else if (st === 'puzzle') { room.setPaintingLight(0.4); room.setFocus('painting', 0); P.setHintBottom(30); puzzle.start(); }
+    else if (st === 'puzzle') { room.setPaintingLight(0.4); room.setFocus('painting', 0); P.setHintBottom(30); puzzle.start({ intro: !s.gathered, onIntroDone: () => progress.save({ gathered: true }) }); }
     else if (st === 'key') {
       room.setPaintingLight(0.4); room.setPaintingOpen(true); room.setFocus('niche', 0);
       ensureKey(); key.visible = true; key.scale.setScalar(0.52); showKey(true); P.hint('hintTakeKey');

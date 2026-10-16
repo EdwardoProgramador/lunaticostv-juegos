@@ -15,10 +15,11 @@
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ clipConvex, area, centroid }, { PUZZLE_SCALE, playFuse }, { toShard }] = await Promise.all([
+const [{ clipConvex, area, centroid }, { PUZZLE_SCALE, playFuse, crystalFX }, { toShard }, { glowSprite }] = await Promise.all([
   import(`./crystal-shape.js${V}`),
   import(`./crystal-fx.js${V}`),
   import(`./crystal.js${V}`),
+  import(`./objects.js${V}`),
 ]);
 
 // ---------- targets (painting uv: u 0…1 left→right, v 0…1 top→bottom) ----------
@@ -74,7 +75,7 @@ const DEPTH = [0.58, 0.63, 0.55, 0.66, 0.6]; // fraction of the way from the can
 const ROT = [[0.25, 0.5, 0.2], [-0.3, -0.45, 0.4], [0.5, 0.2, -0.3], [-0.2, 0.6, 0.1], [0.35, -0.5, -0.45]];
 const START = { yaw: 0.95, pitch: -0.48 };
 
-export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', onSolved }) {
+export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', reduced = false, onSolved }) {
   const T = TARGETS[variant], PA = room.PAINT, L = room.light, ZS = room.shadowZ;
   const toWorld = ([u, v]) => new THREE.Vector3(PA.cx - PA.w / 2 + u * PA.w, PA.cy + PA.h / 2 - v * PA.h, ZS);
   // pieces of the silhouette per fragment
@@ -103,7 +104,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', onS
   });
 
   const pivot = new THREE.Group(); pivot.name = 'fragment_cluster'; pivot.position.copy(C); room.scene.add(pivot);
-  const S = { yaw: START.yaw, pitch: START.pitch, vy: 0, vp: 0, drag: false, locked: false, enabled: false, fade: 1, done: false };
+  const S = { yaw: START.yaw, pitch: START.pitch, vy: 0, vp: 0, drag: false, locked: false, enabled: false, fade: 1, done: false, intro: false };
   const qy = new THREE.Quaternion(), qx = new THREE.Quaternion(), Y = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0);
   const applyRot = () => { qy.setFromAxisAngle(Y, S.yaw); qx.setFromAxisAngle(X, S.pitch); pivot.quaternion.copy(qx).multiply(qy); };
 
@@ -213,6 +214,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', onS
 
   const error = () => 2 * Math.acos(Math.min(1, Math.abs(pivot.quaternion.w)));
   room.onTick((t, dt) => {
+    if (S.intro) { crystal.tick(t * 2.2); drawShadows(); return; } // reunión: las sombras siguen a los fragmentos que llegan
     if (!S.enabled && !S.locked) return;
     if (!S.drag && !S.locked) {
       S.yaw += S.vy * dt; S.pitch = Math.max(-1.45, Math.min(1.45, S.pitch + S.vp * dt));
@@ -257,21 +259,80 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', onS
   }
   function reset() {
     if (tl) tl.kill(); tl = null;
+    if (introTl) introTl.kill(); introTl = null; S.intro = false; glints.forEach((g) => { gsap.killTweensOf([g.material, g.scale]); g.material.opacity = 0; });
     Object.assign(S, { yaw: START.yaw, pitch: START.pitch, vy: 0, vp: 0, drag: false, locked: false, fade: 1, done: false });
     closeness = 0; lastSig = ''; applyRot(); mount(); clearCanvases(); crystal.setCrackGlow(1.1); room.candle.calm = 0;
     if (crystal.group.parent) crystal.group.visible = false;
   }
+  // ---------- reunión (antes del puzzle) ----------
+  // Cada fragmento entra desde un borde distinto de la pantalla (curva suave, gira hasta su orientación, crece), deja una
+  // estela de brasas de cobre y destella al llegar; la vela responde a cada llegada y se aviva al reunirse los cinco.
+  // ~3.5 s. Con movimiento reducido: aparecen en su sitio uno a uno con su destello.
+  let introTl = null;
+  const glints = [0, 1, 2, 3, 4].map(() => { const g = glowSprite(0xfff0d8, 0.3, 0); room.scene.add(g); return g; });
+  const EDGES = [[-1.3, 0.3], [1.3, -0.15], [0.2, 1.3], [-0.75, -1.3], [1.25, 1.05]]; // NDC: izq., der., arriba, abajo, esquina
+  const _w = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
+  function gather(done) {
+    const FX = crystalFX(room), cam = room.cam;
+    S.intro = true; S.fade = 0; crystal.setGlint(1);
+    cam.updateMatrixWorld(); pivot.updateMatrixWorld(true);
+    const depth = C.clone().project(cam).z, order = [0, 1, 2, 3, 4].sort(() => Math.random() - 0.5);
+    const T0 = 0.2, STEP = reduced ? 0.28 : 0.42, DUR = reduced ? 0 : 1.25;
+    const tl = gsap.timeline({ onComplete: () => { S.intro = false; introTl = null; done(); } });
+    crystal.fragments.forEach((f, n) => {
+      const g = f.group, i = order[n], end = g.position.clone(), q1 = g.quaternion.clone(), s1 = g.scale.x, at = T0 + n * STEP;
+      g.visible = false;
+      const flash = () => {
+        g.getWorldPosition(_w); const sp = glints[n];
+        sp.position.copy(_w); gsap.killTweensOf([sp.material, sp.scale]);
+        gsap.timeline().fromTo(sp.material, { opacity: 0 }, { opacity: 0.95, duration: 0.09 }).to(sp.material, { opacity: 0, duration: 0.6, ease: 'power2.out' });
+        gsap.fromTo(sp.scale, { x: 0.12, y: 0.12 }, { x: 0.55, y: 0.55, duration: 0.65, ease: 'power2.out' });
+        if (!reduced) FX.trail.emit(_w, 12, 0.14);
+        gsap.timeline().to(room.candle.flame.state, { flare: 1.35, duration: 0.12, ease: 'power2.out' }).to(room.candle.flame.state, { flare: 1, duration: 0.5 });
+        gsap.timeline().to(room.candle, { base: 8, duration: 0.12 }).to(room.candle, { base: 6.5, duration: 0.6 });
+      };
+      if (reduced) { tl.set(g, { visible: true }, at).call(flash, null, at); return; }
+      // desde fuera de la pantalla, a la profundidad del grupo; punto de control desplazado: una curva, no una recta
+      _w.set(EDGES[i][0], EDGES[i][1], depth).unproject(cam);
+      const from = pivot.worldToLocal(_w.clone()), ctrl = from.clone().lerp(end, 0.55);
+      ctrl.add(_a.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(from.distanceTo(end) * 0.28));
+      const q0 = new THREE.Quaternion().setFromEuler(new THREE.Euler((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 4));
+      tl.set(g, { visible: true }, at)
+        .to({}, { duration: DUR, ease: 'power3.out', onUpdate() {
+          const k = this.ratio, u = 1 - k;
+          g.position.set(u * u * from.x + 2 * u * k * ctrl.x + k * k * end.x, u * u * from.y + 2 * u * k * ctrl.y + k * k * end.y, u * u * from.z + 2 * u * k * ctrl.z + k * k * end.z);
+          g.quaternion.slerpQuaternions(q0, q1, Math.min(1, k * 1.1)); g.scale.setScalar(s1 * (0.55 + 0.45 * k));
+          if (k < 0.92) { g.getWorldPosition(_b); FX.trail.emit(_b, 2); }
+        } }, at)
+        .call(flash, null, at + DUR * 0.82);
+    });
+    const end = T0 + 4 * STEP + DUR;
+    tl.to(S, { fade: 1, duration: end - 0.5, ease: 'power1.inOut' }, 0.3);
+    room.flare(tl, end - 0.15);
+    tl.to({}, { duration: 0.45 }, end); // un respiro antes de la instrucción
+    return tl;
+  }
+
   let startTok = 0; // start() waits for the room's crystal stage; hide() meanwhile cancels it
   return {
     center: C, pivot,
     reset,
-    start() {
-      const k = ++startTok, go = () => { if (k !== startTok) return; reset(); S.enabled = true; el.style.cursor = 'grab'; room.setVoid(0.5); drawShadows();
-        if (!(page.tip && page.tip('tipPuzzle', { delay: 0.4, then: 'hintRotateKeys' }))) page.hint('hintRotate', { delay: 0.6 });
+    // intro: los fragmentos llegan uno a uno desde los bordes y se reúnen frente al cuadro antes de poder girarlos
+    start({ intro = false, onIntroDone } = {}) {
+      const k = ++startTok, go = () => {
+        if (k !== startTok) return;
+        reset(); room.setVoid(0.5);
+        const ready = () => {
+          if (k !== startTok) return;
+          S.enabled = true; el.style.cursor = 'grab'; drawShadows();
+          if (!(page.tip && page.tip('tipPuzzle', { delay: 0.2, then: 'hintRotateKeys' }))) page.hint('hintRotate', { delay: 0.6 });
+        };
+        if (intro) introTl = gather(() => { if (onIntroDone) onIntroDone(); ready(); });
+        else { drawShadows(); ready(); }
       };
       room.has('crystal') ? go() : room.need('crystal').then(go);
     },
-    stop() { S.enabled = false; el.style.cursor = ''; },
+    stop() { if (introTl) { introTl.kill(); introTl = null; S.intro = false; } S.enabled = false; el.style.cursor = ''; },
     // teclado: girar un paso (radianes) en cada eje
     nudge(dYaw, dPitch) { if (!S.enabled || S.locked || S.drag) return; S.vy = S.vp = 0; S.yaw += dYaw; S.pitch = Math.max(-1.45, Math.min(1.45, S.pitch + dPitch)); },
     // demo: glide to the answer, then lock like a player would
