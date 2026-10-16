@@ -1,17 +1,19 @@
-// Juego 1 · Los objetos del Cholo — punto de entrada (lo importa juegos/boot.js cuando la página
-// ya cargó y el navegador está libre).
-// Rotación: en cada página puede salir cualquier objeto que falte. Uno a la vez; si nadie lo recolecta,
-// se despide y, tras una pausa, llega otro distinto. Al cambiar de página se evita repetir el último visto.
-// Three.js, GSAP, el CSS y las fuentes solo se descargan cuando de verdad va a aparecer un objeto.
-// Progreso: dura la visita (ver progress.js). Recargar o volver a entrar reinicia el juego.
-// Depuración: ?j1reset borra el progreso · ?j1complete abre directo la recompensa (no cambia el progreso).
+// Juego 1 · Los objetos del Cholo (niveles 1 y 2) — orquesta el juego en cada página una vez activado (lo carga gate.js).
+//   · Botón "El Cuarto del Cholo" en el menú, HUD de objetos, caja en Inicio.
+//   · Nivel 1: el objeto de esta página (config.objects) flota hasta que se recolecta. El 5.º abre la secuencia 5/5 y el cuarto.
+//   · Nivel 2: el fragmento de esta página (config.fragments) espera escondido; el cuarto se abre con el botón.
+//   · El cuarto se prepara en segundo plano cuando se acerca su momento, para que abra al instante.
+// Progreso: progress.js (dura la visita). Idioma: i18n.js. Al cerrar la pantalla final de la caja el juego se reinicia.
 import * as progress from './progress.js';
 import { t, onLangChange } from './i18n.js';
+import { arm, disarm } from './gate.js';
+import { createRoomButton } from './room-button.js';
+import { createHUD } from './lib/hud.js';
+import { prefersReduced } from './lib/dom.js';
 
 const CSS_URL = new URL('./game.css', import.meta.url).href;
-const FONTS_URL = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Grenze+Gotisch:wght@700&display=swap';
-const LAST_KEY = 'lunaticos_j1_last'; // último objeto mostrado (sessionStorage): la siguiente página empieza con otro
-const DEFAULT_TIMING = { firstAppear: [3, 6], visibleFor: [25, 35], pauseBetween: [8, 14], afterCollect: [12, 20] };
+const PREFETCH_KEY = 'lunaticos_j1_prefetch';
+let G = null; // el juego en marcha en esta página
 
 function addStylesheet(href) {
   const found = [...document.querySelectorAll('link[rel="stylesheet"]')].find((l) => l.href === href);
@@ -24,38 +26,34 @@ function addStylesheet(href) {
   });
 }
 
-// En el inicio, la intro de video tapa todo (html.has-intro): el juego espera a que termine y se desvanezca.
+// En Inicio, la intro de video tapa todo (html.has-intro): el juego espera a que termine y se desvanezca.
 function afterIntro() {
   const html = document.documentElement;
   if (!html.classList.contains('has-intro')) return Promise.resolve();
   return new Promise((resolve) => {
     const mo = new MutationObserver(() => {
-      if (!html.classList.contains('has-intro')) { mo.disconnect(); setTimeout(resolve, 1400); }
+      if (!html.classList.contains('has-intro')) { mo.disconnect(); setTimeout(resolve, 1200); }
     });
     mo.observe(html, { attributes: true, attributeFilter: ['class'] });
   });
 }
 
-const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const between = ([a, b]) => (a + Math.random() * Math.max(0, b - a)) * 1000;
+const idle = (fn, timeout = 2000) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout }) : setTimeout(fn, 300));
 
-// Espera ms de tiempo "útil": solo corre con la pestaña visible y mientras counts() sea verdadero.
-// .cancel() la corta (resuelve false).
-function wait(ms, counts = () => true) {
-  let left = ms, last = performance.now(), id = 0, done;
+// Espera ms de tiempo "útil" (solo con la pestaña visible). .cancel() la corta (resuelve false).
+function wait(ms) {
+  let left = ms, last = performance.now(), done;
   const p = new Promise((r) => { done = r; });
-  id = setInterval(() => {
+  const id = setInterval(() => {
     const now = performance.now();
-    if (!document.hidden && counts()) left -= now - last;
+    if (!document.hidden) left -= now - last;
     last = now;
     if (left <= 0) { clearInterval(id); done(true); }
   }, 200);
   p.cancel = () => { clearInterval(id); done(false); };
   return p;
 }
-
-const readLast = () => { try { return sessionStorage.getItem(LAST_KEY); } catch (e) { return null; } };
-const writeLast = (k) => { try { sessionStorage.setItem(LAST_KEY, k); } catch (e) { /* sin sessionStorage: solo se pierde la variedad entre páginas */ } };
 
 // Three.js y GSAP dejan una marca en window para detectar copias duplicadas (__THREE__, gsapVersions).
 // El juego no deja globales: se quitan en cuanto las librerías ya se registraron (si no existían antes).
@@ -65,83 +63,233 @@ function tidyGlobals() {
   for (const k of LIB_MARKS) if (!preexisting.includes(k) && k in window) { try { delete window[k]; } catch (e) { /* no configurable: se deja */ } }
 }
 
-export async function start({ config }) {
-  const q = new URLSearchParams(location.search);
-  // recargar o entrar de nuevo al sitio = juego nuevo; pasar de una página a otra conserva el progreso
-  if (q.has('j1reset') || progress.isFreshVisit()) progress.reset();
-  const forceReward = q.has('j1complete');
-  if (!forceReward && progress.isComplete(progress.load())) return; // nada que mostrar: no se descarga nada más
-
-  const timing = { ...DEFAULT_TIMING, ...(config.timing || {}) };
-  const link = config.rewardLink || '#';
+// ───────────────────────────────────────────── arranque ─────────────────────────────────────────────
+export async function start(ctx) {
+  if (G) { sync(); return; }
+  disarm();
+  const g = G = { ...ctx, reduced: prefersReduced(), timers: [], offs: [] };
+  const alive = () => G === g;
+  await addStylesheet(CSS_URL);
+  if (!alive()) return;
   await afterIntro();
+  if (!alive()) return;
 
-  // primera aparición: unos segundos después de que la página está lista
-  if (!(await wait(between(timing.firstAppear)))) return;
-  if (progress.isComplete(progress.load())) return; // se completó en otra pestaña mientras tanto
-  await Promise.all([addStylesheet(CSS_URL), addStylesheet(FONTS_URL)]);
-  const [{ createFloat }, { createHUD }] = await Promise.all([import('./float.js'), import('./lib/hud.js')]);
-  const reduced = prefersReduced();
+  g.button = createRoomButton({ onClick: () => openRoom(), onIntent: () => prepareRoom(), reduced: g.reduced });
+  requestAnimationFrame(tidyGlobals);
+  if (ctx.activated) {
+    if (g.button) { g.button.setState('appear'); g.button.settle(buttonState()); }
+    hud().reveal();
+  } else if (g.button) g.button.settle(buttonState());
 
-  let fl = null, key = null, hud = null, reward = null, graph = null, timer = null, finished = false;
-  const label = (tx) => tx.collect(tx.names[key]);
-  onLangChange((tx) => {
-    if (fl) fl.setLabel(label(tx));
-    if (hud) hud.setText(tx);
-    if (reward) reward.setText(tx);
-  });
+  if (g.page === 'index') mountBox(ctx.activated).catch(g.log);
+  scheduleObject(ctx.activated).catch(g.log);
+  mountFragment().catch(g.log);
+  maybePrepare();
+  handleHomeLinks();
+  g.offs.push(onLangChange(relang));
 
-  // siguiente objeto: cualquiera que falte, evitando repetir el último mostrado (en esta u otra página)
-  function pickNext() {
-    const left = progress.ITEMS.filter((k) => !progress.load().includes(k));
-    if (!left.length) return null;
-    const last = key || readLast();
-    const pool = left.length > 1 ? left.filter((k) => k !== last) : left;
-    return pool[Math.floor(Math.random() * pool.length)];
-  }
+  if (ctx.debugStage === 'room' || ctx.debugStage === 'puzzle') openRoom();
+  else if (ctx.debugStage === 'altar') openRoom({ autoSolve: true });
+}
 
-  async function show() {
-    if (finished) return;
-    key = pickNext();
-    if (!key) return;
-    writeLast(key);
-    const isLast = progress.ITEMS.every((k) => k === key || progress.load().includes(k));
-    fl = await createFloat({ key, label: label(t()), reduced, onCollect });
-    requestAnimationFrame(tidyGlobals);
-    // si es el último que falta, el altar se va armando en tiempo ocioso mientras flota
-    if (isLast && !graph) {
-      const later = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
+function buttonState() {
+  const st = progress.stage();
+  return st === 'altar' || st === 'puzzle' || st === 'key' ? 'new' : 'normal';
+}
+function refreshButton() { if (G && G.button) G.button.settle(buttonState()); }
+
+function hud() {
+  const g = G;
+  if (!g.hud) g.hud = createHUD({ collected: progress.load().objects, text: t(), reduced: g.reduced, holdMs: 3500 });
+  return g.hud;
+}
+
+function relang(tx) {
+  const g = G; if (!g) return;
+  if (g.float) g.float.setLabel(tx.collect(tx.names[g.float.key]));
+  if (g.hud) g.hud.setText(tx);
+  if (g.fhud) g.fhud.setText();
+  if (g.fragment) g.fragment.relang();
+  if (g.box) g.box.relang();
+  if (g.room) g.room.relang();
+}
+
+// ───────────────────────────────────────────── nivel 1 ─────────────────────────────────────────────
+async function scheduleObject(activatedNow) {
+  const g = G, key = g.config.objects && g.config.objects[g.page];
+  if (!key || progress.stage() !== 'objects' || progress.load().objects.includes(key) || g.float || g.floatWait) return;
+  g.floatWait = wait(activatedNow ? 1400 : between(g.config.objectDelay || [2, 4]));
+  const ok = await g.floatWait; g.floatWait = null;
+  if (!ok || G !== g || progress.load().objects.includes(key) || progress.stage() !== 'objects') return;
+  const { createFloat } = await import('./float.js');
+  if (G !== g) return;
+  const tx = t();
+  const fl = await createFloat({ key, label: tx.collect(tx.names[key]), reduced: g.reduced, onCollect: () => collectObject(fl).catch(g.log) });
+  fl.key = key;
+  if (G !== g) { fl.destroy(); return; }
+  g.float = fl;
+  requestAnimationFrame(tidyGlobals);
+}
+
+async function collectObject(fl) {
+  const g = G; if (!g || g.float !== fl) return;
+  const key = fl.key, before = progress.load().objects.filter((k) => k !== key);
+  const s = progress.collectObject(key), done = s.objects.length === progress.ITEMS.length;
+  if (g.hud) g.hud.destroy();
+  g.hud = createHUD({ collected: before, text: t(), reduced: g.reduced, holdMs: done ? Infinity : 3000 });
+  g.hud.collect(key);
+  // el efecto de recolección termina ~0.35 s después; luego se libera el renderer del objeto (uno por vista)
+  setTimeout(() => { fl.destroy(); if (g.float === fl) g.float = null; }, 400);
+  refreshButton();
+  if (!done) { maybePrepare(); return; }
+  prepareRoom();
+  const { playComplete } = await import('./complete.js');
+  if (G !== g) return;
+  const h = g.hud;
+  playComplete({ hud: h, reduced: g.reduced, openRoom: () => openRoom({ instant: true }), onDone: () => { if (g.hud === h) g.hud = null; h.destroy(); } });
+}
+
+// ───────────────────────────────────────────── nivel 2 ─────────────────────────────────────────────
+async function mountFragment() {
+  const g = G, spots = g.config.fragments && g.config.fragments[g.page];
+  const idx = Object.keys(g.config.fragments || {}).indexOf(g.page);
+  if (!spots || idx < 0 || g.fragment || progress.stage() !== 'fragments' || progress.load().fragments.includes(idx)) return;
+  const { createSiteFragment } = await import('./fragments.js');
+  if (G !== g || g.fragment || progress.load().fragments.includes(idx)) return;
+  g.fragment = createSiteFragment({ index: idx, spots, reduced: g.reduced, onCollect: () => collectFragment(idx).catch(g.log) });
+}
+
+async function collectFragment(idx) {
+  const g = G; if (!g) return;
+  const before = progress.load().fragments.filter((i) => i !== idx);
+  const s = progress.collectFragment(idx);
+  const frag = g.fragment; g.fragment = null;
+  if (frag) frag.collect().then(() => frag.destroy());
+  const { createFragmentHUD } = await import('./lib/fragment-hud.js');
+  if (G !== g) return;
+  if (g.fhud) g.fhud.destroy();
+  g.fhud = createFragmentHUD({ collected: before, reduced: g.reduced });
+  g.fhud.collect(idx);
+  refreshButton();
+  if (s.fragments.length === 5) prepareRoom(); else maybePrepare();
+}
+
+// ───────────────────────────────────────────── cuarto ─────────────────────────────────────────────
+let roomMod = null;
+function loadRoom() { return roomMod || (roomMod = import('./room-ui.js')); }
+
+function ensureRoom() {
+  const g = G;
+  return loadRoom().then((m) => {
+    if (G !== g) return null;
+    if (!g.room) {
+      g.room = m.createRoomUI({
+        reduced: g.reduced,
+        onProgress: () => { refreshButton(); if (g.box && progress.load().key) g.box.armKey(); },
+        onOpen: () => { if (g.box) g.box.pause('room'); if (g.float) g.float.pause && g.float.pause(); },
+        onClose: () => { if (g.box) g.box.resume('room'); if (g.float) g.float.resume && g.float.resume(); mountFragment().catch(g.log); refreshButton(); },
+      });
+      requestAnimationFrame(tidyGlobals);
     }
-    // tiempo en pantalla: solo cuenta mientras se le ve flotando
-    const current = fl;
-    timer = wait(between(timing.visibleFor), () => current.shown);
-    if (!(await timer) || fl !== current) return;
-    // nadie lo recolectó: se despide y, tras una pausa, llega otro
-    await current.leave();
-    current.destroy();
-    if (fl === current) fl = null;
-    timer = wait(between(timing.pauseBetween));
-    if (await timer) show();
-  }
+    return g.room;
+  });
+}
 
-  async function onCollect() {
-    if (timer) timer.cancel();
-    const current = fl, got = key;
-    const before = progress.load().filter((k) => k !== got);
-    const collected = progress.collect(got);
-    const done = progress.isComplete(collected);
-    const h = hud = createHUD({
-      collected: before, text: t(), reduced, holdMs: done ? Infinity : 3000,
-      onHidden: () => { if (!done) { h.destroy(); if (hud === h) hud = null; } },
-    });
-    h.collect(got);
-    // el efecto de recolección termina ~0.35 s después; luego se libera el renderer del objeto
-    const released = new Promise((resolve) => setTimeout(() => { current.destroy(); if (fl === current) fl = null; resolve(); }, 400));
-    if (done) { finished = true; return; } // fase (a): la secuencia 5/5 → cuarto llega en la fase (c)
-    await released;
-    timer = wait(between(timing.afterCollect));
-    if (await timer) show();
-  }
+// prepara el cuarto en segundo plano (modelos, texturas, shaders) para que abra al instante
+function prepareRoom() {
+  const g = G; if (!g || progress.stage() === 'off') return;
+  ensureRoom().then((r) => r && r.prepare()).catch(g.log);
+}
 
-  show();
+function openRoom(opts = {}) {
+  const g = G; if (!g) return;
+  ensureRoom().then((r) => r && r.open(opts)).catch(g.log);
+}
+
+// ¿se acerca el momento del cuarto? entonces se prepara ya; si no, solo se precalienta la caché HTTP (una vez por visita)
+function maybePrepare() {
+  const g = G, s = progress.load(), st = progress.stage(s);
+  const myObj = g.config.objects && g.config.objects[g.page];
+  const myFrag = Object.keys(g.config.fragments || {}).indexOf(g.page);
+  const soon = (st === 'objects' && s.objects.length === progress.ITEMS.length - 1 && myObj && !s.objects.includes(myObj))
+    || st === 'altar' || st === 'puzzle' || st === 'key'
+    || (st === 'fragments' && s.fragments.length === 4 && myFrag >= 0 && !s.fragments.includes(myFrag));
+  if (soon) { idle(() => prepareRoom(), 3000); return; }
+  if (st === 'box') return;
+  let done = false;
+  try { done = sessionStorage.getItem(PREFETCH_KEY) === '1'; } catch (e) { /* sin almacenamiento */ }
+  if (done) return;
+  idle(() => {
+    if (G !== g) return;
+    loadRoom().then((m) => { m.prefetch(); try { sessionStorage.setItem(PREFETCH_KEY, '1'); } catch (e) { /* sin almacenamiento */ } }).catch(g.log);
+  }, 6000);
+}
+
+// ───────────────────────────────────────────── caja (Inicio) ─────────────────────────────────────────────
+async function mountBox(activatedNow) {
+  const g = G;
+  const { createBox } = await import('./box.js');
+  if (G !== g || g.box) return;
+  g.box = createBox({
+    link: g.config.rewardLink || '#', reduced: g.reduced,
+    hasKey: () => progress.load().key,
+    onFinalClose: () => resetGame(),
+  });
+  if (activatedNow) g.box.appear();
+  requestAnimationFrame(tidyGlobals);
+}
+
+// En Inicio, el logo (y cualquier enlace a "/") sube al principio sin recargar: recargar reiniciaría el juego.
+function handleHomeLinks() {
+  const g = G; if (g.page !== 'index') return;
+  const onClick = (e) => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest && e.target.closest('a[href]');
+    if (!a || a.target === '_blank') return;
+    let u; try { u = new URL(a.href, location.href); } catch (err) { return; }
+    if (u.origin !== location.origin || !/^\/(index(\.html)?)?$/.test(u.pathname) || u.hash || u.search) return;
+    e.preventDefault();
+    scrollTo({ top: 0, behavior: g.reduced ? 'auto' : 'smooth' });
+  };
+  document.addEventListener('click', onClick);
+  g.offs.push(() => document.removeEventListener('click', onClick));
+}
+
+// ───────────────────────────────────────────── sincronizar / reiniciar ─────────────────────────────────────────────
+// Vuelta con atrás/adelante desde la caché del navegador: el progreso pudo cambiar en otra página.
+export function sync() {
+  const g = G; if (!g) return;
+  const s = progress.load();
+  if (!s.active) { teardown(); arm(); return; }
+  if (g.float && s.objects.includes(g.float.key)) { g.float.destroy(); g.float = null; }
+  if (g.fragment) {
+    const idx = Object.keys(g.config.fragments || {}).indexOf(g.page);
+    if (s.fragments.includes(idx) || progress.stage(s) !== 'fragments') { g.fragment.destroy(); g.fragment = null; }
+  }
+  if (g.hud) { g.hud.destroy(); g.hud = null; }
+  if (g.box && s.key) g.box.armKey();
+  if (g.room) g.room.sync();
+  refreshButton();
+  scheduleObject(false).catch(g.log);
+  mountFragment().catch(g.log);
+  maybePrepare();
+}
+
+function teardown() {
+  const g = G; if (!g) return;
+  G = null;
+  if (g.floatWait) g.floatWait.cancel();
+  g.offs.forEach((off) => off());
+  for (const k of ['float', 'fragment', 'hud', 'fhud', 'box', 'room', 'button']) {
+    if (g[k]) { try { g[k].destroy(); } catch (e) { g.log(e); } g[k] = null; }
+  }
+}
+
+// Fin del juego (se cerró la pantalla final de la caja): progreso borrado, la luna vuelve a parpadear.
+export function resetGame() {
+  const log = G && G.log;
+  progress.reset();
+  try { sessionStorage.removeItem(PREFETCH_KEY); } catch (e) { /* sin almacenamiento */ }
+  teardown();
+  if (!arm() && log) log(new Error('j1: no se encontró la luna del logo'));
 }
