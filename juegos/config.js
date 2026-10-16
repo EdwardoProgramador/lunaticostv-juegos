@@ -69,11 +69,11 @@ export const games = {
         { anchor: '.quote-band', x: 94, y: 90, size: 52, rotate: -24 },
         { anchor: '.home-strip', x: 4, y: 50, size: 48, rotate: 12 },
       ],
-      talento: [
-        { anchor: '.talent-hero', x: 6, y: 95, size: 50, rotate: 24 },
-        { anchor: '.talent-hero', x: 95, y: 91, size: 50, rotate: -18 },
+      talento: [ // el hero ocupa una pantalla: casi todos los escondites van en el pie (hay que bajar)
+        { anchor: '.talent-hero', x: 6, y: 98, size: 48, rotate: 24 },
         { anchor: '.foot', x: 95, y: 30, size: 48, rotate: 10 },
         { anchor: '.foot', x: 62, y: 78, size: 46, rotate: -14 },
+        { anchor: '.foot', x: 77, y: 28, size: 46, rotate: 18 },
       ],
       contacto: [
         { anchor: '.contact-paths-band', x: 96, y: 93, size: 50, rotate: -22 },
@@ -81,11 +81,11 @@ export const games = {
         { anchor: '.home-closer', x: 93, y: 10, size: 50, rotate: 20 },
         { anchor: '.foot', x: 96, y: 34, size: 46, rotate: -12 },
       ],
-      tienda: [
-        { anchor: '.shop-hero', x: 6, y: 94, size: 50, rotate: 20 },
-        { anchor: '.shop-hero', x: 95, y: 90, size: 50, rotate: -16 },
+      tienda: [ // igual que Talento: hero de una pantalla, el resto en el pie
+        { anchor: '.shop-hero', x: 95, y: 98, size: 48, rotate: -16 },
         { anchor: '.foot', x: 60, y: 34, size: 46, rotate: 12 },
-        { anchor: '.foot', x: 94, y: 84, size: 46, rotate: -20 },
+        { anchor: '.foot', x: 78, y: 28, size: 46, rotate: -20 },
+        { anchor: '.foot', x: 96, y: 50, size: 46, rotate: 8 },
       ],
     },
     rewardLink: '#',
