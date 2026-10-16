@@ -34,12 +34,28 @@ export const games = {
       contacto: 'candle',
     },
     objectDelay: [2, 4],
+    // El orden de las páginas aquí es el número del fragmento (1.º index … 5.º contacto).
     fragments: {
-      index: [{ anchor: '#home-hero', x: 50, y: 50, size: 64, rotate: -18 }],
-      estudio: [{ anchor: 'main', x: 50, y: 20, size: 64, rotate: 14 }],
-      proyectos: [{ anchor: 'main', x: 50, y: 20, size: 64, rotate: -10 }],
-      talento: [{ anchor: 'main', x: 50, y: 20, size: 64, rotate: 22 }],
-      contacto: [{ anchor: 'main', x: 50, y: 20, size: 64, rotate: -24 }],
+      index: [
+        { anchor: '#home-estudio .split__media', x: 9, y: 106, size: 66, rotate: -16, tuck: 'bottom' },
+        { anchor: '#home-estudio', x: 92, y: 100, size: 60, rotate: -16, tuck: 'bottom' },
+      ],
+      estudio: [
+        { anchor: '.quote-band', x: 90, y: 16, size: 60, rotate: 18 },
+        { anchor: '.def-grid', x: 94, y: 6, size: 56, rotate: 18 },
+      ],
+      proyectos: [
+        { anchor: '.page-lead', x: 93, y: 0, size: 62, rotate: -8, tuck: 'top' },
+        { anchor: '.work-band', x: 95, y: 4, size: 56, rotate: -8 },
+      ],
+      talento: [
+        { anchor: '.talent-hero', x: 10, y: 86, size: 62, rotate: 24 },
+        { anchor: '.talent-hero', x: 88, y: 12, size: 56, rotate: 24 },
+      ],
+      contacto: [
+        { anchor: '.contact-paths-band', x: 94, y: 12, size: 60, rotate: -22 },
+        { anchor: '.form-band', x: 6, y: 8, size: 56, rotate: -22 },
+      ],
     },
     rewardLink: '#',
     debug: { params: true, console: false },
