@@ -7,15 +7,17 @@
 export const ITEMS = ['cassette', 'microphone', 'candle', 'notebook', 'medallion'];
 const KEY = 'lunaticos_j1_v2';
 const OLD = ['lunaticos_j1_v1', 'lunaticos_j1_last']; // versiones anteriores: se borran
-const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false };
+const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false, spots: {} };
 let memory = { ...EMPTY };
 
+const dict = (o, ok) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([k, v]) => /^[a-z0-9-]+$/.test(k) && ok(v))) : {});
 const clean = (s) => ({
   active: !!s.active,
   objects: ITEMS.filter((k) => Array.isArray(s.objects) && s.objects.includes(k)),
   clue: !!s.clue,
   altar: !!s.altar,
   fragments: [0, 1, 2, 3, 4].filter((i) => Array.isArray(s.fragments) && s.fragments.includes(i)),
+  spots: dict(s.spots, (v) => Number.isInteger(v) && v >= 0 && v < 16), // página → escondite elegido para su fragmento
   gathered: !!s.gathered, // ya se vio la reunión de los fragmentos antes del puzzle
   puzzle: !!s.puzzle,
   key: !!s.key,

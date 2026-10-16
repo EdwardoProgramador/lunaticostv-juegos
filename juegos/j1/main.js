@@ -170,10 +170,14 @@ async function collectObject(fl) {
 async function mountFragment() {
   const g = G, spots = g.config.fragments && g.config.fragments[g.page];
   const idx = Object.keys(g.config.fragments || {}).indexOf(g.page);
-  if (!spots || idx < 0 || g.fragment || progress.stage() !== 'fragments' || progress.load().fragments.includes(idx)) return;
+  if (!spots || !spots.length || idx < 0 || g.fragment || progress.stage() !== 'fragments' || progress.load().fragments.includes(idx)) return;
+  // un escondite al azar por página y partida (se recuerda al volver a la página); los demás quedan de reserva
+  let pick = progress.load().spots[g.page];
+  if (!(pick < spots.length)) { pick = Math.floor(Math.random() * spots.length); progress.save({ spots: { ...progress.load().spots, [g.page]: pick } }); }
+  const ordered = [spots[pick], ...spots.filter((_, i) => i !== pick)];
   const { createSiteFragment } = await import(`./fragments.js${V}`);
   if (G !== g || g.fragment || progress.load().fragments.includes(idx)) return;
-  g.fragment = createSiteFragment({ index: idx, spots, reduced: g.reduced, onCollect: () => collectFragment(idx).catch(g.log) });
+  g.fragment = createSiteFragment({ index: idx, spots: ordered, reduced: g.reduced, onCollect: () => collectFragment(idx).catch(g.log) });
 }
 
 async function collectFragment(idx) {

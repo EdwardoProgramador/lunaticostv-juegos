@@ -1,8 +1,10 @@
 // Nivel 2 · el fragmento de cristal escondido en la página. Estático, pequeño, metido en el diseño (config.fragments), con un
 // destello ocasional como pista. 2D: SVG con la textura del cristal recortada por la forma del fragmento y el borde de cobre
 // en los lados exteriores (sin WebGL: no añade un renderer a la página).
-// Se usa el primer lugar de la lista cuyo ancla exista y cuyo área de toque (mín. 48 px) no pise nada interactivo; si ninguno
-// sirve, busca un hueco libre alrededor del primer ancla visible. Se recoloca al cambiar el diseño (resize, imágenes, fuentes).
+// spots llega ordenado desde main.js: primero el escondite elegido al azar para esta partida, luego los de reserva. Se usa el
+// primero cuyo ancla exista y cuyo área de toque (mín. 48 px) no pise nada interactivo (ni controles de la tienda), no quede
+// bajo el menú fijo ni fuera del documento; si ninguno sirve, busca un hueco libre alrededor del primer ancla visible.
+// Se recoloca al cambiar el diseño (resize, imágenes, fuentes). Solo se dibuja cerca de la pantalla (IntersectionObserver).
 //   const f = createSiteFragment({ index, spots, reduced, onCollect });  f.collect() → Promise;  f.destroy()
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
@@ -16,6 +18,8 @@ const AVOID = [
   'a[href]', 'button', 'input', 'select', 'textarea', 'label', 'summary', 'iframe', 'video[controls]', 'audio[controls]',
   '[role="button"]', '[role="link"]', '[role="tab"]', '[role="menuitem"]', '[contenteditable="true"]',
   '[tabindex]:not([tabindex="-1"])', 'form', '.nav', '.site-header', '.lang-switch',
+  // tienda (shop.js / Shopify): botón y cajón del carrito, modales, controles de producto
+  '[class*="cart"]', '[class*="modal"]', '[class*="shop-btn"]', '[data-product]', '[data-variant]',
 ].join(',');
 const HIT = 48;
 const FREE = 48; // margen sin recorte alrededor del fragmento (px)
@@ -63,8 +67,8 @@ export function createSiteFragment({ index, spots = [], reduced = false, onColle
   const relang = () => hit.setAttribute('aria-label', t().pickFragment);
   relang();
   document.body.appendChild(el);
-  if (reduced) gsap.fromTo(glint, { opacity: 0 }, { opacity: 0.55, duration: 2.2, repeat: -1, yoyo: true, repeatDelay: 3, ease: 'sine.inOut' });
-  else glint.style.opacity = '1';
+  const glintTw = reduced ? gsap.fromTo(glint, { opacity: 0 }, { opacity: 0.55, duration: 2.2, repeat: -1, yoyo: true, repeatDelay: 3, ease: 'sine.inOut' }) : null;
+  if (!reduced) glint.style.opacity = '1';
 
   // ── colocación ──
   const obstacles = () => [...document.querySelectorAll(AVOID)].filter((n) => !el.contains(n) && !n.closest('.lj1-scope')).map((n) => {
@@ -86,6 +90,9 @@ export function createSiteFragment({ index, spots = [], reduced = false, onColle
     else if (spot.tuck === 'left') box.r = Math.min(box.r, A.l);
     else if (spot.tuck === 'right') box.l = Math.max(box.l, A.r);
     if (box.r - box.l < size * 0.3 || box.b - box.t < size * 0.3) return null; // casi todo escondido: no se encontraría
+    // inalcanzable: bajo el menú fijo con la página arriba del todo, o fuera del final del documento
+    const nav = document.querySelector('.nav, .site-header'), navH = nav ? nav.getBoundingClientRect().height : 0;
+    if (box.t < navH + 8 || box.b > document.documentElement.scrollHeight - 2) return null;
     const hx = (box.l + box.r) / 2, hy = (box.t + box.b) / 2, hw = Math.max(HIT, box.r - box.l), hh = Math.max(HIT, box.b - box.t);
     return { cx, cy, size, rot: spot.rotate || 0, box, hit: [hx - hw / 2, hy - hh / 2, hx + hw / 2, hy + hh / 2] };
   }
@@ -126,6 +133,16 @@ export function createSiteFragment({ index, spots = [], reduced = false, onColle
   addEventListener('load', schedule);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
 
+  // solo se dibuja cerca de la pantalla: lejos, oculto y con el destello en pausa
+  const svg = el.querySelector('svg');
+  const near = (on) => {
+    el.style.visibility = on ? '' : 'hidden';
+    if (svg.pauseAnimations) on ? svg.unpauseAnimations() : svg.pauseAnimations();
+    if (glintTw) on ? glintTw.resume() : glintTw.pause();
+  };
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(([e]) => near(e.isIntersecting), { rootMargin: '300px 0px' }) : null;
+  if (io) io.observe(el);
+
   // ── recoger ──
   let taken = false;
   hit.addEventListener('click', () => { if (!taken && placed && onCollect) onCollect(); });
@@ -152,6 +169,7 @@ export function createSiteFragment({ index, spots = [], reduced = false, onColle
     destroy() {
       if (raf) cancelAnimationFrame(raf);
       if (ro) ro.disconnect();
+      if (io) io.disconnect();
       removeEventListener('resize', schedule); removeEventListener('load', schedule);
       gsap.killTweensOf([el, artEl, glint]);
       el.remove();
