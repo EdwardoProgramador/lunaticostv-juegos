@@ -6,9 +6,7 @@
      bandeja de la llave 1045 · cuarto 1050 · secuencia 5/5 1060 · pantalla final 1070 → encima del nav (son pantalla
      completa), debajo de la intro. El botón del cuarto vive dentro del nav. */
 
-@font-face { font-family: 'lj1 Grenze Gotisch'; font-style: normal; font-weight: 700; font-display: swap; src: url('assets/fonts/grenze-gotisch-700.woff2') format('woff2'); }
-@font-face { font-family: 'lj1 Barlow Condensed'; font-style: normal; font-weight: 600; font-display: swap; src: url('assets/fonts/barlow-condensed-600.woff2') format('woff2'); }
-@font-face { font-family: 'lj1 Barlow Condensed'; font-style: normal; font-weight: 700; font-display: swap; src: url('assets/fonts/barlow-condensed-700.woff2') format('woff2'); }
+/* Fuentes (lj1 Grenze Gotisch 700, lj1 Barlow Condensed 600/700): las declara main.js con la versión del juego en la URL. */
 
 .lj1-scope, .lj1-room, .lj1-reveal, .lj1-complete {
   --lj1-bg: #060814;

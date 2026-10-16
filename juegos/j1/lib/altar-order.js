@@ -4,11 +4,14 @@
 //   const order = createAltarOrder({ room, page, tray, clue, onSolved });  order.enable(true)
 // Port: textos de ../i18n.js (page.hint recibe la clave), teclado (Enter/Espacio en ranuras y lugares = tocar),
 // onClueTorn para guardar que la hoja ya se arrancó, reset({ clueTorn }) para reabrir el cuarto con la hoja en la bandeja.
-import { gsap } from '../vendor/gsap.min.js';
-import { t } from '../i18n.js';
-import { ALTAR_ORDER, ITEMS } from './level2-data.js';
-import { sparks, flyIcon } from './dom.js';
-import { hudIcon } from './paths.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ t }, { ALTAR_ORDER, ITEMS }, { sparks, flyIcon }, { hudIcon }] = await Promise.all([
+  import(`../i18n.js${V}`),
+  import(`./level2-data.js${V}`),
+  import(`./dom.js${V}`),
+  import(`./paths.js${V}`),
+]);
 
 const icon = k => hudIcon(k);
 

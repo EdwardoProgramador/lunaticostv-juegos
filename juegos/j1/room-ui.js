@@ -9,21 +9,24 @@
 //   key       → cuadro abierto con la llave, "Toma la llave"
 //   box       → nicho vacío, la llave en la bandeja, "Ve a la caja en Inicio"
 // Crear la UI ya crea el cuarto y lo prepara en segundo plano (room.ready): main.js la crea antes de que haga falta.
-import * as THREE from './vendor/three.module.min.js';
-import { gsap } from './vendor/gsap.min.js';
-import * as progress from './progress.js';
-import { t, bindText } from './i18n.js';
-import { createRoom, prefetchRoom, PAINT, WALL_Z } from './lib/room.js';
-import { createTray } from './lib/tray.js';
-import { createAltarOrder } from './lib/altar-order.js';
-import { createClue } from './lib/notebook-clue.js';
-import { createCrystal } from './lib/crystal.js';
-import { createShadowPuzzle } from './lib/shadow-puzzle.js';
-import { playRiseShatter, crystalFX } from './lib/crystal-fx.js';
-import { buildKey } from './lib/key.js';
-import { ALTAR_ORDER } from './lib/level2-data.js';
-import { sparks, flyIcon } from './lib/dom.js';
-import { asset } from './lib/paths.js';
+import * as THREE from './vendor/three-0.184.0/three.module.min.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, { createTray }, { createAltarOrder }, { createClue }, { createCrystal }, { createShadowPuzzle }, { playRiseShatter, crystalFX }, { buildKey }, { ALTAR_ORDER }, { sparks, flyIcon }, { asset }] = await Promise.all([
+  import(`./progress.js${V}`),
+  import(`./i18n.js${V}`),
+  import(`./lib/room.js${V}`),
+  import(`./lib/tray.js${V}`),
+  import(`./lib/altar-order.js${V}`),
+  import(`./lib/notebook-clue.js${V}`),
+  import(`./lib/crystal.js${V}`),
+  import(`./lib/shadow-puzzle.js${V}`),
+  import(`./lib/crystal-fx.js${V}`),
+  import(`./lib/key.js${V}`),
+  import(`./lib/level2-data.js${V}`),
+  import(`./lib/dom.js${V}`),
+  import(`./lib/paths.js${V}`),
+]);
 
 export const prefetch = () => prefetchRoom();
 const KEY_ICON = asset('hud/key.webp');

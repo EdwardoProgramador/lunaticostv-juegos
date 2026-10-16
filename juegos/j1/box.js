@@ -3,12 +3,15 @@
 // · Sin la llave: tiembla y dice "Cerrada". Con la llave: sale la bandeja con la llave, la llave vuela a la cerradura, gira,
 //   la tapa se abre con luz cálida y se muestra la pantalla final con "Ver contenido exclusivo de CHOLO" (config.rewardLink).
 // · Al cerrar la pantalla final (X, Esc) se llama onFinalClose: main.js reinicia el juego.
-import { gsap } from './vendor/gsap.min.js';
-import { createChest } from './lib/chest.js';
-import { createTray } from './lib/tray.js';
-import { navBottom } from './lib/hud.js';
-import { asset } from './lib/paths.js';
-import { bindText } from './i18n.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ createChest }, { createTray }, { navBottom }, { asset }, { bindText }] = await Promise.all([
+  import(`./lib/chest.js${V}`),
+  import(`./lib/tray.js${V}`),
+  import(`./lib/hud.js${V}`),
+  import(`./lib/paths.js${V}`),
+  import(`./i18n.js${V}`),
+]);
 
 const KEY_ICON = asset('hud/key.webp');
 

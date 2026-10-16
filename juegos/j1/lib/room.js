@@ -6,17 +6,20 @@
 // Port (juego1-v2/lib/room.js): Three/GSAP locales; el loop duerme mientras el cuarto está cerrado y ya liberó la GPU
 // (room.wake() al abrir); sin preserveDrawingBuffer; createRoom({ reduced }) = sin parallax ni sacudidas y los cambios
 // de encuadre son un corte con fundido; textos de ../i18n.js; estilos en game.css (.lj1-room-load*).
-import * as THREE from '../vendor/three.module.min.js';
-import { gsap } from '../vendor/gsap.min.js';
-import { OBJECTS, materials, setupRenderer, makeEnv, addLights, glowSprite, glowTexture, smokeTexture, spriteBatch, makeFlame, crescentGeo, mergeGeos, framed, texturesReady, textureProgress, startTextures, groupProgress, WARM } from './objects.js';
-import { runLoop } from './loop.js';
-import { prepareCrystalFX } from './crystal-fx.js';
-import { buildAltar } from './altar.js';
-import { MOON_PHASE, ALTAR_ORDER } from './level2-data.js';
-import { bindText } from '../i18n.js';
-import { moonLitPath } from './notebook-clue.js';
-import { surfaces, surfaceUrls, laterSurfaceUrls, surfaceRes, setSurfaceRes } from './surfaces.js';
-import { createRoomRenderer, detectQuality, BAKE, bakeVertexLight, bakedMaterial, bakeLightMap } from './room-render.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ OBJECTS, materials, setupRenderer, makeEnv, addLights, glowSprite, glowTexture, smokeTexture, spriteBatch, makeFlame, crescentGeo, mergeGeos, framed, texturesReady, textureProgress, startTextures, groupProgress, WARM }, { runLoop }, { prepareCrystalFX }, { buildAltar }, { MOON_PHASE, ALTAR_ORDER }, { bindText }, { moonLitPath }, { surfaces, surfaceUrls, laterSurfaceUrls, surfaceRes, setSurfaceRes }, { createRoomRenderer, detectQuality, BAKE, bakeVertexLight, bakedMaterial, bakeLightMap }] = await Promise.all([
+  import(`./objects.js${V}`),
+  import(`./loop.js${V}`),
+  import(`./crystal-fx.js${V}`),
+  import(`./altar.js${V}`),
+  import(`./level2-data.js${V}`),
+  import(`../i18n.js${V}`),
+  import(`./notebook-clue.js${V}`),
+  import(`./surfaces.js${V}`),
+  import(`./room-render.js${V}`),
+]);
 
 export const WALL_Z = -0.62;
 export const PAINT = { cx: 0, cy: 2.82, w: 1.1, h: 1.35, border: 0.15 };

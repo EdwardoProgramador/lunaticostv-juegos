@@ -10,10 +10,20 @@ Cada página incluye una sola línea, antes de `</body>`:
 Juego 1: `j1/gate.js` + `j1/progress.js`, unos 14 KB sin comprimir). El juego completo se descarga únicamente cuando el
 visitante lo activa. Con `activeGame: null` solo se descargan `boot.js` y `config.js` y el sitio queda igual al original.
 
+## Versión y caché
+
+`config.js` → `version` es la versión publicada del juego. `boot.js` pide `config.js` siempre fresco y carga el juego con
+`?v=<version>`; cada archivo del juego pasa ese mismo `?v=` a todo lo que carga (módulos, `game.css`, fuentes, texturas,
+iconos). **Cada vez que publiques cambios en `/juegos/`, cambia `version`** (cualquier valor distinto; por costumbre
+fecha + número, p. ej. `'2026-10-16.2'`) y el navegador descargará todo de nuevo. Las librerías de `vendor/` no usan
+`?v=`: su carpeta lleva la versión de la librería (`three-0.184.0`, `gsap-3.12.5`) y su contenido nunca cambia.
+`boot.js` no lleva versión (lo incluyen las páginas tal cual): no debería cambiar entre versiones del juego.
+
 ## config.js
 
 | Campo | Qué hace |
 | --- | --- |
+| `version` | Versión del juego; se añade como `?v=` a todos sus archivos. Cámbiala en cada publicación. |
 | `activeGame` | `'j1'` activa "Los objetos del Cholo" (niveles 1 y 2). `null` lo apaga todo. |
 | `games.j1.pages` | Páginas donde se carga el juego (luna, botón del cuarto, HUD). Tienda y catálogo no van aquí. |
 | `games.j1.objects` | Página → objeto del nivel 1: `cassette`, `microphone`, `candle`, `notebook`, `medallion`. |
@@ -41,9 +51,9 @@ botón pulsa → puzzle de sombras → llave → caja en Inicio → pantalla fin
 | `room-ui.js` | El cuarto a pantalla completa (X y Esc cierran) y sus estados según el progreso. |
 | `fragments.js` | Fragmento de cristal escondido en la página (SVG 2D, sin WebGL). |
 | `box.js` | Caja en Inicio y pantalla final. |
-| `game.css` | Todos los estilos, prefijo `.lj1-`. Capas: fragmento 40, caja 44, objeto 45, HUD 85 (debajo del menú del sitio); cuarto 1050, secuencia 5/5 1060, pantalla final 1070 (pantalla completa, debajo de la intro de video). |
+| `game.css` | Todos los estilos, prefijo `.lj1-` (las `@font-face` las declara `main.js`, con `?v=`). Capas: fragmento 40, caja 44, objeto 45, HUD 85 (debajo del menú del sitio); cuarto 1050, secuencia 5/5 1060, pantalla final 1070 (pantalla completa, debajo de la intro de video). |
 | `lib/` | Port de `/juego1-v2/lib` (modelos, cuarto, render, superficies, altar, bandeja, hoja, cristal, puzzle, llave, caja, HUDs). |
-| `vendor/` | Three.js 0.184.0, GSAP 3.12.5 y los addons de post-proceso de Three 0.184.0, servidos desde el sitio, sin modificar (en los addons solo cambia la ruta del import de `three`). |
+| `vendor/` | `three-0.184.0/` (Three.js + addons de post-proceso) y `gsap-3.12.5/`, servidos desde el sitio, sin modificar (en los addons solo cambia la ruta del import de `three`). La carpeta lleva la versión de la librería. |
 | `assets/` | Texturas WebP (1024 y 512 px), iconos del HUD, icono de la llave, fuentes WOFF2 recortadas. |
 
 ### Rendimiento

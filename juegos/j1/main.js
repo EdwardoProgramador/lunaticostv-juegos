@@ -4,18 +4,32 @@
 //   · Nivel 2: el fragmento de esta página (config.fragments) espera escondido; el cuarto se abre con el botón.
 //   · El cuarto se prepara en segundo plano cuando se acerca su momento, para que abra al instante.
 // Progreso: progress.js (dura la visita). Idioma: i18n.js. Al cerrar la pantalla final de la caja el juego se reinicia.
-import * as progress from './progress.js';
-import { t, onLangChange } from './i18n.js';
-import { arm, disarm } from './gate.js';
-import { createRoomButton } from './room-button.js';
-import { createHUD } from './lib/hud.js';
-import { prefersReduced } from './lib/dom.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { createHUD }, { prefersReduced }, { asset }] = await Promise.all([
+  import(`./progress.js${V}`),
+  import(`./i18n.js${V}`),
+  import(`./gate.js${V}`),
+  import(`./room-button.js${V}`),
+  import(`./lib/hud.js${V}`),
+  import(`./lib/dom.js${V}`),
+  import(`./lib/paths.js${V}`),
+]);
 
-const CSS_URL = new URL('./game.css', import.meta.url).href;
+const CSS_URL = new URL(`./game.css${V}`, import.meta.url).href;
 const PREFETCH_KEY = 'lunaticos_j1_prefetch';
 let G = null; // el juego en marcha en esta página
 
+// Las fuentes del juego se declaran aquí (no en game.css) para que su URL lleve la versión, igual que todo lo demás.
+const FONTS = [['lj1 Grenze Gotisch', 700, 'grenze-gotisch-700'], ['lj1 Barlow Condensed', 600, 'barlow-condensed-600'], ['lj1 Barlow Condensed', 700, 'barlow-condensed-700']];
+function addFonts() {
+  if (document.getElementById('lj1-fonts')) return;
+  const st = document.createElement('style'); st.id = 'lj1-fonts';
+  st.textContent = FONTS.map(([family, weight, file]) => `@font-face{font-family:'${family}';font-style:normal;font-weight:${weight};font-display:swap;src:url('${asset(`fonts/${file}.woff2`)}') format('woff2')}`).join('\n');
+  document.head.appendChild(st);
+}
+
 function addStylesheet(href) {
+  addFonts();
   const found = [...document.querySelectorAll('link[rel="stylesheet"]')].find((l) => l.href === href);
   if (found) return Promise.resolve();
   return new Promise((resolve) => {
@@ -121,7 +135,7 @@ async function scheduleObject(activatedNow) {
   g.floatWait = wait(activatedNow ? 1400 : between(g.config.objectDelay || [2, 4]));
   const ok = await g.floatWait; g.floatWait = null;
   if (!ok || G !== g || progress.load().objects.includes(key) || progress.stage() !== 'objects') return;
-  const { createFloat } = await import('./float.js');
+  const { createFloat } = await import(`./float.js${V}`);
   if (G !== g) return;
   const tx = t();
   const fl = await createFloat({ key, label: tx.collect(tx.names[key]), reduced: g.reduced, onCollect: () => collectObject(fl).catch(g.log) });
@@ -143,7 +157,7 @@ async function collectObject(fl) {
   refreshButton();
   if (!done) { maybePrepare(); return; }
   prepareRoom();
-  const { playComplete } = await import('./complete.js');
+  const { playComplete } = await import(`./complete.js${V}`);
   if (G !== g) return;
   const h = g.hud;
   playComplete({ hud: h, reduced: g.reduced, openRoom: () => openRoom({ instant: true }), onDone: () => { if (g.hud === h) g.hud = null; h.destroy(); } });
@@ -154,7 +168,7 @@ async function mountFragment() {
   const g = G, spots = g.config.fragments && g.config.fragments[g.page];
   const idx = Object.keys(g.config.fragments || {}).indexOf(g.page);
   if (!spots || idx < 0 || g.fragment || progress.stage() !== 'fragments' || progress.load().fragments.includes(idx)) return;
-  const { createSiteFragment } = await import('./fragments.js');
+  const { createSiteFragment } = await import(`./fragments.js${V}`);
   if (G !== g || g.fragment || progress.load().fragments.includes(idx)) return;
   g.fragment = createSiteFragment({ index: idx, spots, reduced: g.reduced, onCollect: () => collectFragment(idx).catch(g.log) });
 }
@@ -165,7 +179,7 @@ async function collectFragment(idx) {
   const s = progress.collectFragment(idx);
   const frag = g.fragment; g.fragment = null;
   if (frag) frag.collect().then(() => frag.destroy());
-  const { createFragmentHUD } = await import('./lib/fragment-hud.js');
+  const { createFragmentHUD } = await import(`./lib/fragment-hud.js${V}`);
   if (G !== g) return;
   if (g.fhud) g.fhud.destroy();
   g.fhud = createFragmentHUD({ collected: before, reduced: g.reduced });
@@ -176,7 +190,7 @@ async function collectFragment(idx) {
 
 // ───────────────────────────────────────────── cuarto ─────────────────────────────────────────────
 let roomMod = null;
-function loadRoom() { return roomMod || (roomMod = import('./room-ui.js')); }
+function loadRoom() { return roomMod || (roomMod = import(`./room-ui.js${V}`)); }
 
 function ensureRoom() {
   const g = G;
@@ -228,7 +242,7 @@ function maybePrepare() {
 // ───────────────────────────────────────────── caja (Inicio) ─────────────────────────────────────────────
 async function mountBox(activatedNow) {
   const g = G;
-  const { createBox } = await import('./box.js');
+  const { createBox } = await import(`./box.js${V}`);
   if (G !== g || g.box) return;
   g.box = createBox({
     link: g.config.rewardLink || '#', reduced: g.reduced,

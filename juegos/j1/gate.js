@@ -4,7 +4,8 @@
 //   llevando a Inicio) activa el juego. Es un <button> real: funciona con ratón, toque, teclado y lector de pantalla.
 // · Activado (o si ya estaba activado en esta visita), se carga main.js. Al terminar el juego, main.js vuelve a llamar arm().
 // Depuración (si config.debug.params): ?j1reset borra el progreso · ?j1stage=room|altar|fragments|puzzle|box salta a esa etapa.
-import * as progress from './progress.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const progress = await import(`./progress.js${V}`);
 
 const STYLE = `
 @keyframes lj1-moon-blink{0%,70%,100%{opacity:1;filter:none}79%{opacity:.35;filter:none}87%{opacity:1;filter:drop-shadow(0 0 5px rgba(255,154,60,.95)) drop-shadow(0 0 12px rgba(255,154,60,.5))}94%{opacity:1;filter:drop-shadow(0 0 2px rgba(255,154,60,.4))}}
@@ -31,7 +32,7 @@ function whenIdle() {
 }
 
 function run(activated) {
-  return import('./main.js')
+  return import(`./main.js${V}`)
     .then((m) => { main = m; return m.start({ ...ctx, activated }); })
     .catch(ctx.log);
 }

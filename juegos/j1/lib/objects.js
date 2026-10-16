@@ -6,8 +6,9 @@
 //   group.userData.tick(t, dt)  per-frame animation (flame flicker etc.)
 //   group.userData.pose         suggested display rotation [x,y,z]
 //   child "__fx"                glow sprites / lights — not exported to GLB
-import * as THREE from '../vendor/three.module.min.js';
-import { asset } from './paths.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { asset } = await import(`./paths.js${V}`);
 export { asset };
 
 // Texture loading. Every surface is a pre-baked image (assets/tex/…); nothing is drawn at runtime except tiny glow/smoke sprites.

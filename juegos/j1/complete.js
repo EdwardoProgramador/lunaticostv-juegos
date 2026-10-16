@@ -3,7 +3,7 @@
 // recompensa automática del altar. Una sola capa a pantalla completa, por encima del cuarto: el cuarto se abre detrás del
 // destello y esta capa se desvanece. Con movimiento reducido: fundidos, sin desplazamientos.
 //   playComplete({ hud, reduced, openRoom, onDone })
-import { gsap } from './vendor/gsap.min.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 
 export function playComplete({ hud, reduced = false, openRoom, onDone }) {
   const root = document.createElement('div');

@@ -4,14 +4,17 @@
 // Port (juego1-v2/lib/chest.js): Three/GSAP locales, estilos en game.css (.lj1-box*), el render se pausa con la caja fuera
 // de pantalla, la pestaña oculta o pause('room'); pixel ratio según la calidad del dispositivo; el vuelo de la llave va en
 // coordenadas de viewport (layer = capa fija a pantalla completa); textos de ../i18n.js. La pantalla final vive en ../box.js.
-import * as THREE from '../vendor/three.module.min.js';
-import { gsap } from '../vendor/gsap.min.js';
-import { materials, crescentGeo, mergeGeos, glowSprite, setupRenderer, makeEnv, addLights, loadTexture } from './objects.js';
-import { runLoop } from './loop.js';
-import { detectQuality, PIXEL_RATIO } from './quality.js';
-import { buildKey } from './key.js';
-import { t } from '../i18n.js';
-import { flyIcon } from './dom.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ materials, crescentGeo, mergeGeos, glowSprite, setupRenderer, makeEnv, addLights, loadTexture }, { runLoop }, { detectQuality, PIXEL_RATIO }, { buildKey }, { t }, { flyIcon }] = await Promise.all([
+  import(`./objects.js${V}`),
+  import(`./loop.js${V}`),
+  import(`./quality.js${V}`),
+  import(`./key.js${V}`),
+  import(`../i18n.js${V}`),
+  import(`./dom.js${V}`),
+]);
 
 const M4 = (x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
 const W = 0.32, D = 0.2, HB = 0.15;

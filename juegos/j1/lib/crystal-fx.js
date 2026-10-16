@@ -1,9 +1,10 @@
 // Crystal sequences in the room (level 2):
 //   playRiseShatter(room, crystal, page)  14 — rises from the altar, cracks glow, trembles, shatters; 5 fragments fly off screen (starts once room.need('crystal') resolves)
 //   playFuse(room, crystal, frags, at)     16 — fragments fly together and fuse; cracks seal with copper light
-import * as THREE from '../vendor/three.module.min.js';
-import { gsap } from '../vendor/gsap.min.js';
-import { glowSprite, glowTexture } from './objects.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { glowSprite, glowTexture } = await import(`./objects.js${V}`);
 
 export const CRYSTAL_SCALE = 0.42;   // rising from the altar (14)
 export const PUZZLE_SCALE = 0.72;    // floating in front of the painting (16, 17)

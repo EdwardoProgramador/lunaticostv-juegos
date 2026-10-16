@@ -3,11 +3,14 @@
 // Mismo comportamiento que el HUD de objetos (lib/hud.js): oculto, entra al recoger, sale a los ~3 s; debajo del nav del
 // sitio, centrado arriba en ≤ 640 px. Sin Three.js (SVG + GSAP). Estilos en game.css (.lj1-fhud*).
 //   const hud = createFragmentHUD({ collected: [0, 2], reduced });  hud.collect(1);
-import { gsap } from '../vendor/gsap.min.js';
-import { FRAGMENTS, svgPath, centroid } from './crystal-shape.js';
-import { asset } from './paths.js';
-import { navBottom } from './hud.js';
-import { t } from '../i18n.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ FRAGMENTS, svgPath, centroid }, { asset }, { navBottom }, { t }] = await Promise.all([
+  import(`./crystal-shape.js${V}`),
+  import(`./paths.js${V}`),
+  import(`./hud.js${V}`),
+  import(`../i18n.js${V}`),
+]);
 
 let uid = 0;
 const VB = [250, 4, 640, 1072];

@@ -3,8 +3,9 @@
 // Escritorio (> 960 px): al final de los enlaces del menú. Móvil (≤ 960 px, cuando el sitio muestra la hamburguesa): junto a
 // la hamburguesa, nunca dentro del menú desplegable. Nombre corto ("El Cuarto" / "Room") en ≤ 640 px.
 //   const b = createRoomButton({ onClick, onIntent });  b.setState('appear');  b.destroy()
-import { gsap } from './vendor/gsap.min.js';
-import { t } from './i18n.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { t } = await import(`./i18n.js${V}`);
 
 const MOBILE = '(max-width: 960px)';
 

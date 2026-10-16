@@ -1,6 +1,7 @@
 // Devotional altar of the room (room.js). Meters, y-up, front = +z.
-import * as THREE from '../vendor/three.module.min.js';
-import { materials, crescentGeo, makeFlame, smokeTexture, mergeGeos, spriteBatch } from './objects.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { materials, crescentGeo, makeFlame, smokeTexture, mergeGeos, spriteBatch } = await import(`./objects.js${V}`);
 
 const mtx = (x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) =>
   new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));

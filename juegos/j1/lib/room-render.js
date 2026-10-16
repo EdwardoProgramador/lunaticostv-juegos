@@ -3,16 +3,18 @@
 // so metal, copper and glass reflect the real walls, painting and candles.
 //   const R = createRoomRenderer({ renderer, scene, cam });  R.setSize(w, h);  R.render();  R.captureEnv(pos, hide)  R.setBloom(on)
 // Also the adaptive-quality helpers used by room.js: detectQuality, and the Low-quality light bake (BAKE, bakeLightMap, bakeVertexLight, bakedMaterial).
-import * as THREE from '../vendor/three.module.min.js';
-import { EffectComposer } from '../vendor/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from '../vendor/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from '../vendor/addons/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from '../vendor/addons/postprocessing/OutputPass.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+import { EffectComposer } from '../vendor/three-0.184.0/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from '../vendor/three-0.184.0/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from '../vendor/three-0.184.0/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from '../vendor/three-0.184.0/addons/postprocessing/OutputPass.js';
 
 // threshold is in HDR scene units: candle light makes the wax ~100× brighter than 1, so only flames, hot copper and
 // glowing cracks pass. The high-pass is patched to bloom only the excess over the threshold, Reinhard-capped (CAP), so
 // very hot pixels give a soft halo instead of washing out the frame.
-export { detectQuality } from './quality.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { detectQuality } = await import(`./quality.js${V}`);
+export { detectQuality };
 
 // Baked candle light for Low quality. Light sources = [{ pos (world), color (linear), intensity, decay }]: Lambert,
 // inverse-power falloff, no shadows. BAKE.value scales it in every baked material (0 = High: real lights instead).

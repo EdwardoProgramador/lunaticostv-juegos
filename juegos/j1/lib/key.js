@@ -1,8 +1,11 @@
 // The ornate gothic key (level 2): dark iron + worn copper, crescent moon on the bow. 1 unit long, bow up (+y), bit at y≈0.
 //   const key = buildKey();  (el icono de la bandeja es un WebP pre-renderizado: assets/hud/key.webp)
-import * as THREE from '../vendor/three.module.min.js';
-import { crescentGeo, mergeGeos, glowSprite } from './objects.js';
-import { surfaces } from './surfaces.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ crescentGeo, mergeGeos, glowSprite }, { surfaces }] = await Promise.all([
+  import(`./objects.js${V}`),
+  import(`./surfaces.js${V}`),
+]);
 
 const M4 = (x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
 

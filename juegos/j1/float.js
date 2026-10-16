@@ -5,11 +5,14 @@
 // lo arrastra un poco con el contenido, como si flotara en agua, y lo manda a otro punto.
 // Nunca se queda encima del nav, enlaces, botones o formularios: si el contenido que pasa por debajo
 // lo alcanza, se aparta y mientras tanto se vuelve casi transparente y deja pasar los clics.
-import * as THREE from './vendor/three.module.min.js';
-import { gsap } from './vendor/gsap.min.js';
-import { BUILDERS, setupRenderer, makeEnv, addLights, framed, texturesReady, disposeTree } from './lib/objects.js';
-import { runLoop } from './lib/loop.js';
-import { detectQuality } from './lib/quality.js';
+import * as THREE from './vendor/three-0.184.0/three.module.min.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ BUILDERS, setupRenderer, makeEnv, addLights, framed, texturesReady, disposeTree }, { runLoop }, { detectQuality }] = await Promise.all([
+  import(`./lib/objects.js${V}`),
+  import(`./lib/loop.js${V}`),
+  import(`./lib/quality.js${V}`),
+]);
 
 // Todo lo que el objeto no debe tapar.
 const AVOID = [

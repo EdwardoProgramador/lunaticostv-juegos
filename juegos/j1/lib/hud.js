@@ -3,9 +3,12 @@
 // Entra deslizando, el objeto nuevo aparece con un parpadeo "glitch" y sale a los holdMs.
 // holdMs: Infinity lo deja en pantalla (secuencia 5/5). Arriba a la derecha, debajo del nav del sitio;
 // centrado arriba cuando el contenedor mide ≤ 640 px (container query en game.css).
-import { gsap } from '../vendor/gsap.min.js';
-import { ITEMS } from './level2-data.js';
-import { hudIcon } from './paths.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ ITEMS }, { hudIcon }] = await Promise.all([
+  import(`./level2-data.js${V}`),
+  import(`./paths.js${V}`),
+]);
 
 export function navBottom() {
   const nav = document.querySelector('.nav, .site-header');

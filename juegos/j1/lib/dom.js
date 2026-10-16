@@ -1,6 +1,8 @@
 // Ayudas DOM compartidas por el cuarto y la caja (de juego1-v2/lib/room-page.js, sin la cabecera de demo).
-import { gsap } from '../vendor/gsap.min.js';
-export { hudIcon } from './paths.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { hudIcon } = await import(`./paths.js${V}`);
+export { hudIcon };
 
 export function sparks(parent, x, y, n = 16, spread = 90) {
   for (let k = 0; k < n; k++) {

@@ -1,5 +1,11 @@
 // LunáticosTv · juegos — configuración central.
 //
+// version: versión publicada del juego. Se añade como ?v=… a TODOS los archivos del juego (scripts, estilos, texturas, iconos,
+//          fuentes), así una versión nueva nunca se queda con archivos viejos en la caché del navegador.
+//          CADA VEZ QUE PUBLIQUES CAMBIOS EN /juegos/, CAMBIA ESTE VALOR (cualquier texto distinto sirve; por costumbre,
+//          la fecha + un número: '2026-10-16.2'). Las librerías de vendor/ no lo necesitan: su carpeta lleva su propia
+//          versión (three-0.184.0, gsap-3.12.5) y nunca cambian de contenido.
+//
 // activeGame: 'j1' activa "Los objetos del Cholo" (niveles 1 y 2). null = no se carga nada: el sitio queda como el original.
 //
 // Juego 1 (j1):
@@ -20,6 +26,8 @@
 //                Si es de otro dominio, abre en pestaña nueva.
 //   debug        params: acepta ?j1reset, ?j1stage=… y ?calidad=… en la URL · console: muestra en consola los errores del juego
 //                (también con ?j1debug).
+
+export const version = '2026-10-16.1';
 
 export const activeGame = 'j1';
 

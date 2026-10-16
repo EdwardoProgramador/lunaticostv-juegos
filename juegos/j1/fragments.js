@@ -4,10 +4,13 @@
 // Se usa el primer lugar de la lista cuyo ancla exista y cuyo área de toque (mín. 48 px) no pise nada interactivo; si ninguno
 // sirve, busca un hueco libre alrededor del primer ancla visible. Se recoloca al cambiar el diseño (resize, imágenes, fuentes).
 //   const f = createSiteFragment({ index, spots, reduced, onCollect });  f.collect() → Promise;  f.destroy()
-import { gsap } from './vendor/gsap.min.js';
-import { FRAGMENTS } from './lib/crystal-shape.js';
-import { asset } from './lib/paths.js';
-import { t } from './i18n.js';
+import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ FRAGMENTS }, { asset }, { t }] = await Promise.all([
+  import(`./lib/crystal-shape.js${V}`),
+  import(`./lib/paths.js${V}`),
+  import(`./i18n.js${V}`),
+]);
 
 const AVOID = [
   'a[href]', 'button', 'input', 'select', 'textarea', 'label', 'summary', 'iframe', 'video[controls]', 'audio[controls]',

@@ -4,9 +4,12 @@
 //   const S = surfaces();  S.woodBox (worn edges at the uv borders: boxes), S.woodBevel (wear on bevels, shader), S.wood,
 //   S.copper, S.iron, S.plaster / S.floor / S.canvas (material params incl. colour map), S.painting (the picture)
 //   setSurfaceRes(1024 | 512) swaps every tiered map in place (no shader recompile), one upload per frame.
-import * as THREE from '../vendor/three.module.min.js';
-import { loadTexture, reloadTexture } from './objects.js';
-import { asset } from './paths.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ loadTexture, reloadTexture }, { asset }] = await Promise.all([
+  import(`./objects.js${V}`),
+  import(`./paths.js${V}`),
+]);
 
 const DIR = 'tex/room/';
 const HAS_512 = new Set(['wood-col', 'wood-rough', 'wood-bump', 'woodbox-col', 'woodbox-rough', 'woodbox-bump', 'copper-col', 'copper-rough', 'copper-bump', 'copper-metal', 'canvas-rough', 'canvas-bump', 'painting']);

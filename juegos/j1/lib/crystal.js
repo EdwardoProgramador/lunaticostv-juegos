@@ -2,10 +2,13 @@
 // Unit: the assembled shard is 1 tall (scale it where it's used). Front = +z.
 //   const c = createCrystal();  scene.add(c.group);  c.tick(t);  c.setCrackGlow(3);
 //   c.fragments[i].group  →  'fragmento_1'…'fragmento_5' (position = its place in the full shard)
-import * as THREE from '../vendor/three.module.min.js';
-import { materials, crescentGeo, mergeGeos, texturesReady, prewarm, startTextures } from './objects.js';
-import { IMG, FRAGMENTS, ORNAMENTS, centroid } from './crystal-shape.js';
-import { tieredTexture } from './surfaces.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ materials, crescentGeo, mergeGeos, texturesReady, prewarm, startTextures }, { IMG, FRAGMENTS, ORNAMENTS, centroid }, { tieredTexture }] = await Promise.all([
+  import(`./objects.js${V}`),
+  import(`./crystal-shape.js${V}`),
+  import(`./surfaces.js${V}`),
+]);
 
 // the crystal's own stage: its texture downloads only when this (or the room's 'crystal' stage) asks for it
 export const crystalReady = () => startTextures('crystal').then(() => texturesReady());

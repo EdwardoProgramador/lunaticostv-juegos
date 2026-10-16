@@ -3,10 +3,13 @@
 // With onRead: a hidden "page" slot (the torn clue page) after a separator; tray.showPage(true) reveals it, tapping it calls onRead.
 //   const tray = createTray({ mount, has: ['candle', …], onRead });  tray.set('candle', false)
 // Port: estilos en game.css (.lj1-tray*), iconos WebP, textos de ../i18n.js (relang() al cambiar de idioma).
-import { gsap } from '../vendor/gsap.min.js';
-import { t } from '../i18n.js';
-import { ITEMS } from './level2-data.js';
-import { hudIcon } from './paths.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ t }, { ITEMS }, { hudIcon }] = await Promise.all([
+  import(`../i18n.js${V}`),
+  import(`./level2-data.js${V}`),
+  import(`./paths.js${V}`),
+]);
 
 const nameOf = (it) => (it.nameKey ? t()[it.nameKey] : t().names[it.key]);
 

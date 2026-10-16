@@ -7,10 +7,13 @@
 // Sketches are traced at runtime from the HUD renders (assets/hud/*.webp): edges → ink lines, shadows → pencil hatching.
 // Port: textos de ../i18n.js (la línea manuscrita se redibuja al cambiar de idioma: relang()), estilos en game.css (.lj1-clue*),
 // Esc lo maneja el cuarto (room-ui.js), la fuente manuscrita se registra con un nombre propio del juego.
-import { gsap } from '../vendor/gsap.min.js';
-import { t } from '../i18n.js';
-import { MOON_PHASE, ITEMS } from './level2-data.js';
-import { hudIcon } from './paths.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ t }, { MOON_PHASE, ITEMS }, { hudIcon, asset }] = await Promise.all([
+  import(`../i18n.js${V}`),
+  import(`./level2-data.js${V}`),
+  import(`./paths.js${V}`),
+]);
 
 // Lit part of a waxing moon (lit side on the right), f = 0 new … 1 full. Also used by room.js for the carved altar moons.
 export function moonLitPath(g, cx, cy, R, f) {
@@ -30,7 +33,7 @@ let fontLoad = null;
 function fontReady() {
   if (!fontLoad) fontLoad = (async () => {
     if (typeof FontFace !== 'function' || !document.fonts) return;
-    const f = new FontFace('lj1 La Belle Aurore', `url(${new URL('../assets/fonts/la-belle-aurore-400.woff2', import.meta.url).href}) format('woff2')`, { display: 'swap' });
+    const f = new FontFace('lj1 La Belle Aurore', `url(${asset('fonts/la-belle-aurore-400.woff2')}) format('woff2')`, { display: 'swap' });
     document.fonts.add(f);
     await Promise.race([f.load(), new Promise(r => setTimeout(r, 3000))]).catch(() => {});
   })();

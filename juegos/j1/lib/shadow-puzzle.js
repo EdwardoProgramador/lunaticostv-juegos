@@ -12,11 +12,14 @@
 // faint copper-tinted glass shadow; the moon shares are denser, with a dark rim, a bright refracted line and a few
 // fracture lines. All of it is semi-transparent and sharp; the glass detail fades out as the pieces line up.
 // Port: Three/GSAP locales, page.hint recibe la clave de ../i18n.js, nudge() para jugar con las flechas del teclado.
-import * as THREE from '../vendor/three.module.min.js';
-import { gsap } from '../vendor/gsap.min.js';
-import { clipConvex, area, centroid } from './crystal-shape.js';
-import { PUZZLE_SCALE, playFuse } from './crystal-fx.js';
-import { toShard } from './crystal.js';
+import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
+import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const [{ clipConvex, area, centroid }, { PUZZLE_SCALE, playFuse }, { toShard }] = await Promise.all([
+  import(`./crystal-shape.js${V}`),
+  import(`./crystal-fx.js${V}`),
+  import(`./crystal.js${V}`),
+]);
 
 // ---------- targets (painting uv: u 0…1 left→right, v 0…1 top→bottom) ----------
 function crescent(cx, cy, R, ang, dFrac = 0.42, n = 44, W = 1.1, H = 1.35) {

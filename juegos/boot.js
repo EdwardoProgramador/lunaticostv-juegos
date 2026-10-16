@@ -3,19 +3,24 @@
 // Lee config.js y, si hay juego activo para esta página, carga su "puerta" (para j1: j1/gate.js, unos pocos KB: la luna
 // que parpadea y el botón que activa el juego). El juego completo solo se descarga al activarlo.
 // Con activeGame = null no hace nada más.
-import { activeGame, games } from './config.js';
-
-const GATES = { j1: () => import('./j1/gate.js') };
+// Caché: config.js se pide siempre fresco (es pequeño) y trae `version`; la puerta se carga con ?v=<version> y cada archivo
+// del juego pasa ese mismo ?v= a todo lo que carga (scripts, estilos, texturas, iconos, fuentes). Al cambiar `version` en
+// config.js, todo se descarga de nuevo. Este archivo no lleva versión: no debería cambiar entre versiones del juego.
+const GATES = { j1: (q) => import(`./j1/gate.js${q}`) };
 
 function pageKey() {
   const last = location.pathname.replace(/\/+$/, '').split('/').pop() || 'index';
   return last.replace(/\.html$/i, '') || 'index';
 }
 
-const game = activeGame && games[activeGame];
-const page = pageKey();
-if (game && GATES[activeGame] && Array.isArray(game.pages) && game.pages.includes(page)) {
-  GATES[activeGame]()
-    .then((mod) => mod.init({ page, config: game }))
-    .catch((e) => { if ((game.debug && game.debug.console) || /[?&]j1debug\b/.test(location.search)) console.error(e); }); // el juego es un extra: si falla, el sitio sigue intacto
-}
+const debugParam = /[?&]j1debug\b/.test(location.search);
+import(`./config.js?t=${Date.now()}`)
+  .then(({ activeGame, games, version }) => {
+    const game = activeGame && games[activeGame];
+    const page = pageKey();
+    if (!game || !GATES[activeGame] || !Array.isArray(game.pages) || !game.pages.includes(page)) return null;
+    return GATES[activeGame](version ? `?v=${encodeURIComponent(version)}` : '')
+      .then((mod) => mod.init({ page, config: game }))
+      .catch((e) => { if ((game.debug && game.debug.console) || debugParam) console.error(e); }); // el juego es un extra: si falla, el sitio sigue intacto
+  })
+  .catch((e) => { if (debugParam) console.error(e); });
