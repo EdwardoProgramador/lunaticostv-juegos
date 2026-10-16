@@ -7,8 +7,9 @@
 // lo alcanza, se aparta y mientras tanto se vuelve casi transparente y deja pasar los clics.
 import * as THREE from './vendor/three.module.min.js';
 import { gsap } from './vendor/gsap.min.js';
-import { BUILDERS, setupRenderer, makeEnv, addLights, framed, texturesReady, disposeTree, disposeShared } from './lib/objects.js';
-import { createLoop } from './lib/loop.js';
+import { BUILDERS, setupRenderer, makeEnv, addLights, framed, texturesReady, disposeTree } from './lib/objects.js';
+import { runLoop } from './lib/loop.js';
+import { detectQuality } from './lib/quality.js';
 
 // Todo lo que el objeto no debe tapar.
 const AVOID = [
@@ -40,7 +41,7 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
 
   // ── escena ──
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(box, box, false);
+  setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, detectQuality(renderer) === 'minimal' ? 1.5 : 2)); renderer.setSize(box, box, false); // lienzo pequeño: 2× es barato
   renderer.setClearColor(0x000000, 0);
   const scene = new THREE.Scene();
   const env = makeEnv(renderer); scene.environment = env; addLights(scene);
@@ -209,7 +210,7 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
     }
     draw(t, dt);
   }
-  const loop = createLoop(step);
+  const loop = runLoop(step, { autostart: false });
 
   // pausa si el objeto sale de la pantalla (p. ej. al cambiar el tamaño del viewport)
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(([e]) => (e.isIntersecting ? loop.resume('offscreen') : loop.pause('offscreen'))) : null;
@@ -281,8 +282,9 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
           .to(el, { opacity: 0, duration: 0.45, ease: 'power1.in', overwrite: 'auto' }, 0.3);
       });
     },
-    // Libera todo. keepShared: no tocar las cachés compartidas (el altar ya construido las usa).
-    destroy({ keepShared = false } = {}) {
+    // Libera todo lo propio. Los materiales/texturas compartidos se quedan (el cuarto puede estar usándolos); la GPU del
+    // objeto se libera con su contexto.
+    destroy() {
       if (gone) return; gone = true;
       loop.dispose(); if (io) io.disconnect(); clearInterval(idleCheck);
       removeEventListener('scroll', markDirty); removeEventListener('resize', onResize);
@@ -290,7 +292,6 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
       gsap.killTweensOf([S, el, glow, flash]); if (pulse) pulse.kill();
       el.querySelectorAll('.lj1-spark').forEach((s) => gsap.killTweensOf(s));
       disposeTree(scene); env.dispose();
-      if (!keepShared) disposeShared();
       renderer.dispose(); renderer.forceContextLoss();
       el.remove();
     },

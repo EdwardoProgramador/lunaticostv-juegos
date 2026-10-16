@@ -1,29 +1,72 @@
-// LunaticosTv · Los objetos del Cholo — 3D object library (port de Juego-1-lunaticos/lib/cholo-objects.js)
+// LunaticosTv · Los objetos del Cholo — librería de los 5 objetos 3D (port de juego1-v2/lib/cholo-objects.js).
+// Cambios del port: Three local (vendor/), rutas de texturas relativas a este módulo (asset()), materiales perezosos
+// (un objeto flotante solo crea y descarga los materiales que usa; el cuarto los pide todos), sin exportadores GLB,
+// disposeTree() para liberar la geometría del objeto flotante. El loop de render vive en loop.js.
 // All objects are modeled in meters, y-up, centered. Each builder returns a THREE.Group:
 //   group.userData.tick(t, dt)  per-frame animation (flame flicker etc.)
 //   group.userData.pose         suggested display rotation [x,y,z]
-//   child "__fx"                glow sprites / lights
-// Cambios respecto al export: materiales perezosos (solo se crean los que usa el objeto de la página),
-// texturas reducidas en assets/tex (WebP), geometría más ligera donde a 80–120 px no se nota,
-// y disposeTree()/disposeShared() para liberar todo al terminar. Sin exportadores GLB.
+//   child "__fx"                glow sprites / lights — not exported to GLB
 import * as THREE from '../vendor/three.module.min.js';
+import { asset } from './paths.js';
+export { asset };
 
-const BASE = new URL('../assets/', import.meta.url).href;
-
-let texCache = {}, texWait = [];
-function T(url, srgb = true) {
+// Texture loading. Every surface is a pre-baked image (assets/tex/…); nothing is drawn at runtime except tiny glow/smoke sprites.
+// tile = seamless map whose orientation doesn't matter: decoded off the main thread (fetch + createImageBitmap, flipY off);
+// otherwise <img> + decode() (still async), flipY on. texturesReady() waits for everything requested so far.
+const texCache = {}, texWait = [];
+const BITMAP = typeof createImageBitmap === 'function' && typeof fetch === 'function';
+async function decodeImage(url, tile) {
+  if (tile && BITMAP) {
+    try {
+      const res = await fetch(url); if (!res.ok) throw new Error(url); const blob = await res.blob();
+      try { return await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: 'none' }); } catch (e) { return await createImageBitmap(blob); }
+    } catch (e) { /* file:// or an old browser: <img> below */ }
+  }
+  const img = new Image(); img.decoding = 'async'; img.src = url;
+  if (img.decode) await img.decode(); else await new Promise((ok, no) => { img.onload = ok; img.onerror = no; });
+  return img;
+}
+// (re)fill a texture from a file: same Texture object, so materials keep their compiled programs. A size change frees the old
+// GPU copy first; the upload happens on the next render (or renderer.initTexture).
+export function reloadTexture(t, url, tile = t.userData.tile) {
+  return decodeImage(url, tile).then(img => {
+    if (t.image) t.dispose();
+    t.image = img; t.flipY = !(typeof ImageBitmap !== 'undefined' && img instanceof ImageBitmap); t.userData.url = url; t.needsUpdate = true;
+    return t;
+  }).catch(() => t);
+}
+// group: a later loading stage (e.g. 'crystal'). Its textures exist at once (materials compile the same) but download only
+// when startTextures(group) is called. texturesReady() / textureProgress() cover the first stage (no group).
+const groups = {};
+function T(url, srgb = true, tile = false, group = null) {
   const k = url + srgb;
   if (texCache[k]) return texCache[k];
-  let done; texWait.push(new Promise(r => (done = r)));
-  const t = new THREE.TextureLoader().load(BASE + url, () => done(), undefined, () => done());
+  const t = new THREE.Texture(); t.userData.tile = tile; t.userData.url = url = asset(url);
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
+  if (tile) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
+  if (group) { const G = groups[group] || (groups[group] = { items: [], wait: null, done: 0 }); G.items.push(t); if (G.wait) G.wait.push(fill(t, G)); }
+  else texWait.push(reloadTexture(t, url, tile).then(x => (texDone++, x)));
   return (texCache[k] = t);
 }
+const fill = (t, G) => reloadTexture(t, t.userData.urlFn ? asset(t.userData.urlFn()) : t.userData.url).then(x => (G.done++, x));
+export function startTextures(group) {
+  const G = groups[group]; if (!G) return Promise.resolve([]);
+  if (!G.wait) G.wait = G.items.map(t => fill(t, G));
+  return Promise.all(G.wait);
+}
+export function groupProgress(group) { const G = groups[group]; return G && G.items.length ? G.done / G.items.length : 1; }
+export const groupStarted = group => !!(groups[group] && groups[group].wait);
+let texDone = 0;
 export function texturesReady() { return Promise.all(texWait); }
+export function textureProgress() { return texWait.length ? texDone / texWait.length : 1; } // 0…1, for loading screens
+// Objects that join a scene later (the crystal): the room compiles their materials in the stage that loads them.
+export const WARM = new Set();
+export function prewarm(obj) { WARM.add(obj); return obj; }
+export const loadTexture = T; // shared loader (crystal.js, surfaces.js, chest.js): texturesReady() also waits for these
 
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 100000) / 100000; }; }
-
+// tiny generated sprites only (glow, smoke: radial gradients, 128 px)
 function canvasTex(size, draw, srgb = true) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   draw(c.getContext('2d'), size);
@@ -32,75 +75,32 @@ function canvasTex(size, draw, srgb = true) {
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
   return t;
 }
-function blotches(g, S, r, n, cols, aMin, aMax, rMin, rMax) {
-  for (let i = 0; i < n; i++) {
-    const x = r() * S, y = r() * S, rad = rMin + r() * (rMax - rMin);
-    const grd = g.createRadialGradient(x, y, 0, x, y, rad);
-    grd.addColorStop(0, cols[Math.floor(r() * cols.length)]); grd.addColorStop(1, 'rgba(0,0,0,0)');
-    g.globalAlpha = aMin + r() * (aMax - aMin); g.fillStyle = grd; g.fillRect(x - rad, y - rad, rad * 2, rad * 2);
-  }
-  g.globalAlpha = 1;
-}
-function grain(g, S, r, amt) {
-  const id = g.getImageData(0, 0, S, S);
-  for (let i = 0; i < id.data.length; i += 4) { const k = (r() - 0.5) * amt; id.data[i] += k; id.data[i + 1] += k; id.data[i + 2] += k; }
-  g.putImageData(id, 0, 0);
-}
-// Drawn in 512-unit space but rasterized at 256 px: same pattern (same seed sequence), ¼ of the pixels.
-// Objects never show larger than ~150 px, so 512 px wear maps were never sampled at full size.
-function wearTex(base, dark, light, seed, n = 220) {
-  return canvasTex(256, (g, px) => {
-    const S = 512; g.scale(px / S, px / S);
-    const r = rng(seed); g.fillStyle = base; g.fillRect(0, 0, S, S);
-    blotches(g, S, r, n, [dark, dark, light], 0.08, 0.35, 6, 46);
-    g.strokeStyle = light; g.globalAlpha = 0.22;
-    for (let i = 0; i < 70; i++) { g.lineWidth = 0.4 + r(); g.beginPath(); const x = r() * S, y = r() * S; g.moveTo(x, y); g.lineTo(x + (r() - .5) * 70, y + (r() - .5) * 70); g.stroke(); }
-    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; grain(g, px, r, 16);
-  });
-}
-function roughTex(seed, lo, hi) {
-  return canvasTex(256, (g, S) => {
-    const r = rng(seed); g.fillStyle = `rgb(${lo},${lo},${lo})`; g.fillRect(0, 0, S, S);
-    blotches(g, S, r, 160, [`rgb(${hi},${hi},${hi})`], 0.2, 0.7, 4, 30); grain(g, S, r, 30);
-  }, false);
-}
-function woodTex() {
-  return canvasTex(512, (g, S) => {
-    const r = rng(77); g.fillStyle = '#120a09'; g.fillRect(0, 0, S, S);
-    for (let i = 0; i < 140; i++) {
-      const y0 = r() * S, amp = 2 + r() * 6, f = 0.004 + r() * 0.01;
-      g.strokeStyle = r() < 0.5 ? 'rgba(52,30,24,0.5)' : 'rgba(4,2,2,0.7)'; g.lineWidth = 0.5 + r() * 2;
-      g.beginPath(); for (let x = 0; x <= S; x += 8) { const y = y0 + Math.sin(x * f + i) * amp; x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
-    }
-    blotches(g, S, r, 40, ['#3a2018', '#050304'], 0.1, 0.3, 20, 80); grain(g, S, r, 10);
-  });
-}
 
 function std(name, o) { const m = new THREE.MeshStandardMaterial(o); m.name = name; return m; }
 
-// Materials are created on first use: a page that floats only the cassette never paints the
-// candle's mercury-glass or the altar's wood canvases.
-const once = (f) => { let v; return () => v || (v = f()); };
+// Materiales compartidos, perezosos: cada uno se crea (y sus texturas empiezan a descargarse) la primera vez que se usa.
 let MATS = null;
-function defineMaterials() {
-  const rough = once(() => roughTex(3, 100, 195));
-  const D = {
-    copper: () => std('worn_copper', { map: wearTex('#b8796a', '#3a2420', '#f6d2b6', 11), roughnessMap: rough(), roughness: 1, metalness: 1 }),
-    copperDark: () => std('dark_copper', { map: wearTex('#6a4236', '#1e1416', '#c08672', 12), roughnessMap: rough(), roughness: 1, metalness: 0.9 }),
-    micMetal: () => std('mic_metal', { map: wearTex('#b89a8e', '#3f2c2a', '#f8e2d6', 13, 260), roughnessMap: roughTex(5, 60, 170), roughness: 1, metalness: 1 }),
-    silver: () => std('aged_silver', { map: wearTex('#b6aab2', '#3a3036', '#ffffff', 14), roughnessMap: rough(), roughness: 0.8, metalness: 1 }),
-    charcoal: () => std('charcoal_plastic', { map: wearTex('#29252c', '#100e12', '#7a4c3e', 15, 260), roughness: 0.62, metalness: 0.15 }),
-    darkMetal: () => std('dark_handle', { map: wearTex('#1d191c', '#0b090a', '#9a6a5a', 16, 200), roughnessMap: roughTex(6, 90, 170), roughness: 1, metalness: 0.7 }),
+const lazy = (defs) => { const o = {}; for (const k of Object.keys(defs)) { let v = null; Object.defineProperty(o, k, { enumerable: true, get: () => v || (v = defs[k]()) }); } return o; };
+export function materials() {
+  if (MATS) return MATS;
+  const O = (name, srgb = true) => T(`tex/obj/${name}.webp`, srgb, true), rough = () => O('worn_copper-rough', false);
+  MATS = lazy({
+    copper: () => std('worn_copper', { map: O('worn_copper-col'), roughnessMap: rough(), roughness: 1, metalness: 1 }),
+    copperDark: () => std('dark_copper', { map: O('dark_copper-col'), roughnessMap: rough(), roughness: 1, metalness: 0.9 }),
+    micMetal: () => std('mic_metal', { map: O('mic_metal-col'), roughnessMap: O('mic_metal-rough', false), roughness: 1, metalness: 1 }),
+    silver: () => std('aged_silver', { map: O('aged_silver-col'), roughnessMap: rough(), roughness: 0.8, metalness: 1 }),
+    charcoal: () => std('charcoal_plastic', { map: O('charcoal_plastic-col'), roughness: 0.62, metalness: 0.15 }),
+    darkMetal: () => std('dark_handle', { map: O('dark_handle-col'), roughnessMap: O('dark_handle-rough', false), roughness: 1, metalness: 0.7 }),
     grille: () => std('grille_mesh', { color: 0x0e0b0d, roughness: 0.95, metalness: 0.2 }),
     rubber: () => std('black_rubber', { color: 0x151215, roughness: 0.42, metalness: 0 }),
     tape: () => std('magnetic_tape', { color: 0x4a2a22, roughness: 0.2, metalness: 0.85, side: THREE.DoubleSide }),
-    leather: () => std('worn_leather', { map: wearTex('#2a1b20', '#0e090b', '#6e4a3e', 17, 320), roughness: 0.82, metalness: 0 }),
-    paperEdge: () => std('paper_edge', { map: wearTex('#d7a882', '#7a5440', '#f2d2bc', 18, 120), roughness: 0.95, metalness: 0 }),
+    leather: () => std('worn_leather', { map: O('worn_leather-col'), roughness: 0.82, metalness: 0 }),
+    paperEdge: () => std('paper_edge', { map: O('paper_edge-col'), roughness: 0.95, metalness: 0 }),
     wax: () => std('wax', { color: 0xefdfcb, roughness: 0.5, metalness: 0, emissive: 0xff9a50, emissiveIntensity: 0.06 }),
     wick: () => std('wick', { color: 0x120c0a, roughness: 1 }),
     ribbon: () => std('purple_ribbon', { color: 0x4a3550, roughness: 0.7, metalness: 0, side: THREE.DoubleSide }),
-    wood: () => std('carved_wood', { map: woodTex(), roughness: 0.62, metalness: 0 }),
-    pencilBody: () => std('pencil_lacquer', { map: wearTex('#231a1d', '#0c0809', '#8a6a5a', 19, 120), roughness: 0.45, metalness: 0.1 }),
+    wood: () => std('carved_wood', { map: O('carved_wood-col'), roughness: 0.62, metalness: 0 }),
+    pencilBody: () => std('pencil_lacquer', { map: O('pencil_lacquer-col'), roughness: 0.45, metalness: 0.1 }),
     pencilWood: () => std('pencil_wood', { color: 0xd8a27a, roughness: 0.8 }),
     graphite: () => std('graphite', { color: 0x1a1a1c, roughness: 0.35, metalness: 0.6 }),
     eraser: () => std('eraser', { color: 0xb05a52, roughness: 0.9 }),
@@ -110,51 +110,14 @@ function defineMaterials() {
     // Mercury glass, thin-walled (thickness 0): tint comes from color/map only, so it looks the same at every display scale.
     // Mottled silvering (metalnessMap) mirrors the room; clear patches let the cream wax show through.
     glass: () => {
-      const mercMap = canvasTex(512, (g, S) => {
-        const r = rng(31); g.fillStyle = '#dcd8de'; g.fillRect(0, 0, S, S);
-        blotches(g, S, r, 220, ['#f2eef4', '#e0d9e3', '#4a4250'], 0.12, 0.4, 8, 60);
-        g.fillStyle = '#141016';
-        for (let i = 0; i < 520; i++) { g.globalAlpha = 0.3 + r() * 0.6; g.beginPath(); g.arc(r() * S, r() * S, 0.5 + r() * r() * 3.5, 0, 7); g.fill(); }
-        g.globalAlpha = 1; grain(g, S, r, 18);
-      });
-      const mercMetal = canvasTex(256, (g, S) => { const r = rng(32); g.fillStyle = 'rgb(30,30,30)'; g.fillRect(0, 0, S, S); blotches(g, S, r, 170, ['rgb(255,255,255)', 'rgb(220,220,220)'], 0.25, 0.75, 8, 40); }, false);
+      const mercMap = O('mercury_glass-col'), mercMetal = O('mercury_glass-metal', false);
       mercMap.repeat.set(3, 1); mercMetal.repeat.set(3, 1);
       return Object.assign(new THREE.MeshPhysicalMaterial({ color: 0xc9c2cd, map: mercMap, metalness: 1, metalnessMap: mercMetal, roughness: 0.16, transmission: 1, thickness: 0, ior: 1.5, specularIntensity: 1, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 4 }), { name: 'mercury_glass' });
     },
-    waxGlow: () => std('wax_inner', { color: 0xeadfcc, roughness: 0.6, emissiveMap: canvasTex(64, (g, S) => { const gr = g.createLinearGradient(0, 0, 0, S); gr.addColorStop(0, '#ffc890'); gr.addColorStop(0.45, '#6a4a30'); gr.addColorStop(1, '#1a120c'); g.fillStyle = gr; g.fillRect(0, 0, S, S); }), emissive: 0xffffff, emissiveIntensity: 0.7 }),
-    wornSilver: () => std('worn_silver', { map: wearTex('#e4dde2', '#4a4046', '#ffffff', 21, 200), roughnessMap: rough(), roughness: 0.55, metalness: 0.7, envMapIntensity: 2.2 }),
-  };
-  const M = {};
-  for (const k of Object.keys(D)) {
-    Object.defineProperty(M, k, { configurable: true, enumerable: true, get() { const v = D[k](); Object.defineProperty(M, k, { value: v, enumerable: true }); return v; } });
-  }
-  return M;
-}
-export function materials() { return MATS || (MATS = defineMaterials()); }
-
-// ---------- cleanup ----------
-const TEX_KEYS = ['map', 'roughnessMap', 'metalnessMap', 'normalMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'aoMap', 'lightMap', 'specularMap', 'sheenColorMap', 'clearcoatMap'];
-function disposeMaterial(m) {
-  for (const k of TEX_KEYS) if (m[k] && m[k].isTexture) m[k].dispose();
-  m.dispose();
-}
-// Frees every geometry, material and texture under root (GPU side) and detaches it.
-export function disposeTree(root) {
-  const mats = new Set();
-  root.traverse((o) => {
-    if (o.geometry) o.geometry.dispose();
-    if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => mats.add(m));
-    if (o.isLight && o.dispose) o.dispose();
+    waxGlow: () => std('wax_inner', { color: 0xeadfcc, roughness: 0.6, emissiveMap: T('tex/obj/wax_inner-glow.webp'), emissive: 0xffffff, emissiveIntensity: 0.7 }),
+    wornSilver: () => std('worn_silver', { map: O('worn_silver-col'), roughnessMap: rough(), roughness: 0.55, metalness: 0.7, envMapIntensity: 2.2 }),
   });
-  mats.forEach(disposeMaterial);
-  if (root.parent) root.parent.remove(root);
-}
-// Frees the shared caches (materials, loaded textures, glow/smoke sprites) so the next build starts clean.
-export function disposeShared() {
-  if (MATS) for (const k of Object.keys(MATS)) { const d = Object.getOwnPropertyDescriptor(MATS, k); if (d && 'value' in d) disposeMaterial(d.value); }
-  Object.values(texCache).forEach((t) => t.dispose());
-  [_glow, _smoke].forEach((t) => t && t.dispose());
-  MATS = null; texCache = {}; texWait = []; _glow = _smoke = null;
+  return MATS;
 }
 
 // ---------- renderer / lighting ----------
@@ -202,6 +165,47 @@ export function smokeTexture() {
 export function glowSprite(color = 0xffffff, size = 1, opacity = 1) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity }));
   s.scale.setScalar(size); return s;
+}
+// Many soft sprites (smoke, haze) in ONE draw call: camera-facing quads with their own position, size, rotation, opacity and
+// colour; the same look as one THREE.Sprite each (map × colour × opacity, fog, normal blending, no depth write).
+//   const b = spriteBatch(27, smokeTexture(), 0xb8a4cc);  scene.add(b.mesh);  b.set(i, x, y, z, size, rotation, opacity);  b.update()
+export function spriteBatch(n, map, color = 0xffffff) {
+  const quad = new THREE.PlaneGeometry(1, 1), geo = new THREE.InstancedBufferGeometry();
+  geo.index = quad.index; geo.setAttribute('position', quad.attributes.position); geo.setAttribute('uv', quad.attributes.uv); geo.instanceCount = n;
+  const pos = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage);
+  const prm = new THREE.InstancedBufferAttribute(new Float32Array(n * 3), 3).setUsage(THREE.DynamicDrawUsage); // size, rotation, opacity
+  geo.setAttribute('iPos', pos); geo.setAttribute('iPrm', prm);
+  const mat = new THREE.ShaderMaterial({
+    name: 'sprite_batch', transparent: true, depthWrite: false, fog: true,
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { map: { value: null }, diffuse: { value: new THREE.Color(color) } }]),
+    vertexShader: `#include <common>
+#include <fog_pars_vertex>
+attribute vec3 iPos; attribute vec3 iPrm; varying vec2 vUv; varying float vA;
+void main() {
+  vUv = uv; vA = iPrm.z;
+  vec4 mvPosition = modelViewMatrix * vec4(iPos, 1.0); float c = cos(iPrm.y), s = sin(iPrm.y);
+  mvPosition.xy += mat2(c, s, -s, c) * position.xy * iPrm.x;
+  gl_Position = projectionMatrix * mvPosition;
+  #include <fog_vertex>
+}`,
+    fragmentShader: `#include <common>
+#include <fog_pars_fragment>
+uniform sampler2D map; uniform vec3 diffuse; varying vec2 vUv; varying float vA;
+void main() {
+  vec4 t = texture2D(map, vUv);
+  gl_FragColor = vec4(diffuse * t.rgb, t.a * vA);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+  #include <fog_fragment>
+}`,
+  });
+  mat.uniforms.map.value = map;
+  const mesh = new THREE.Mesh(geo, mat); mesh.frustumCulled = false; mesh.name = 'sprite_batch';
+  return {
+    mesh,
+    set(i, x, y, z, size, rot, opacity) { pos.setXYZ(i, x, y, z); prm.setXYZ(i, size, rot, opacity); },
+    update() { pos.needsUpdate = prm.needsUpdate = true; },
+  };
 }
 
 // ---------- geometry helpers ----------
@@ -258,8 +262,8 @@ function crescentShape(R) {
   s.absarc(cx, 0, ri, b0 + 2 * Math.PI, b1, true);
   return s;
 }
-export function crescentGeo(R, depth, curveSegments = 24) {
-  const g = new THREE.ExtrudeGeometry(crescentShape(R), { depth, bevelEnabled: true, bevelThickness: depth * 0.35, bevelSize: R * 0.04, bevelSegments: 2, curveSegments });
+export function crescentGeo(R, depth) {
+  const g = new THREE.ExtrudeGeometry(crescentShape(R), { depth, bevelEnabled: true, bevelThickness: depth * 0.35, bevelSize: R * 0.04, bevelSegments: 2, curveSegments: 24 });
   g.translate(0, 0, -depth / 2); g.scale(1, 1, -1);
   const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 30, uv.getY(i) * 30);
   return g;
@@ -279,9 +283,9 @@ export function makeFlame(scale = 1, withLight = true, lightPower = 0.03) {
   let light = null;
   if (withLight) { light = new THREE.PointLight(0xff9a4a, 1, 0, 2); light.position.y = 0.012 * scale; fx.add(light); }
   const seed = Math.random() * 100, v = new THREE.Vector3();
-  const state = { flare: 1 };
+  const state = { flare: 1, calm: 0 }; // calm 0…1 steadies the flicker (shadow puzzle feedback)
   const tick = (t) => {
-    const n = Math.sin(t * 13 + seed) * 0.5 + Math.sin(t * 23.7 + seed * 2) * 0.3 + Math.sin(t * 5.1 + seed) * 0.2;
+    const n = (Math.sin(t * 13 + seed) * 0.5 + Math.sin(t * 23.7 + seed * 2) * 0.3 + Math.sin(t * 5.1 + seed) * 0.2) * (1 - state.calm * 0.85);
     const f = state.flare;
     g.children[0].scale.set(1 - n * 0.04, (1 + n * 0.1) * f, 1 - n * 0.04);
     g.children[1].scale.set(1, 1 + n * 0.08 * f, 1);
@@ -293,8 +297,12 @@ export function makeFlame(scale = 1, withLight = true, lightPower = 0.03) {
   return { group: g, fx, tick, state, light };
 }
 
+// Builders take { lod }: true = lighter copy for the room, where the objects stand ~13 cm tall on the altar and are never
+// seen up close (fewer segments on curved parts; same shapes and materials). The object pages (01–05, 07) use full detail.
+const seg = (lod, n, min = 3) => lod ? Math.max(min, Math.round(n * 0.55)) : n;
+
 // ---------- 01 CASSETTE ----------
-export function buildCassette() {
+export function buildCassette({ lod = false } = {}) {
   const m = materials();
   const W = 0.100, H = 0.0638, D = 0.012, R = 0.0035, bt = 0.001, bs = 0.001;
   const g = new THREE.Group(); g.name = 'cassette';
@@ -302,31 +310,31 @@ export function buildCassette() {
   body.translate(0, 0, -(D - 2 * bt) / 2);
   g.add(M(body, [m.charcoal, m.copperDark], 'shell'));
   const face = new THREE.ShapeGeometry(rrShape(W, H, R), 6); planarUV(face, W, H);
-  const faceMat = std('cassette_face', { map: T('tex/cassette-face.webp'), roughness: 0.62, metalness: 0.2 });
+  const faceMat = std('cassette_face', { map: T('tex/cassette-face.webp'), roughness: 0.62, metalness: 0.2 }); // 512 px en todas partes (nunca se ve más grande)
   const front = M(face, faceMat, 'face_front'); front.position.z = D / 2 + 0.0002; g.add(front);
   const back = M(face.clone(), m.charcoal, 'face_back'); back.rotation.y = Math.PI; back.position.z = -D / 2 - 0.0002; g.add(back);
   const pts = [[-0.030, -0.027, -0.001], [-0.034, -0.037, 0.003], [-0.041, -0.047, 0.009], [-0.031, -0.057, 0.014], [-0.011, -0.055, 0.012], [-0.012, -0.045, 0.008], [-0.027, -0.045, 0.006], [-0.037, -0.055, 0.010], [-0.026, -0.069, 0.016], [0.004, -0.073, 0.014], [0.030, -0.070, 0.010], [0.044, -0.077, 0.006], [0.041, -0.085, 0.004], [0.027, -0.078, 0.003]];
   const curve = new THREE.CatmullRomCurve3(pts.map(p => new THREE.Vector3(...p)), false, 'centripetal');
-  g.add(M(ribbonGeo(curve, 0.0038, 220, new THREE.Vector3(0, 0, 1), s => Math.sin(s * Math.PI * 3.2) * 1.1 + s * 0.8), m.tape, 'tape'));
+  g.add(M(ribbonGeo(curve, 0.0038, seg(lod, 220), new THREE.Vector3(0, 0, 1), s => Math.sin(s * Math.PI * 3.2) * 1.1 + s * 0.8), m.tape, 'tape'));
   g.userData.pose = [0.15, -0.35, -0.2];
   return g;
 }
 
 // ---------- 02 MICROPHONE ----------
-export function buildMicrophone() {
+export function buildMicrophone({ lod = false } = {}) {
   const m = materials();
   const g = new THREE.Group(); g.name = 'microphone';
   const R = 0.029, L = 0.026, SX = 1.2, DY = L + R - 0.047;
   const prof = y => { const a = Math.abs(y); return a <= L ? R : Math.sqrt(Math.max(0, R * R - (a - L) ** 2)); };
-  const core = new THREE.CapsuleGeometry(R * 0.9, L * 2, 8, 24); core.scale(SX, 1, 1); core.translate(0, DY, 0);
+  const core = new THREE.CapsuleGeometry(R * 0.9, L * 2, seg(lod, 8), seg(lod, 24)); core.scale(SX, 1, 1); core.translate(0, DY, 0);
   g.add(M(core, m.grille, 'grille_core'));
   const ribs = [], N = 14, YS = L + 0.66 * R;
   for (let i = 0; i < N; i++) {
     const y = -YS + i * (2 * YS / (N - 1)), r = prof(y);
-    const tg = new THREE.TorusGeometry(r, 0.0021, 4, 36); tg.rotateX(Math.PI / 2); tg.scale(SX, 1, 1); tg.translate(0, y, 0); ribs.push([tg]);
+    const tg = new THREE.TorusGeometry(r, 0.0021, seg(lod, 6, 4), seg(lod, 48)); tg.rotateX(Math.PI / 2); tg.scale(SX, 1, 1); tg.translate(0, y, 0); ribs.push([tg]);
   }
   const yc = L + 0.72 * R, th = Math.acos((yc - L) / R);
-  const capT = new THREE.SphereGeometry(R, 24, 7, 0, Math.PI * 2, 0, th); capT.scale(SX, 1, 1); capT.translate(0, L, 0);
+  const capT = new THREE.SphereGeometry(R, seg(lod, 32), seg(lod, 10), 0, Math.PI * 2, 0, th); capT.scale(SX, 1, 1); capT.translate(0, L, 0);
   const capB = capT.clone(); capB.rotateX(Math.PI);
   ribs.push([capT], [capB]);
   // seam band around the silhouette
@@ -335,8 +343,8 @@ export function buildMicrophone() {
   for (const y of [L / 2, 0, -L / 2]) seamPts.push(new THREE.Vector3(-SX * Rs, y, 0));
   for (let i = 0; i <= 16; i++) { const a = Math.PI + i / 16 * Math.PI; seamPts.push(new THREE.Vector3(SX * Rs * Math.cos(a), -L + Rs * Math.sin(a), 0)); }
   for (const y of [-L / 2, 0, L / 2]) seamPts.push(new THREE.Vector3(SX * Rs, y, 0));
-  ribs.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(seamPts, true), 72, 0.0017, 6, true)]);
-  ribs.push([new THREE.SphereGeometry(0.0022, 8, 6), mtx(SX * Rs + 0.0012, 0, 0)], [new THREE.SphereGeometry(0.0022, 8, 6), mtx(-SX * Rs - 0.0012, 0, 0)]);
+  ribs.push([new THREE.TubeGeometry(new THREE.CatmullRomCurve3(seamPts, true), seg(lod, 96), 0.0017, seg(lod, 8, 4), true)]);
+  ribs.push([new THREE.SphereGeometry(0.0022, seg(lod, 12), seg(lod, 8)), mtx(SX * Rs + 0.0012, 0, 0)], [new THREE.SphereGeometry(0.0022, seg(lod, 12), seg(lod, 8)), mtx(-SX * Rs - 0.0012, 0, 0)]);
   g.add(M(mergeGeos(ribs).translate(0, DY, 0), m.micMetal, 'head'));
   // yoke + knob
   const yoke = mergeGeos([
@@ -345,7 +353,7 @@ export function buildMicrophone() {
     [new THREE.TorusGeometry(0.0105, 0.0013, 8, 32), mtx(0, -0.0605, 0, Math.PI / 2)],
   ]);
   g.add(M(yoke, m.micMetal, 'yoke'));
-  g.add(M(new THREE.CylinderGeometry(0.0103, 0.0084, 0.056, 32).translate(0, -0.088, 0), m.darkMetal, 'handle'));
+  g.add(M(new THREE.CylinderGeometry(0.0103, 0.0084, 0.056, seg(lod, 32)).translate(0, -0.088, 0), m.darkMetal, 'handle'));
   const fittings = mergeGeos([
     [new THREE.TorusGeometry(0.0089, 0.0011, 8, 32), mtx(0, -0.112, 0, Math.PI / 2)],
     [new THREE.CylinderGeometry(0.0088, 0.0088, 0.006, 28), mtx(0, -0.119, 0)],
@@ -353,7 +361,7 @@ export function buildMicrophone() {
   ]);
   g.add(M(fittings, m.silver, 'connector'));
   const cable = new THREE.CatmullRomCurve3([[0, -0.134, 0], [0, -0.146, 0.001], [-0.006, -0.158, 0.004], [-0.022, -0.165, 0.008], [-0.046, -0.156, 0.010], [-0.062, -0.131, 0.008], [-0.063, -0.105, 0.004], [-0.053, -0.085, -0.001], [-0.036, -0.074, -0.006], [-0.016, -0.07, -0.011]].map(p => new THREE.Vector3(...p)));
-  g.add(M(new THREE.TubeGeometry(cable, 64, 0.0042, 8, false), m.rubber, 'cable'));
+  g.add(M(new THREE.TubeGeometry(cable, seg(lod, 90), 0.0042, seg(lod, 10, 5), false), m.rubber, 'cable'));
   g.add(M(new THREE.CylinderGeometry(0.0048, 0.0052, 0.01, 16).translate(0, -0.139, 0), m.rubber, 'strain_relief'));
   g.userData.pose = [0.1, -0.5, 0.48];
   return g;
@@ -379,9 +387,9 @@ function wrapCyl(geo, R) {
   return geo;
 }
 // Half-round relief stroke along a 2D path, radius tapering r0 → r1.
-function reliefStroke(pts, r0, r1, seg = 3) {
+function reliefStrokeGeo(pts, r0, r1, seg = 4, step = 0.0008) {
   const curve = new THREE.CatmullRomCurve3(pts.map(([x, y]) => new THREE.Vector3(x, y, 0)), false, 'centripetal');
-  const n = Math.max(6, Math.round(curve.getLength() / 0.002)), P = [], N = [], U = [], I = [];
+  const n = Math.max(8, Math.round(curve.getLength() / step)), P = [], N = [], U = [], I = [];
   for (let i = 0; i <= n; i++) {
     const t = i / n, p = curve.getPointAt(t), d = curve.getTangentAt(t), sx = -d.y, sy = d.x, r = r0 + (r1 - r0) * t;
     for (let j = 0; j <= seg; j++) {
@@ -399,10 +407,11 @@ const spiral = (cx, cy, r0, a0, turns, dir, k = 0.28, n = Math.ceil(turns * 14))
   const t = i / n, a = a0 + dir * t * turns * Math.PI * 2, r = r0 * (1 - (1 - k) * t);
   return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
 });
-const blob = (x, y, sx, sy, sz, rot = 0) => [new THREE.SphereGeometry(1, 5, 3), mtx(x, y, 0, 0, 0, rot, sx, sy, sz)];
 // Baroque band: 6 repeats of mirrored C-scrolls with acanthus leaves and a rosette; the front repeat carries a fleur-de-lis.
-function baroqueBand(R, y0, h) {
+function baroqueBand(R, y0, h, lod = false) {
   const reps = 6, w = (Math.PI * 2 * R) / reps, parts = [];
+  const blob = (x, y, sx, sy, sz, rot = 0) => [new THREE.SphereGeometry(1, lod ? 6 : 8, lod ? 4 : 5), mtx(x, y, 0, 0, 0, rot, sx, sy, sz)];
+  const reliefStroke = (pts, r0, r1) => reliefStrokeGeo(pts, r0, r1, lod ? 3 : 4, lod ? 0.0016 : 0.0008);
   for (let u = 0; u < reps; u++) {
     const ox = u * w, front = u === 0;
     for (const s of [-1, 1]) {
@@ -435,12 +444,12 @@ function baroqueBand(R, y0, h) {
   return mergeGeos(geos.map(g1 => [g1]));
 }
 // Wax drip hanging down the outer wall: thin neck widening into a droplet at the tip.
-function waxDrip(phi, top, L, r0, rb, sway, wall) {
+function waxDrip(phi, top, L, r0, rb, sway, wall, lod = false) {
   const p = [[0, -L - rb]];
   for (let i = 1; i <= 5; i++) { const a = -Math.PI / 2 + (i / 5) * Math.PI * 0.72; p.push([Math.cos(a) * rb, -L + Math.sin(a) * rb]); }
   for (const [r, y] of [[r0 * 0.72, -L + rb * 1.9], [r0 * 0.85, -L * 0.5], [r0, -L * 0.15], [r0 * 1.2, 0], [r0 * 0.9, 0.0022], [0.0001, 0.0028]])
     if (y > p[p.length - 1][1] + 0.0002) p.push([r, y]);
-  const geo = new THREE.LatheGeometry(p.map(q => new THREE.Vector2(q[0], q[1])), 7, Math.PI);
+  const geo = new THREE.LatheGeometry(p.map(q => new THREE.Vector2(q[0], q[1])), lod ? 6 : 10, Math.PI);
   const pos = geo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const y = pos.getY(i), d = Math.max(0, -y / L);
@@ -449,36 +458,36 @@ function waxDrip(phi, top, L, r0, rb, sway, wall) {
   geo.computeVertexNormals();
   return [geo, mtx(0, 0, 0, 0, phi, 0)];
 }
-export function buildCandle() {
+export function buildCandle({ lod = false } = {}) {
   const m = materials();
   const g = new THREE.Group(); g.name = 'candle';
   // glass holder: thick rolled lip, straight wall, flared foot
   const prof = [[0.001, 0], [0.043, 0], [0.0465, 0.003], [0.0468, 0.012], [0.0448, 0.015], [0.0442, 0.018], [0.0442, 0.075], [0.047, 0.0785], [0.0478, 0.082], [0.0473, 0.0856], [0.0452, 0.0873], [0.0424, 0.0875], [0.0402, 0.0859], [0.0394, 0.0835], [0.0394, 0.024], [0.001, 0.022]].map(p => new THREE.Vector2(p[0], p[1]));
-  const glassGeo = new THREE.LatheGeometry(prof, 48);
+  const glassGeo = new THREE.LatheGeometry(prof, seg(lod, 64));
   { const p = glassGeo.attributes.position, uv = glassGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setY(i, p.getY(i) / 0.0927); } // height-based v: mottling stays round, not streaked
   const glass = M(glassGeo, m.glass, 'glass_holder'); glass.renderOrder = 2;
   // inner surface sheen so the wall reads as thick glass
-  const innerSheen = M(new THREE.CylinderGeometry(0.0393, 0.0393, 0.06, 48, 1, true).translate(0, 0.055, 0), Object.assign(new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.03, transparent: true, opacity: 0.12, envMapIntensity: 3, side: THREE.BackSide, depthWrite: false }), { name: 'glass_inner' }), 'glass_inner'); g.add(innerSheen);
-  const wax = M(new THREE.CylinderGeometry(0.0388, 0.0388, 0.051, 48).translate(0, 0.0475, 0), m.waxGlow, 'wax');
+  const innerSheen = M(new THREE.CylinderGeometry(0.0393, 0.0393, 0.06, seg(lod, 48), 1, true).translate(0, 0.055, 0), Object.assign(new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0, roughness: 0.03, transparent: true, opacity: 0.12, envMapIntensity: 3, side: THREE.BackSide, depthWrite: false }), { name: 'glass_inner' }), 'glass_inner'); g.add(innerSheen);
+  const wax = M(new THREE.CylinderGeometry(0.0388, 0.0388, 0.051, seg(lod, 48)).translate(0, 0.0475, 0), m.waxGlow, 'wax');
   // poured wax: top surface, pool over the rim, drips of different lengths
   const wall = y => y < 0.075 ? 0.0442 : y < 0.0785 ? 0.0442 + (y - 0.075) / 0.0035 * 0.0028 : y < 0.082 ? 0.047 + (y - 0.0785) / 0.0035 * 0.0008 : 0.0476;
-  const wx = [[new THREE.CylinderGeometry(0.0392, 0.0392, 0.0035, 48), mtx(0, 0.0742, 0)]];
+  const wx = [[new THREE.CylinderGeometry(0.0392, 0.0392, 0.0035, seg(lod, 48)), mtx(0, 0.0742, 0)]];
   const dr = rng(42), A0 = -1.15, A1 = 2.6;
   const N = 26, lump = Array.from({ length: N + 1 }, () => 0.6 + dr() * 0.7);
   for (let i = 0; i <= N; i++) {
     const t = i / N, a = A0 + t * (A1 - A0) + (dr() - .5) * 0.06, taper = Math.min(1, t * 5, (1 - t) * 5) * lump[i];
-    const at = (R, y, sx, sy, sz, rz = 0) => wx.push([new THREE.SphereGeometry(1, 6, 4), mtx(Math.sin(a) * R, y, Math.cos(a) * R, 0, a, rz, sx, sy, sz)]);
+    const at = (R, y, sx, sy, sz, rz = 0) => wx.push([new THREE.SphereGeometry(1, lod ? 7 : 10, lod ? 4 : 6), mtx(Math.sin(a) * R, y, Math.cos(a) * R, 0, a, rz, sx, sy, sz)]);
     at(0.0436 + (dr() - .5) * 0.001, 0.0871 + (dr() - .5) * 0.0006, 0.0095 * Math.max(taper, 0.35), 0.0019 * taper + 0.0005, 0.0046 * Math.max(taper, 0.4), (dr() - .5) * 0.25);
     if (taper > 0.5) at(0.0402, 0.0853, 0.0085 * taper, 0.0013 * taper, 0.0024 * taper);
     if (dr() < 0.6 && taper > 0.4) at(0.047, 0.0838, 0.006 * taper, 0.0026 * taper, 0.0015 * taper);
   }
   for (const [phi, L, r0, rb] of [[-0.95, 0.010, 0.0019, 0.0026], [-0.62, 0.022, 0.0017, 0.0025], [-0.35, 0.006, 0.0022, 0.0027], [0.18, 0.011, 0.0018, 0.0024], [0.44, 0.033, 0.0021, 0.0031], [0.63, 0.015, 0.0019, 0.0026], [0.86, 0.045, 0.0024, 0.0035], [1.06, 0.023, 0.0018, 0.0026], [1.3, 0.038, 0.0022, 0.0031], [1.55, 0.008, 0.002, 0.0026], [1.8, 0.029, 0.0019, 0.0028], [2.1, 0.014, 0.0021, 0.0027], [2.4, 0.025, 0.0018, 0.0025]])
-    wx.push(waxDrip(phi + (dr() - .5) * 0.06, 0.0842, L * (0.9 + dr() * 0.2), r0, rb, (dr() - .5) * 0.0024, wall));
+    wx.push(waxDrip(phi + (dr() - .5) * 0.06, 0.0842, L * (0.9 + dr() * 0.2), r0, rb, (dr() - .5) * 0.0024, wall, lod));
   g.add(glass, wax, M(mergeGeos(wx), m.wax, 'wax_drips'));
   // worn silver: crescent moon on the front + baroque band with rings
-  const moon = wrapCyl(flipWinding(crescentGeo(0.013, 0.002, 12).translate(0, 0.0465, 0.0017)), 0.0442);
-  const band = baroqueBand(0.0441, 0.0170, 0.0156);
-  const rings = [[new THREE.TorusGeometry(0.0451, 0.0009, 4, 48), mtx(0, 0.0162, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.0446, 0.0008, 4, 48), mtx(0, 0.0338, 0, Math.PI / 2)]];
+  const moon = wrapCyl(flipWinding(crescentGeo(0.013, 0.002).translate(0, 0.0465, 0.0017)), 0.0442);
+  const band = baroqueBand(0.0441, 0.0170, 0.0156, lod);
+  const rings = [[new THREE.TorusGeometry(0.0451, 0.0009, seg(lod, 6, 4), seg(lod, 72)), mtx(0, 0.0162, 0, Math.PI / 2)], [new THREE.TorusGeometry(0.0446, 0.0008, seg(lod, 6, 4), seg(lod, 72)), mtx(0, 0.0338, 0, Math.PI / 2)]];
   g.add(M(mergeGeos([[moon], [band], ...rings]), m.wornSilver, 'silver_ornament'));
   g.add(M(new THREE.CylinderGeometry(0.0008, 0.001, 0.008, 8).translate(0, 0.0775, 0), m.wick, 'wick'));
   const fl = makeFlame(1, true, 0.012); fl.group.position.y = 0.0805; g.add(fl.group);
@@ -493,7 +502,7 @@ export function buildCandle() {
 }
 
 // ---------- 04 NOTEBOOK ----------
-export function buildNotebook() {
+export function buildNotebook({ lod = false } = {}) {
   const m = materials();
   const g = new THREE.Group(); g.name = 'notebook';
   const PW = 0.098, PD = 0.138, CW = 0.105, CD = 0.146;
@@ -525,7 +534,7 @@ export function buildNotebook() {
     return h;
   };
   g.add(half(-1), half(1));
-  g.add(M(new THREE.CylinderGeometry(0.006, 0.006, CD, 16, 1, false, -Math.PI / 2, Math.PI).rotateX(Math.PI / 2).translate(0, -0.0002, 0), m.leather, 'spine'));
+  g.add(M(new THREE.CylinderGeometry(0.006, 0.006, CD, seg(lod, 16), 1, false, -Math.PI / 2, Math.PI).rotateX(Math.PI / 2).translate(0, -0.0002, 0), m.leather, 'spine'));
   // pencil (rests on right page along the drawn pencil)
   const pencil = new THREE.Group(); pencil.name = 'pencil';
   const pg = mergeGeos([[new THREE.CylinderGeometry(0.0034, 0.0034, 0.076, 6), mtx(0, 0, 0, 0, 0, Math.PI / 2)]]);
@@ -545,29 +554,29 @@ export function buildNotebook() {
 }
 
 // ---------- 05 MEDALLION ----------
-export function buildMedallion() {
+export function buildMedallion({ lod = false } = {}) {
   const m = materials();
   const g = new THREE.Group(); g.name = 'medallion';
   const RX = 0.0205, RY = 0.0285, TH = 0.0035;
-  g.add(M(new THREE.CylinderGeometry(1, 1, TH, 56).rotateX(Math.PI / 2).scale(RX, RY, 1), m.copperDark, 'medal_body'));
+  g.add(M(new THREE.CylinderGeometry(1, 1, TH, seg(lod, 72)).rotateX(Math.PI / 2).scale(RX, RY, 1), m.copperDark, 'medal_body'));
   const faceMat = std('medal_relief', { map: T('tex/medallion-face.webp'), emissiveMap: T('tex/medallion-face.webp'), emissive: 0xffffff, emissiveIntensity: 0.22, normalMap: T('tex/medallion-normal.webp', false), normalScale: new THREE.Vector2(2.2, 2.2), metalness: 0.65, roughness: 0.45 });
-  g.add(M(new THREE.CircleGeometry(1, 56).scale(0.0171, 0.0239, 1).translate(0, 0, TH / 2 + 0.0002), faceMat, 'medal_face'));
-  const back = new THREE.CircleGeometry(1, 56).scale(RX * 0.95, RY * 0.95, 1).rotateY(Math.PI).translate(0, 0, -TH / 2 - 0.0002);
+  g.add(M(new THREE.CircleGeometry(1, seg(lod, 72)).scale(0.0171, 0.0239, 1).translate(0, 0, TH / 2 + 0.0002), faceMat, 'medal_face'));
+  const back = new THREE.CircleGeometry(1, seg(lod, 72)).scale(RX * 0.95, RY * 0.95, 1).rotateY(Math.PI).translate(0, 0, -TH / 2 - 0.0002);
   g.add(M(back, m.copper, 'medal_back'));
   const parts = [
-    [new THREE.TubeGeometry(new Ellipse3(RX, RY, 0.0006), 96, 0.0016, 6, true)],
-    [new THREE.TubeGeometry(new Ellipse3(0.0174, 0.0242, TH / 2), 96, 0.0006, 4, true)],
+    [new THREE.TubeGeometry(new Ellipse3(RX, RY, 0.0006), seg(lod, 140), 0.0016, seg(lod, 8, 5), true)],
+    [new THREE.TubeGeometry(new Ellipse3(0.0174, 0.0242, TH / 2), seg(lod, 140), 0.0006, seg(lod, 6, 4), true)],
   ];
   const nb = 52;
   for (let i = 0; i < nb; i++) {
     const a = (i / nb) * Math.PI * 2;
     const near = [0, Math.PI / 2, Math.PI, Math.PI * 1.5, Math.PI * 2].some(c => Math.abs(a - c) < 0.13);
     if (near) continue;
-    parts.push([new THREE.SphereGeometry(0.00072, 6, 4), mtx(Math.cos(a) * 0.01895, Math.sin(a) * 0.0263, TH / 2 + 0.0002)]);
+    parts.push([new THREE.SphereGeometry(0.00072, lod ? 5 : 8, lod ? 3 : 6), mtx(Math.cos(a) * 0.01895, Math.sin(a) * 0.0263, TH / 2 + 0.0002)]);
   }
   const orn = (x, y, s = 1) => {
-    parts.push([new THREE.SphereGeometry(0.001, 8, 6), mtx(x, y, TH / 2 + 0.0009, 0, 0, 0, s)]);
-    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; parts.push([new THREE.SphereGeometry(0.001, 6, 4), mtx(x + Math.cos(a) * 0.0014 * s, y + Math.sin(a) * 0.0014 * s, TH / 2 + 0.0005, 0, 0, a, 1.5 * s, 0.85 * s, 0.7 * s)]); }
+    parts.push([new THREE.SphereGeometry(0.001, lod ? 6 : 10, lod ? 4 : 8), mtx(x, y, TH / 2 + 0.0009, 0, 0, 0, s)]);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; parts.push([new THREE.SphereGeometry(0.001, lod ? 5 : 8, lod ? 3 : 6), mtx(x + Math.cos(a) * 0.0014 * s, y + Math.sin(a) * 0.0014 * s, TH / 2 + 0.0005, 0, 0, a, 1.5 * s, 0.85 * s, 0.7 * s)]); }
   };
   orn(RX - 0.0006, 0); orn(-RX + 0.0006, 0); orn(0, RY - 0.0008); orn(0, -RY + 0.0008);
   parts.push([new THREE.ConeGeometry(0.0022, 0.004, 4), mtx(0, -RY - 0.0016, 0, Math.PI, 0, 0, 1, 1, 0.5)]);
@@ -592,7 +601,7 @@ export function buildMedallion() {
       const Z = new THREE.Vector3(0, 0, 1), cz = Z.clone().addScaledVector(t, -t.dot(Z)).normalize(), b = new THREE.Vector3().crossVectors(cz, t);
       const basis = new THREE.Matrix4().makeBasis(t, b, cz);
       if ((i + (dir > 0 ? 1 : 0)) % 2) basis.multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-      const lg = new THREE.TorusGeometry(0.0025, 0.0008, 4, 10); lg.scale(1.38, 1, 1);
+      const lg = new THREE.TorusGeometry(0.0025, 0.0008, lod ? 4 : 6, lod ? 8 : 14); lg.scale(1.38, 1, 1);
       links.push([lg, new THREE.Matrix4().makeTranslation(p.x, p.y, p.z).multiply(basis)]);
     }
   }
@@ -601,13 +610,13 @@ export function buildMedallion() {
   return g;
 }
 
-export const BUILDERS = {
-  cassette: buildCassette,
-  microphone: buildMicrophone,
-  candle: buildCandle,
-  notebook: buildNotebook,
-  medallion: buildMedallion,
-};
+export const OBJECTS = [
+  { key: 'cassette', name: 'Cassette', build: buildCassette },
+  { key: 'microphone', name: 'Micrófono', build: buildMicrophone },
+  { key: 'candle', name: 'Vela', build: buildCandle },
+  { key: 'notebook', name: 'Libreta', build: buildNotebook },
+  { key: 'medallion', name: 'Medalla', build: buildMedallion },
+];
 
 // Wrap an object so its pose is applied and it is centered + scaled to `size` (max dimension).
 export function framed(obj, size = 1, usePose = true) {
@@ -625,6 +634,11 @@ export function framed(obj, size = 1, usePose = true) {
   return fit;
 }
 
-export function triCount(obj) {
-  let n = 0; obj.traverse(o => { if (o.isMesh) { const g = o.geometry; n += g.index ? g.index.count / 3 : g.attributes.position.count / 3; } }); return Math.round(n);
+export const BUILDERS = Object.fromEntries(OBJECTS.map(o => [o.key, o.build]));
+
+// Libera la geometría propia de un árbol (el objeto flotante al irse). Los materiales y texturas compartidos no se tocan:
+// el cuarto puede estar usándolos en otro renderer; la memoria de GPU del flotante se va con su contexto.
+export function disposeTree(root) {
+  root.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+  if (root.parent) root.parent.remove(root);
 }

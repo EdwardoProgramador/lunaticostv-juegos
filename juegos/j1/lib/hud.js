@@ -1,14 +1,13 @@
-// Collection HUD (port de Juego-1-lunaticos/lib/hud.js): DOM + GSAP, sin framework.
+// HUD de objetos (port de juego1-v2/lib/hud.js): DOM + GSAP, sin framework.
 //   const hud = createHUD({ collected: ['cassette'], text }); hud.collect('microphone');
 // Entra deslizando, el objeto nuevo aparece con un parpadeo "glitch" y sale a los holdMs.
 // holdMs: Infinity lo deja en pantalla (secuencia 5/5). Arriba a la derecha, debajo del nav del sitio;
 // centrado arriba cuando el contenedor mide ≤ 640 px (container query en game.css).
 import { gsap } from '../vendor/gsap.min.js';
-import { ITEMS } from '../progress.js';
+import { ITEMS } from './level2-data.js';
+import { hudIcon } from './paths.js';
 
-const BASE = new URL('../assets/hud/', import.meta.url).href;
-
-function navBottom() {
+export function navBottom() {
   const nav = document.querySelector('.nav, .site-header');
   const b = nav ? nav.getBoundingClientRect().bottom : 0;
   return b > 0 && b < innerHeight / 2 ? b : 0;
@@ -19,7 +18,7 @@ export function createHUD({ mount = document.body, holdMs = 3000, collected = []
   root.className = 'lj1-scope lj1-hud-root';
   root.innerHTML = `<div class="lj1-hud" role="status" aria-live="polite">
     <div class="lj1-hud__head"><span class="lj1-hud__label"></span><span class="lj1-hud__count"><b>0</b><span>/5</span></span></div>
-    <ol class="lj1-hud__slots">${ITEMS.map((k, i) => `<li class="lj1-hud__slot" data-i="${i}"><img class="lj1-hud__sil" src="${BASE}${k}-sil.webp" alt="" decoding="async"><img class="lj1-hud__col" src="${BASE}${k}.webp" alt="" decoding="async"></li>`).join('')}</ol>
+    <ol class="lj1-hud__slots">${ITEMS.map((k, i) => `<li class="lj1-hud__slot" data-i="${i}"><img class="lj1-hud__sil" src="${hudIcon(k, true)}" alt="" decoding="async"><img class="lj1-hud__col" src="${hudIcon(k)}" alt="" decoding="async"></li>`).join('')}</ol>
   </div>`;
   mount.appendChild(root);
   const panel = root.querySelector('.lj1-hud'), countEl = root.querySelector('.lj1-hud__count'), countN = countEl.querySelector('b');
@@ -31,7 +30,7 @@ export function createHUD({ mount = document.body, holdMs = 3000, collected = []
   const paint = () => { slots.forEach((s, i) => s.classList.toggle('is-got', got[i])); countN.textContent = got.filter(Boolean).length; };
   const setText = (tx) => {
     label.textContent = tx.hudLabel;
-    slots.forEach((s, i) => s.setAttribute('aria-label', `${tx.names[ITEMS[i]]}${got[i] ? ' ✓' : ''}`));
+    slots.forEach((s, i) => s.setAttribute('aria-label', `${tx.names[ITEMS[i]]}${got[i] ? `, ${tx.got}` : ''}`));
   };
   let tx = text;
   paint(); setText(tx);
@@ -90,6 +89,14 @@ export function createHUD({ mount = document.body, holdMs = 3000, collected = []
     get visible() { return visible; },
     set holdMs(v) { holdMs = v; if (v === Infinity && hideCall) hideCall.kill(); },
     collect(key) { const i = ITEMS.indexOf(key); if (i < 0) return null; got[i] = true; setText(tx); return run(i); },
+    // entra sin recolectar nada (al activar el juego: las 5 siluetas) y sale a los holdMs
+    reveal() {
+      if (tl) tl.progress(1).kill(); if (hideCall) hideCall.kill(); gsap.killTweensOf(panel);
+      tl = gsap.timeline(); show(tl);
+      if (holdMs !== Infinity) tl.call(() => { hideCall = gsap.delayedCall(holdMs / 1000, hide); });
+      return tl;
+    },
+    hide,
     setText(next) { tx = next; setText(tx); },
     destroy() {
       if (tl) tl.kill(); if (hideCall) hideCall.kill();

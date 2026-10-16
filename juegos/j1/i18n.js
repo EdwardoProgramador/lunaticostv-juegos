@@ -1,21 +1,86 @@
-// Textos ES/EN. Sigue el selector de idioma del sitio: script.js escribe <html lang> y
-// dispara "ltv:languagechange" en document; aquí solo se lee, nunca se cambia el idioma.
+// Textos ES/EN de todo el juego (nivel 1 + nivel 2). Sigue el selector de idioma del sitio: script.js escribe
+// <html lang> y dispara "ltv:languagechange" en document; aquí solo se lee, nunca se cambia el idioma.
+// Las fuentes del juego no traen → ni ✓: no usarlos en estos textos.
 const STR = {
   es: {
+    activate: 'Activar el juego del Cholo',
     hudLabel: 'Objetos del Cholo',
     collect: (name) => `Recolectar: ${name}`,
-    title: 'Conseguiste los objetos del Cholo',
-    cta: 'Ver contenido exclusivo',
+    got: 'conseguido',
     close: 'Cerrar',
     names: { cassette: 'Cassette', microphone: 'Micrófono', candle: 'Vela', notebook: 'Libreta', medallion: 'Medalla' },
+
+    roomTitle: 'El Cuarto del Cholo',
+    roomButton: 'El Cuarto del Cholo',
+    roomButtonShort: 'El Cuarto',
+    roomNew: 'hay algo nuevo',
+    roomLoading: 'Encendiendo el cuarto',
+
+    hintGather: 'Reúne los objetos del Cholo',
+    hintPlace: 'Coloca los objetos en el altar',
+    hintPlaceTap: 'Toca un objeto y luego un lugar del altar',
+    hintWrong: 'El altar rechaza ese orden',
+    hintFragments: 'Encuentra los fragmentos',
+    hintRotate: 'Gira los fragmentos hasta que su sombra encaje en el cuadro',
+    hintRotateKeys: 'Arrastra o usa las flechas para girar los fragmentos',
+    hintTakeKey: 'Toma la llave',
+    hintBox: 'Ve a la caja en Inicio',
+
+    trayLabel: 'Objetos del Cholo',
+    placeLabel: 'Lugar del altar',
+    inventoryLabel: 'Inventario',
+    keyName: 'Llave',
+    clueTitle: 'Hoja de la libreta',
+    clueLine: 'De la oscuridad a la luz',
+
+    fragmentsHud: 'Fragmentos del cristal',
+    fragment: 'Fragmento',
+    pickFragment: 'Recoger fragmento del cristal',
+
+    boxLabel: 'Caja del Cholo',
+    locked: 'Cerrada',
+    revealTitle: 'Abriste la caja del Cholo',
+    revealButton: 'Ver contenido exclusivo de CHOLO',
   },
   en: {
+    activate: 'Start the Cholo game',
     hudLabel: 'Cholo’s objects',
     collect: (name) => `Collect: ${name}`,
-    title: 'You found the Cholo’s objects',
-    cta: 'See exclusive content',
+    got: 'collected',
     close: 'Close',
     names: { cassette: 'Cassette', microphone: 'Microphone', candle: 'Candle', notebook: 'Notebook', medallion: 'Medallion' },
+
+    roomTitle: 'Cholo’s Room',
+    roomButton: 'Cholo’s Room',
+    roomButtonShort: 'Room',
+    roomNew: 'something new',
+    roomLoading: 'Lighting the room',
+
+    hintGather: 'Gather the Cholo’s objects',
+    hintPlace: 'Place the objects on the altar',
+    hintPlaceTap: 'Tap an object, then a place on the altar',
+    hintWrong: 'The altar rejects that order',
+    hintFragments: 'Find the fragments',
+    hintRotate: 'Turn the fragments until their shadow fits the painting',
+    hintRotateKeys: 'Drag or use the arrow keys to turn the fragments',
+    hintTakeKey: 'Take the key',
+    hintBox: 'Go to the box on the Home page',
+
+    trayLabel: 'Cholo’s objects',
+    placeLabel: 'Altar place',
+    inventoryLabel: 'Inventory',
+    keyName: 'Key',
+    clueTitle: 'Notebook page',
+    clueLine: 'From darkness to light',
+
+    fragmentsHud: 'Crystal fragments',
+    fragment: 'Fragment',
+    pickFragment: 'Pick up crystal fragment',
+
+    boxLabel: 'Cholo’s box',
+    locked: 'Locked',
+    revealTitle: 'You opened Cholo’s box',
+    revealButton: 'See exclusive CHOLO content',
   },
 };
 
@@ -27,9 +92,35 @@ export function lang() {
 
 export const t = () => STR[lang()];
 
-// fn() se llama cada vez que el usuario cambia de idioma. Devuelve la función para dejar de escuchar.
+// fn(t()) se llama cada vez que el usuario cambia de idioma. Devuelve la función para dejar de escuchar.
 export function onLangChange(fn) {
   const h = () => fn(t());
   document.addEventListener('ltv:languagechange', h);
   return () => document.removeEventListener('ltv:languagechange', h);
+}
+
+// Texto vivo: escribe t()[key] en el elemento (o en un atributo) ahora y en cada cambio de idioma.
+// Los elementos que ya no están en el documento se olvidan solos.
+const bound = new Map();
+let listening = false;
+function paint(el, { key, attr, fn }) {
+  const v = fn ? fn(t()) : t()[key];
+  if (attr) el.setAttribute(attr, v);
+  else { el.textContent = v; if (el.hasAttribute('data-text')) el.setAttribute('data-text', v); }
+}
+export function bindText(el, key, attr = null) {
+  if (!el) return el;
+  const spec = typeof key === 'function' ? { fn: key, attr } : { key, attr };
+  const list = bound.get(el) || [];
+  list.push(spec); bound.set(el, list); paint(el, spec);
+  if (!listening) {
+    listening = true;
+    onLangChange(() => {
+      for (const [node, specs] of bound) {
+        if (!node.isConnected && !node.__lj1Keep) { bound.delete(node); continue; }
+        specs.forEach((s) => paint(node, s));
+      }
+    });
+  }
+  return el;
 }

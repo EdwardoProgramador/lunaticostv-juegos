@@ -76,15 +76,6 @@ export async function start({ config }) {
   const link = config.rewardLink || '#';
   await afterIntro();
 
-  if (forceReward) {
-    await Promise.all([addStylesheet(CSS_URL), addStylesheet(FONTS_URL)]);
-    const { openReward } = await import('./reward.js');
-    const r = openReward({ text: t(), link, reduced: prefersReduced(), onClose: () => off() });
-    const off = onLangChange((tx) => r.setText(tx));
-    requestAnimationFrame(tidyGlobals);
-    return;
-  }
-
   // primera aparición: unos segundos después de que la página está lista
   if (!(await wait(between(timing.firstAppear)))) return;
   if (progress.isComplete(progress.load())) return; // se completó en otra pestaña mientras tanto
@@ -120,7 +111,6 @@ export async function start({ config }) {
     // si es el último que falta, el altar se va armando en tiempo ocioso mientras flota
     if (isLast && !graph) {
       const later = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 4000 }) : setTimeout(fn, 1500));
-      later(() => { if (fl && !graph) graph = import('./reward.js').then((m) => m.prepareGraph()); });
     }
     // tiempo en pantalla: solo cuenta mientras se le ve flotando
     const current = fl;
@@ -128,7 +118,7 @@ export async function start({ config }) {
     if (!(await timer) || fl !== current) return;
     // nadie lo recolectó: se despide y, tras una pausa, llega otro
     await current.leave();
-    current.destroy({ keepShared: !!graph });
+    current.destroy();
     if (fl === current) fl = null;
     timer = wait(between(timing.pauseBetween));
     if (await timer) show();
@@ -146,16 +136,8 @@ export async function start({ config }) {
     });
     h.collect(got);
     // el efecto de recolección termina ~0.35 s después; luego se libera el renderer del objeto
-    const released = new Promise((resolve) => setTimeout(() => { current.destroy({ keepShared: done && !!graph }); if (fl === current) fl = null; resolve(); }, 400));
-    if (done) {
-      finished = true;
-      const { openReward } = await import('./reward.js');
-      reward = openReward({
-        text: t(), link, reduced, hud: h, graph, before: released,
-        onClose: () => { hud = null; reward = null; },
-      });
-      return;
-    }
+    const released = new Promise((resolve) => setTimeout(() => { current.destroy(); if (fl === current) fl = null; resolve(); }, 400));
+    if (done) { finished = true; return; } // fase (a): la secuencia 5/5 → cuarto llega en la fase (c)
     await released;
     timer = wait(between(timing.afterCollect));
     if (await timer) show();
