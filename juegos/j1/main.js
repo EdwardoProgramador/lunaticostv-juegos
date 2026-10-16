@@ -1,6 +1,6 @@
 // Juego 1 · Los objetos del Cholo (niveles 1 y 2) — orquesta el juego en cada página una vez activado (lo carga gate.js).
 //   · Botón "El Cuarto del Cholo" en el menú, HUD de objetos, caja en Inicio.
-//   · Nivel 1: el objeto de esta página (config.objects) flota hasta que se recolecta. El 5.º abre la secuencia 5/5 y el cuarto.
+//   · Nivel 1: el objeto de esta página (objectFor: reparto al azar de la partida o config.objects) flota hasta que se recolecta. El 5.º abre la secuencia 5/5 y el cuarto.
 //   · Nivel 2: el fragmento de esta página (config.fragments) espera escondido; el cuarto se abre con el botón.
 //   · El cuarto se prepara en segundo plano cuando se acerca su momento, para que abra al instante.
 // Progreso: progress.js (dura la visita). Idioma: i18n.js. Al cerrar la pantalla final de la caja el juego se reinicia.
@@ -132,8 +132,24 @@ function relang(tx) {
 }
 
 // ───────────────────────────────────────────── nivel 1 ─────────────────────────────────────────────
+// Qué objeto flota en una página. objectMode 'random': la primera página de la partida reparte los 5 objetos entre 5 de
+// objectPages (máx. uno por página; la que sobra se queda sin objeto) y el reparto se guarda en el progreso de la visita.
+// 'fixed': config.objects.
+function objectFor(page) {
+  const c = G.config;
+  if (c.objectMode !== 'random' || !Array.isArray(c.objectPages) || c.objectPages.length < progress.ITEMS.length) return (c.objects && c.objects[page]) || null;
+  let map = progress.load().objMap;
+  if (!Object.keys(map).length) {
+    const pages = c.objectPages.slice();
+    for (let i = pages.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pages[i], pages[j]] = [pages[j], pages[i]]; }
+    map = Object.fromEntries(progress.ITEMS.map((k, i) => [pages[i], k]).filter(([p]) => p));
+    progress.save({ objMap: map });
+  }
+  return map[page] || null;
+}
+
 async function scheduleObject(activatedNow) {
-  const g = G, key = g.config.objects && g.config.objects[g.page];
+  const g = G, key = objectFor(g.page);
   if (!key || progress.stage() !== 'objects' || progress.load().objects.includes(key) || g.float || g.floatWait) return;
   g.floatWait = wait(activatedNow ? 1400 : between(g.config.objectDelay || [2, 4]));
   const ok = await g.floatWait; g.floatWait = null;
@@ -230,7 +246,7 @@ function openRoom(opts = {}) {
 // ¿se acerca el momento del cuarto? entonces se prepara ya; si no, solo se precalienta la caché HTTP (una vez por visita)
 function maybePrepare() {
   const g = G, s = progress.load(), st = progress.stage(s);
-  const myObj = g.config.objects && g.config.objects[g.page];
+  const myObj = objectFor(g.page);
   const myFrag = Object.keys(g.config.fragments || {}).indexOf(g.page);
   const soon = (st === 'objects' && s.objects.length === progress.ITEMS.length - 1 && myObj && !s.objects.includes(myObj))
     || st === 'altar' || st === 'puzzle' || st === 'key'

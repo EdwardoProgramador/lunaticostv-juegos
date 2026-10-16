@@ -7,7 +7,7 @@
 export const ITEMS = ['cassette', 'microphone', 'candle', 'notebook', 'medallion'];
 const KEY = 'lunaticos_j1_v2';
 const OLD = ['lunaticos_j1_v1', 'lunaticos_j1_last']; // versiones anteriores: se borran
-const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false, spots: {} };
+const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false, spots: {}, objMap: {} };
 let memory = { ...EMPTY };
 
 const dict = (o, ok) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([k, v]) => /^[a-z0-9-]+$/.test(k) && ok(v))) : {});
@@ -17,6 +17,7 @@ const clean = (s) => ({
   clue: !!s.clue,
   altar: !!s.altar,
   fragments: [0, 1, 2, 3, 4].filter((i) => Array.isArray(s.fragments) && s.fragments.includes(i)),
+  objMap: dict(s.objMap, (v) => ITEMS.includes(v)), // página → objeto del nivel 1 (reparto al azar de esta partida)
   spots: dict(s.spots, (v) => Number.isInteger(v) && v >= 0 && v < 16), // página → escondite elegido para su fragmento
   gathered: !!s.gathered, // ya se vio la reunión de los fragmentos antes del puzzle
   puzzle: !!s.puzzle,

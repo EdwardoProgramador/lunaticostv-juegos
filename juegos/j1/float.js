@@ -4,7 +4,8 @@
 // (prefiere destinos lejanos, así la recorre de lado a lado), más una deriva de ruido suave. El scroll
 // lo arrastra un poco con el contenido, como si flotara en agua, y lo manda a otro punto.
 // Nunca se queda encima del nav, enlaces, botones o formularios: si el contenido que pasa por debajo
-// lo alcanza, se aparta y mientras tanto se vuelve casi transparente y deja pasar los clics.
+// lo alcanza, se aparta y mientras tanto se atenúa y deja pasar los clics. Si no queda ningún hueco libre, espera
+// atenuado en el punto que menos tapa (no desaparece). Ritmo: deslizamientos de ~2 s, un destino nuevo cada 2.5–4.5 s.
 import * as THREE from './vendor/three-0.184.0/three.module.min.js';
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
@@ -106,8 +107,8 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
     const m = vis / 2 + 12;
     return { x0: m, x1: innerWidth - m, y0: top + m, y1: innerHeight - m - 8 };
   };
-  const amp = () => (reduced ? 0 : Math.min(64, Math.min(innerWidth, innerHeight) * 0.08));
-  const nextAt = (now) => now + 4000 + Math.random() * 3000; // cada 4–7 s busca otro punto
+  const amp = () => (reduced ? 0 : Math.min(48, Math.min(innerWidth, innerHeight) * 0.07));
+  const nextAt = (now) => now + 2500 + Math.random() * 2000; // cada 2.5–4.5 s busca otro punto
 
   // Busca un punto libre (centro del objeto). near = buscar lejos del punto actual y de los últimos
   // destinos (así va repartiéndose por toda la pantalla); closest = el hueco más cercano (para escapar
@@ -140,11 +141,28 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
     return best;
   }
 
+  // Sin ningún hueco libre (p. ej. una rejilla de tarjetas-enlace llena la pantalla): el punto que menos tapa. Ahí se queda
+  // atenuado y sin recibir clics (is-shy) hasta que aparezca un hueco, en vez de desaparecer.
+  function leastBlocked(near) {
+    const a = area();
+    if (a.x1 <= a.x0 || a.y1 <= a.y0) return null;
+    const half = vis / 2;
+    let best = null, bestScore = Infinity;
+    for (let k = 0; k < 48; k++) {
+      const x = a.x0 + Math.random() * (a.x1 - a.x0), y = a.y0 + Math.random() * (a.y1 - a.y0);
+      let ov = 0;
+      for (const q of rects) ov += Math.max(0, Math.min(x + half, q[2]) - Math.max(x - half, q[0])) * Math.max(0, Math.min(y + half, q[3]) - Math.max(y - half, q[1]));
+      const score = ov + (near ? Math.hypot(x - near.x, y - near.y) * 4 : 0);
+      if (score < bestScore) { bestScore = score; best = { x, y, tight: true, dim: true }; }
+    }
+    return best;
+  }
+
   // ── movimiento ──
   // state: 'away' (invisible, sin hueco o reubicándose) · 'shown' (flotando)
   const nx = noise(Math.random() * 100), ny = noise(Math.random() * 100 + 50);
   const A = { x: 0, y: 0, vx: 0, vy: 0 }; // ancla con resorte críticamente amortiguado
-  const OMEGA = 1.05, OMEGA_ESCAPE = 2.8; // ~3.5 s para deslizarse a un punto nuevo; ~1.3 s para apartarse
+  const OMEGA = 1.7, OMEGA_ESCAPE = 4; // ~2 s para deslizarse a un punto nuevo; ~0.9 s para apartarse
   let W = null, nextPick = 0, state = 'away', fading = false, shy = false, escaping = false, collecting = false, gone = false;
   const pos = { x: 0, y: 0 };
   let lastScroll = scrollY, scrolled = 0;
@@ -154,17 +172,17 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
   function setShy(v) {
     if (shy === v) return;
     shy = v; el.classList.toggle('is-shy', v);
-    gsap.to(el, { opacity: v ? 0.18 : 1, duration: v ? 0.25 : 0.5, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(el, { opacity: v ? 0.35 : 1, duration: v ? 0.25 : 0.35, ease: 'power2.out', overwrite: 'auto' });
   }
   function goAway() { // se desvanece; al terminar, el loop decide dónde reaparecer (o se pausa si no hay hueco)
     state = 'away'; fading = true; shy = false; el.classList.add('is-shy');
-    gsap.to(el, { opacity: 0, duration: reduced ? 0.35 : 0.3, ease: 'power1.in', overwrite: 'auto', onComplete: () => { fading = false; } });
+    gsap.to(el, { opacity: 0, duration: reduced ? 0.3 : 0.22, ease: 'power1.in', overwrite: 'auto', onComplete: () => { fading = false; } });
   }
   function appear(s) {
     state = 'shown'; setW(s); A.x = s.x; A.y = s.y; A.vx = A.vy = 0;
     nextPick = reduced ? Infinity : nextAt(performance.now());
     el.classList.remove('is-shy');
-    gsap.to(el, { opacity: 1, duration: reduced ? 0.45 : 0.6, ease: 'power2.out', overwrite: 'auto' });
+    gsap.to(el, { opacity: 1, duration: reduced ? 0.4 : 0.45, ease: 'power2.out', overwrite: 'auto' });
   }
 
   function step(t, dt) {
@@ -174,15 +192,15 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
     if (!collecting) {
       if (state === 'away') {
         if (!fading) {
-          const s = freeSpot(null);
+          const s = freeSpot(null) || (reduced ? null : leastBlocked(null));
           if (s) { place(s.x, s.y); appear(s); } else loop.pause('away'); // idleCheck lo despierta
         }
       } else {
         if (!escaping && blocked(pos.x, pos.y, vis / 2) && !reduced) {
           // el contenido le pasó por debajo: al hueco libre más cercano, rápido
-          const s = freeSpot(pos, true);
+          const s = freeSpot(pos, true) || leastBlocked(pos);
           if (s) { setW(s); escaping = true; nextPick = nextAt(now); } else goAway();
-        } else if (blocked(W.x, W.y, vis / 2)) {
+        } else if (!W.dim && blocked(W.x, W.y, vis / 2)) {
           // el contenido se movió bajo el punto de destino: con movimiento reducido, desvanecer y reaparecer
           const s = reduced ? null : freeSpot(A);
           if (s) { setW(s); nextPick = nextAt(now); } else goAway();
@@ -194,9 +212,9 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
         // scroll: el contenido lo arrastra un poco (con inercia) y, tras un buen tramo, se va a otro punto
         if (dy && state === 'shown' && !reduced) {
           const k = Math.max(-140, Math.min(140, dy));
-          A.y -= k * 0.4; A.vy = Math.max(-900, Math.min(900, A.vy - k * 3.2));
+          A.y -= k * 0.25; A.vy = Math.max(-700, Math.min(700, A.vy - k * 2.2));
           scrolled += Math.abs(dy);
-          if (scrolled > innerHeight * 0.35 && !escaping) { scrolled = 0; const s = freeSpot(A); if (s) { setW(s); nextPick = nextAt(now); } }
+          if (scrolled > innerHeight * 0.25 && !escaping) { scrolled = 0; const s = freeSpot(A); if (s) { setW(s); nextPick = nextAt(now); } }
         }
         if (state === 'shown') {
           const w0 = escaping ? OMEGA_ESCAPE : OMEGA;
@@ -205,8 +223,8 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
           A.x += A.vx * dt; A.y += A.vy * dt;
           { const a = area(); A.y = Math.min(a.y1 + 120, Math.max(a.y0 - 120, A.y)); }
           const w = W.tight ? amp() * 0.25 : amp(), a = area();
-          const x = Math.min(a.x1, Math.max(a.x0, A.x + nx(t * 0.16) * w));
-          const y = Math.min(a.y1, Math.max(a.y0, A.y + ny(t * 0.13) * w));
+          const x = Math.min(a.x1, Math.max(a.x0, A.x + nx(t * 0.24) * w));
+          const y = Math.min(a.y1, Math.max(a.y0, A.y + ny(t * 0.2) * w));
           place(x, y);
           const b = blocked(x, y, vis / 2);
           if (!b) escaping = false;
@@ -220,8 +238,8 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
 
   // pausa si el objeto sale de la pantalla (p. ej. al cambiar el tamaño del viewport)
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(([e]) => (e.isIntersecting ? loop.resume('offscreen') : loop.pause('offscreen'))) : null;
-  // mientras está oculto por falta de espacio, se revisa con calma si ya hay hueco
-  const idleCheck = setInterval(() => { if (state === 'away' && !loop.running && !collecting && !gone) { readObstacles(); if (freeSpot(null)) loop.resume('away'); } }, 500);
+  // mientras está oculto por falta de espacio, se revisa a menudo si ya hay hueco (reaparece enseguida)
+  const idleCheck = setInterval(() => { if (state === 'away' && !loop.running && !collecting && !gone) { readObstacles(); if (freeSpot(null)) loop.resume('away'); } }, 250);
   const onResize = () => { markDirty(); if (state === 'shown') nextPick = 0; };
   addEventListener('scroll', markDirty, { passive: true });
   addEventListener('resize', onResize, { passive: true });

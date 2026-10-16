@@ -11,7 +11,11 @@
 // Juego 1 (j1):
 //   pages        páginas donde se carga el juego (luna que parpadea, botón del cuarto, HUD). Tienda, catálogo y cualquier
 //                página de la tienda NO van aquí.
-//   objects      página → objeto del nivel 1 que flota en ella. Objetos: cassette, microphone, candle, notebook, medallion.
+//   objectMode   'random': cada partida reparte los 5 objetos del nivel 1 entre las páginas de objectPages, como máximo uno
+//                por página (con 6 páginas, una se queda sin objeto). 'fixed': usa siempre el mapeo de objects.
+//   objectPages  páginas que pueden tener objeto en modo 'random' (mínimo 5; deben estar también en pages).
+//   objects      mapeo fijo página → objeto (solo con objectMode: 'fixed'). Objetos: cassette, microphone, candle, notebook,
+//                medallion. Para usarlo: objectMode: 'fixed' y una página distinta para cada uno de los 5 objetos.
 //   objectDelay  segundos [mín, máx] desde que la página está lista (o desde que se activa el juego) hasta que aparece el objeto.
 //   fragments    página → escondites de su fragmento de cristal (nivel 2). Un fragmento por página (Inicio no lleva) y el orden
 //                de las páginas aquí es el número del fragmento. Cada página tiene una lista ("pool") de 3–4 escondites a
@@ -39,6 +43,8 @@ export const activeGame = 'j1';
 export const games = {
   j1: {
     pages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'alonso-ortiz'],
+    objectMode: 'random',
+    objectPages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'tienda'],
     objects: {
       index: 'cassette',
       estudio: 'microphone',
@@ -46,7 +52,7 @@ export const games = {
       talento: 'medallion',
       contacto: 'candle',
     },
-    objectDelay: [2, 4],
+    objectDelay: [1, 2],
     // 1.º estudio · 2.º proyectos · 3.º talento · 4.º contacto · 5.º tienda (Inicio no lleva fragmento).
     // Escondites de arriba a abajo; los últimos de cada lista están cerca del final de la página.
     fragments: {
