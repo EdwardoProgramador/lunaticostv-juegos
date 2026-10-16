@@ -55,7 +55,7 @@ function crystalLight(room) {
   return (room._clight = { light, glow, flash });
 }
 
-export function playRiseShatter(room, crystal, page) {
+export function playRiseShatter(room, crystal, page, { reduced = false } = {}) {
   const P = particles(room), L = crystalLight(room), g = crystal.group, F = crystal.fragments;
   crystal.assemble(); room.scene.add(g); g.visible = true;
   const start = new THREE.Vector3(0, 0.7, -0.2), top = new THREE.Vector3(0, 1.22, 0.02);
@@ -81,7 +81,7 @@ export function playRiseShatter(room, crystal, page) {
     .to(L.light, { intensity: 1.5, duration: 1.2 }, 0.2)
     .to(crystal.materials.crack, { emissiveIntensity: 5.5, duration: 1.0, ease: 'power2.in' }, 1.0)
     .to(L.light, { intensity: 5, duration: 1.0, ease: 'power2.in' }, 1.0)
-    .to(sh, { a: 0.03, duration: 0.8, ease: 'power2.in' }, 1.45)
+    .to(sh, { a: reduced ? 0 : 0.03, duration: 0.8, ease: 'power2.in' }, 1.45)
     .to(L.glow.material, { opacity: 1, duration: 0.8, ease: 'power2.in' }, 1.45);
   const B = 2.3;
   tl.call(() => {
@@ -96,6 +96,7 @@ export function playRiseShatter(room, crystal, page) {
   F.forEach((f, i) => {
     const h = f.home.clone(), dir = new THREE.Vector3(h.x * 2.2 + (i % 2 ? 0.5 : -0.5), h.y * 1.6 + 0.25, 0.9 + Math.random() * 0.6).normalize();
     const D = 9 + Math.random() * 3;
+    if (reduced) { tl.set(f.group, { visible: false }, B + 0.06); return; } // movimiento reducido: se apagan dentro del destello
     tl.to(f.group.position, { x: h.x + dir.x * D, y: h.y + dir.y * D, z: dir.z * D, duration: 1.0, ease: 'power2.in' }, B)
       .to(f.group.rotation, { x: (Math.random() - 0.5) * 9, y: (Math.random() - 0.5) * 9, z: (Math.random() - 0.5) * 6, duration: 1.0, ease: 'power1.out' }, B)
       .set(f.group, { visible: false }, B + 1.0);

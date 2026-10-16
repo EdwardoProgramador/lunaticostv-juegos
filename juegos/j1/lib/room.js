@@ -181,6 +181,9 @@ export function createRoom({ stage, canvas, reduced = false }) {
   const shadowLights = [mainLight, ...altar.flames.filter(f => f.light).slice(0, 2).map(f => f.light)];
   shadowLights.forEach((l, i) => { l.castShadow = true; Object.assign(l.shadow, { bias: -0.002, normalBias: 0.012, radius: i ? 3 : 5 }); l.shadow.mapSize.setScalar(i ? 512 : 1024); l.shadow.camera.near = 0.02; l.shadow.camera.far = 9; if (i) l.shadow.autoUpdate = false; });
   const wash = new THREE.PointLight(0xff8a4a, 1.6, 0, 1.6); wash.position.set(0, 1.5, 1.1); scene.add(wash);
+  // las sombras que se refrescan a mano (autoUpdate = false) deben existir antes de cualquier dibujado: sin mapa, Three
+  // enlaza una textura vacía que no es de sombra y WebGL avisa (sampler mismatch)
+  const primeShadows = () => shadowLights.forEach(l => { if (l.castShadow && !l.shadow.map) l.shadow.needsUpdate = true; });
   const candle = { flame: main.flame, light: mainLight, base: 6.5, color: new THREE.Color(0xff9a4a), cold: { v: 0 }, calm: 0 };
 
   // the 5 objects, ready to stand on any place. The holders exist now; the models are built in the background (room.ready),
@@ -432,7 +435,8 @@ export function createRoom({ stage, canvas, reduced = false }) {
   const TEX_KEYS = ['map', 'roughnessMap', 'bumpMap', 'metalnessMap', 'emissiveMap', 'alphaMap', 'normalMap', 'lightMap', 'clearcoatMap', 'sheenColorMap'];
   const texOfMat = (mt, out) => { TEX_KEYS.forEach(k => mt[k] && mt[k].isTexture && out.add(mt[k])); if (mt.uniforms) Object.values(mt.uniforms).forEach(u => u && u.value && u.value.isTexture && out.add(u.value)); return out; };
   const texOf = (root, out) => { root.traverse(o => o.material && [].concat(o.material).forEach(mt => texOfMat(mt, out))); return out; };
-  const later = () => new Promise(r => document.hidden ? setTimeout(r, 0) : requestAnimationFrame(() => setTimeout(r, 0))); // after the next paint
+  let dead = false; // room.dispose(): la preparación en curso se queda parada (sus promesas no vuelven a resolverse)
+  const later = () => new Promise(r => { if (dead) return; document.hidden ? setTimeout(r, 0) : requestAnimationFrame(() => setTimeout(r, 0)); }); // after the next paint
   let sliceT = 0;
   // work budget per frame: 8 ms while the room prepares out of sight (the page keeps its frame rate), 30 ms while the loading
   // screen is up (its flame and line are compositor animations, so they stay smooth)
@@ -451,7 +455,7 @@ export function createRoom({ stage, canvas, reduced = false }) {
     renderer.setRenderTarget(hi ? RR.hdrTarget() : null);
     const jobs = [renderer.compileAsync(scene, cam), renderer.compileAsync(extra, cam, scene)];
     renderer.setRenderTarget(null); lightConfig(Q.level === 'high'); scene.environment = env;
-    return Promise.all(jobs).then(() => g === gen && compiled.add(lv));
+    return Promise.all(jobs).then(() => g === gen && compiled.add(lv)).catch(() => {}); // contexto perdido (dispose): no cuenta
   }
   // the GPU half of the preparation (also re-run when the room reopens after closing freed the GPU): simple environment,
   // texture uploads, the starting level + its neighbour compiled, room reflections, bloom passes, one frame with every
@@ -471,10 +475,10 @@ export function createRoom({ stage, canvas, reduced = false }) {
     const first = Q.level === 'minimal' ? ['low', 'minimal'] : ['high', 'low'];
     for (const lv of first) { await compileLevel(lv, extra); await later(); step('compiled ' + lv, P(lv === first[0] ? 0.75 : 0.88)); }
     lent.forEach(o => o.parent === extra && extra.remove(o));
-    lightConfig(true); scene.environment = baseEnv; capture(); await later(); RR.warmPasses(); step('reflections + passes', P(0.95)); await later();
+    lightConfig(true); scene.environment = baseEnv; primeShadows(); capture(); await later(); primeShadows(); RR.warmPasses(); step('reflections + passes', P(0.95)); await later();
     setLevel(Q.level);
     const list = Object.values(objects), hid = list.filter(o => !o.holder.visible); hid.forEach(o => (o.holder.visible = true));
-    frame(); RR.render(); hid.forEach(o => (o.holder.visible = false));
+    frame(); primeShadows(); RR.render(); hid.forEach(o => (o.holder.visible = false));
     step('ready', 1);
     warmed = true;
     const rest = LEVELS.find(l => !first.includes(l)), lent2 = laterObjects(); lent2.forEach(o => extra.add(o));
@@ -591,8 +595,11 @@ export function createRoom({ stage, canvas, reduced = false }) {
     view.px += (ix - view.px) * Math.min(1, dt * 2.5); view.py += (iy - view.py) * Math.min(1, dt * 2.5);
     placeCamera();
     tickers.forEach(fn => fn(t, dt));
+    primeShadows();
     RR.render();
   });
   room.wake = () => loop.resume('closed');
+  // fuera de la página (reinicio del juego): todo lo de la GPU y el contexto
+  room.dispose = () => { dead = true; loop.dispose(); if (!released) releaseGPU(); renderer.dispose(); renderer.forceContextLoss(); loader.remove(); };
   return room;
 }
