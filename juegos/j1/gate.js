@@ -2,8 +2,9 @@
 // · La luna del logo (svg.nav__mark) parpadea suave cada pocos segundos.
 // · Un botón transparente encima de la luna (insertado en el <nav>, fuera del enlace del logo: el texto "LunáticosTv" sigue
 //   llevando a Inicio) activa el juego. Es un <button> real: funciona con ratón, toque, teclado y lector de pantalla.
-// · Activado (o si ya estaba activado en esta visita), se carga main.js. Al terminar el juego, main.js vuelve a llamar arm().
-// Depuración (si config.debug.params): ?j1reset borra el progreso · ?j1stage=room|altar|fragments|puzzle|box salta a esa etapa.
+// · Activado (o si ya estaba activado en esta visita), se carga main.js. Terminado el juego sigue activo (completado) hasta
+//   recargar o volver a entrar al sitio: entonces el progreso se borra y la luna vuelve a parpadear.
+// Depuración (si config.debug.params): ?j1reset borra el progreso · ?j1stage=room|altar|fragments|puzzle|box|done salta a esa etapa.
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
 const progress = await import(`./progress.js${V}`);
 

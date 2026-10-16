@@ -37,7 +37,9 @@ fecha + número, p. ej. `'2026-10-16.2'`) y el navegador descargará todo de nue
 Flujo: la luna del logo parpadea → clic en la luna (no en el texto, que sigue llevando a Inicio) → HUD con 5 siluetas,
 botón "El Cuarto del Cholo" en el menú, objeto de la página, caja en Inicio → 5.º objeto: secuencia 5/5 y se abre el cuarto
 → hoja de la libreta y altar (orden en `j1/lib/level2-data.js`) → el cristal estalla → un fragmento por página → con 5, el
-botón pulsa → puzzle de sombras → llave → caja en Inicio → pantalla final → al cerrarla el juego se reinicia.
+botón pulsa → puzzle de sombras → llave → caja en Inicio → pantalla final. Desde ahí el juego queda **completado hasta recargar**: la caja sigue abierta en Inicio
+(un clic vuelve a mostrar la pantalla final), el botón del cuarto sigue y el cuarto muestra su estado final (cuadro
+abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 
 | Archivo | Qué hace |
 | --- | --- |
@@ -73,6 +75,7 @@ botón pulsa → puzzle de sombras → llave → caja en Inicio → pantalla fin
 - `?j1stage=fragments` — altar resuelto: aparecen los fragmentos en las páginas.
 - `?j1stage=puzzle` — 5 fragmentos: abre el cuarto en el puzzle de sombras.
 - `?j1stage=box` — con la llave: ve a Inicio y toca la caja.
+- `?j1stage=done` — juego completado: caja abierta en Inicio, cuarto en su estado final.
 - `?calidad=alta|baja|minima` — fuerza la calidad del cuarto.
 - `?j1debug` — errores del juego en consola.
 

@@ -1,6 +1,7 @@
 // The box on the home page (level 2): small antique chest, black wood, worn copper corners, moon emblem, keyhole.
 //   const box = createChest({ mount });  box.shake() (sin llave: "Cerrada")  ·  box.armKey(); box.unlock({ from, keySrc, layer, onOpen }):
 //   key flies to the keyhole, turns, lid opens with warm light, then the final screen (../box.js) covers the screen.
+//   box.setOpen(): ya abierta (juego completado), sin animación: tapa abierta, luz dentro, la llave puesta en la cerradura.
 // Port (juego1-v2/lib/chest.js): Three/GSAP locales, estilos en game.css (.lj1-box*), el render se pausa con la caja fuera
 // de pantalla, la pestaña oculta o pause('room'); pixel ratio según la calidad del dispositivo; el vuelo de la llave va en
 // coordenadas de viewport (layer = capa fija a pantalla completa); textos de ../i18n.js. La pantalla final vive en ../box.js.
@@ -87,7 +88,7 @@ export function createChest({ mount, reduced = false }) {
     C.glint.position.set(-W / 2 + 0.01, HB + Math.sin(ph * Math.PI) * 0.1, -D / 2 + 0.005 + ph * D);
     C.glint.material.opacity = S.open ? 0 : Math.max(0, Math.sin(ph * Math.PI)) * 0.9;
     C.glint.scale.setScalar(0.05 + Math.sin(t * 20) * 0.01);
-    if (!S.busy && !reduced) C.group.position.y = Math.sin(t * 1.4) * 0.004;
+    if (!S.busy && !S.open && !reduced) C.group.position.y = Math.sin(t * 1.4) * 0.004;
     renderer.render(scene, cam);
   });
   // fuera de pantalla no se dibuja
@@ -125,6 +126,16 @@ export function createChest({ mount, reduced = false }) {
       .call(() => { S.open = true; onOpen && onOpen(); }, null, 2.5);
     return tl;
   }
+  function setOpen() {
+    if (S.open) return;
+    armKey(); gsap.killTweensOf([C.lid.rotation, C.inner.material, C.glow.material, C.glow.scale, C.light, tag]);
+    C.group.position.y = 0; C.group.updateMatrixWorld(true);
+    const hole = C.keyhole.clone().applyMatrix4(C.group.matrixWorld), dir = new THREE.Vector3(0, 0, 1).applyQuaternion(C.group.quaternion);
+    key.visible = true; key.position.copy(hole).addScaledVector(dir, 0.008);
+    key.quaternion.copy(C.group.quaternion).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(Math.PI / 2, Math.PI / 2, 0)));
+    C.lid.rotation.x = -1.95; C.inner.material.opacity = 1; C.glow.material.opacity = 1; C.glow.scale.setScalar(0.75); C.light.intensity = 0.6;
+    S.open = true; S.busy = false; gsap.set(tag, { opacity: 0 });
+  }
   function reset() {
     gsap.killTweensOf([C.lid.rotation, C.inner.material, C.glow.material, C.glow.scale, C.light, tag]); if (key) gsap.killTweensOf(key.position);
     C.lid.rotation.x = 0; C.inner.material.opacity = 0; C.glow.material.opacity = 0; C.glow.scale.setScalar(0.5); C.light.intensity = 0;
@@ -138,5 +149,5 @@ export function createChest({ mount, reduced = false }) {
     renderer.dispose(); renderer.forceContextLoss();
     el.remove();
   }
-  return { el, hit, shake, unlock, reset, relang, dispose, armKey, pause: r => loop.pause(r), resume: r => loop.resume(r), get open() { return S.open; }, get busy() { return S.busy; } };
+  return { el, hit, shake, unlock, setOpen, reset, relang, dispose, armKey, pause: r => loop.pause(r), resume: r => loop.resume(r), get open() { return S.open; }, get busy() { return S.busy; } };
 }

@@ -3,7 +3,9 @@
 //   · Nivel 1: el objeto de esta página (objectFor: reparto al azar de la partida o config.objects) flota hasta que se recolecta. El 5.º abre la secuencia 5/5 y el cuarto.
 //   · Nivel 2: el fragmento de esta página (config.fragments) espera escondido; el cuarto se abre con el botón.
 //   · El cuarto se prepara en segundo plano cuando se acerca su momento, para que abra al instante.
-// Progreso: progress.js (dura la visita). Idioma: i18n.js. Al cerrar la pantalla final de la caja el juego se reinicia.
+// Progreso: progress.js (dura la visita). Idioma: i18n.js. Al abrir la caja el juego queda completado (caja abierta en Inicio,
+// botón del cuarto, cuarto en su estado final) hasta recargar la página o volver a entrar al sitio: cerrar la pantalla final
+// ya no reinicia nada.
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
 const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { createHUD }, { prefersReduced }, { asset }] = await Promise.all([
   import(`./progress.js${V}`),
@@ -252,7 +254,7 @@ function maybePrepare() {
     || st === 'altar' || st === 'puzzle' || st === 'key'
     || (st === 'fragments' && s.fragments.length === 4 && myFrag >= 0 && !s.fragments.includes(myFrag));
   if (soon) { idle(() => prepareRoom(), 3000); return; }
-  if (st === 'box') return;
+  if (st === 'box' || st === 'done') return;
   let done = false;
   try { done = sessionStorage.getItem(PREFETCH_KEY) === '1'; } catch (e) { /* sin almacenamiento */ }
   if (done) return;
@@ -270,7 +272,8 @@ async function mountBox(activatedNow) {
   g.box = createBox({
     link: g.config.rewardLink || '#', reduced: g.reduced,
     hasKey: () => progress.load().key,
-    onFinalClose: () => resetGame(),
+    isDone: () => progress.load().done,
+    onOpened: () => { progress.save({ done: true }); refreshButton(); if (g.room) g.room.sync(); },
   });
   if (activatedNow) g.box.appear();
   requestAnimationFrame(tidyGlobals);
@@ -304,7 +307,7 @@ export function sync() {
     if (s.fragments.includes(idx) || progress.stage(s) !== 'fragments') { g.fragment.destroy(); g.fragment = null; }
   }
   if (g.hud) { g.hud.destroy(); g.hud = null; }
-  if (g.box && s.key) g.box.armKey();
+  if (g.box && s.done) g.box.setOpen(); else if (g.box && s.key) g.box.armKey();
   if (g.room) g.room.sync();
   refreshButton();
   scheduleObject(false).catch(g.log);
@@ -321,13 +324,4 @@ function teardown() {
   for (const k of ['float', 'fragment', 'hud', 'fhud', 'box', 'room', 'button']) {
     if (g[k]) { try { g[k].destroy(); } catch (e) { g.log(e); } g[k] = null; }
   }
-}
-
-// Fin del juego (se cerró la pantalla final de la caja): progreso borrado, la luna vuelve a parpadear.
-export function resetGame() {
-  const log = G && G.log;
-  progress.reset();
-  try { sessionStorage.removeItem(PREFETCH_KEY); } catch (e) { /* sin almacenamiento */ }
-  teardown();
-  if (!arm() && log) log(new Error('j1: no se encontró la luna del logo'));
 }

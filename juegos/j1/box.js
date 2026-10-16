@@ -2,7 +2,8 @@
 // · Aparece solo en Inicio, al activar el juego: pequeña, debajo del extremo derecho del menú, nunca encima de sus botones.
 // · Sin la llave: tiembla y dice "Cerrada". Con la llave: sale la bandeja con la llave, la llave vuela a la cerradura, gira,
 //   la tapa se abre con luz cálida y se muestra la pantalla final con "Ver contenido exclusivo de CHOLO" (config.rewardLink).
-// · Al cerrar la pantalla final (X, Esc) se llama onFinalClose: main.js reinicia el juego.
+// · Abierta, la caja se queda abierta (hasta recargar): un clic en ella vuelve a mostrar la pantalla final. Cerrar la pantalla
+//   final (X, Esc) ya no reinicia nada.
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
 const [{ createChest }, { createTray }, { navBottom }, { asset }, { bindText }] = await Promise.all([
@@ -60,7 +61,7 @@ function createReveal({ link, reduced, onClose }) {
   };
 }
 
-export function createBox({ link, reduced = false, hasKey = () => false, onOpened, onFinalClose }) {
+export function createBox({ link, reduced = false, hasKey = () => false, isDone = () => false, onOpened, onFinalClose }) {
   const layer = document.createElement('div'); layer.className = 'lj1-scope lj1-box-layer';
   document.body.appendChild(layer);
   const chest = createChest({ mount: layer, reduced });
@@ -77,10 +78,16 @@ export function createBox({ link, reduced = false, hasKey = () => false, onOpene
     layer.style.setProperty('--lj1-box-right', mob ? '6px' : 'max(16px, calc((100vw - 1440px) / 2 + 16px))');
   };
   place(); addEventListener('resize', place, { passive: true });
-  if (hasKey()) chest.armKey();
+  if (isDone()) chest.setOpen(); else if (hasKey()) chest.armKey();
+  const showReveal = () => {
+    if (reveal) return;
+    reveal = createReveal({ link, reduced, onClose: () => { reveal = null; if (onFinalClose) onFinalClose(); } });
+    reveal.show();
+  };
 
   chest.hit.addEventListener('click', () => {
-    if (chest.busy || chest.open) return;
+    if (chest.open) { showReveal(); return; } // ya abierta: vuelve la pantalla final
+    if (chest.busy) return;
     if (!hasKey()) { chest.shake(); return; }
     if (!tray) {
       tray = createTray({ mount: fly, items: [{ key: 'key', nameKey: 'keyName', src: KEY_ICON, sil: KEY_ICON }], labelKey: 'inventoryLabel' });
@@ -94,8 +101,7 @@ export function createBox({ link, reduced = false, hasKey = () => false, onOpene
         from: { x: r.left + r.width / 2, y: r.top + r.height / 2 }, keySrc: KEY_ICON, layer: fly,
         onOpen: () => {
           tray.hide(); if (onOpened) onOpened();
-          reveal = createReveal({ link, reduced, onClose: () => { reveal = null; if (onFinalClose) onFinalClose(); } });
-          reveal.show();
+          showReveal();
         },
       });
     });
@@ -108,6 +114,7 @@ export function createBox({ link, reduced = false, hasKey = () => false, onOpene
       return gsap.fromTo(layer, { opacity: 0, scale: 0.6, y: -10 }, { opacity: 1, scale: 1, y: 0, duration: 0.9, ease: 'back.out(1.7)', transformOrigin: '50% 60%' });
     },
     armKey: () => chest.armKey(),
+    setOpen: () => chest.setOpen(),
     relang() { chest.relang(); if (tray) tray.relang(); },
     pause: (r) => chest.pause(r), resume: (r) => chest.resume(r),
     destroy() {

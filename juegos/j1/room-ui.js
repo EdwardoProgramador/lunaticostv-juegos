@@ -8,6 +8,8 @@
 //   puzzle    → (la 1.ª vez) los 5 fragmentos llegan desde los bordes y se reúnen frente al cuadro, luego puzzle de sombras (lunas gemelas) → el cristal se funde, entra al cuadro, el cuadro se abre, aparece la llave
 //   key       → cuadro abierto con la llave, "Toma la llave"
 //   box       → nicho vacío, la llave en la bandeja, "Ve a la caja en Inicio"
+//   done      → caja abierta (completado, hasta recargar): cuadro abierto con el nicho encendido y el cristal entero flotando
+//               frente a él, girando despacio
 // Crear la UI ya crea el cuarto y lo prepara en segundo plano (room.ready): main.js la crea antes de que haga falta.
 import * as THREE from './vendor/three-0.184.0/three.module.min.js';
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
@@ -102,7 +104,11 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     onSolved: () => { progress.save({ puzzle: true }); if (onProgress) onProgress(); P.hint(''); playKeyReveal(); },
   });
   puzzle.hide();
-  room.onTick((tt) => { if (crystal.group.visible) crystal.tick(tt); });
+  room.onTick((tt) => {
+    if (!crystal.group.visible) return;
+    crystal.tick(tt);
+    if (state === 'done' && !reduced) { crystal.group.rotation.y = Math.sin(tt * 0.35) * 0.6; crystal.group.position.y = room.clusterCenter.y + Math.sin(tt * 0.9) * 0.02; }
+  });
 
   // ── la llave (de "17 El cuadro y la llave") ──
   const FX = crystalFX(room);
@@ -212,6 +218,16 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     } else if (st === 'box') {
       room.setPaintingLight(0.4); room.setPaintingOpen(true); room.setFocus('niche', 0);
       keyTray.setAll(['key']); keyTray.show(true); pads(keyTray.height() + 10); P.setHintBottom(keyTray.height() + 18); P.hint('hintBox');
+    } else if (st === 'done') {
+      room.setPaintingLight(0.4); room.setPaintingOpen(true); room.setFocus('painting', 0);
+      gsap.set(room.niche.light, { intensity: 0.9 }); gsap.set(room.niche.glow.material, { opacity: 0.22 });
+      const show = () => {
+        if (state !== 'done') return;
+        const g = crystal.group; crystal.assemble(); room.scene.add(g); g.visible = true;
+        g.position.copy(room.clusterCenter); g.rotation.set(0, 0, 0); g.scale.setScalar(0.6); crystal.setCrackGlow(0.6); crystal.setGlint(1);
+      };
+      room.has('crystal') ? show() : room.need('crystal').then(show).catch(() => {});
+      P.hint('hintDone');
     }
   }
   // al cambiar el tamaño, la bandeja cambia de alto: se reencuadra

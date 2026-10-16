@@ -7,7 +7,7 @@
 export const ITEMS = ['cassette', 'microphone', 'candle', 'notebook', 'medallion'];
 const KEY = 'lunaticos_j1_v2';
 const OLD = ['lunaticos_j1_v1', 'lunaticos_j1_last']; // versiones anteriores: se borran
-const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [], gathered: false, spots: {}, objMap: {} };
+const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, done: false, tips: [], gathered: false, spots: {}, objMap: {} };
 let memory = { ...EMPTY };
 
 const dict = (o, ok) => (o && typeof o === 'object' ? Object.fromEntries(Object.entries(o).filter(([k, v]) => /^[a-z0-9-]+$/.test(k) && ok(v))) : {});
@@ -22,6 +22,7 @@ const clean = (s) => ({
   gathered: !!s.gathered, // ya se vio la reunión de los fragmentos antes del puzzle
   puzzle: !!s.puzzle,
   key: !!s.key,
+  done: !!s.done, // la caja ya se abrió: estado final hasta recargar
   tips: Array.isArray(s.tips) ? [...new Set(s.tips.filter((k) => typeof k === 'string'))].slice(0, 32) : [], // instrucciones ya mostradas (lib/notice.js)
 });
 
@@ -61,7 +62,8 @@ export function reset() {
 }
 
 // Etapa actual: 'off' (sin activar) · 'objects' (nivel 1) · 'altar' (5 objetos, falta el altar) · 'fragments' (nivel 2) ·
-// 'puzzle' (5 fragmentos, falta el puzzle de sombras) · 'key' (puzzle resuelto, falta tomar la llave) · 'box' (con la llave).
+// 'puzzle' (5 fragmentos, falta el puzzle de sombras) · 'key' (puzzle resuelto, falta tomar la llave) · 'box' (con la llave) ·
+// 'done' (la caja ya se abrió: el juego queda completado hasta recargar la página o volver a entrar al sitio).
 export function stage(s = load()) {
   if (!s.active) return 'off';
   if (s.objects.length < ITEMS.length) return 'objects';
@@ -69,7 +71,8 @@ export function stage(s = load()) {
   if (s.fragments.length < 5) return 'fragments';
   if (!s.puzzle) return 'puzzle';
   if (!s.key) return 'key';
-  return 'box';
+  if (!s.done) return 'box';
+  return 'done';
 }
 
 // Estados de depuración (?j1stage=…): lo mínimo necesario para empezar en esa etapa.
@@ -80,4 +83,5 @@ export const DEBUG_STAGES = {
   fragments: { active: true, objects: ALL, clue: true, altar: true },              // buscar los 5 fragmentos
   puzzle: { active: true, objects: ALL, clue: true, altar: true, fragments: FIVE }, // puzzle de sombras
   box: { active: true, objects: ALL, clue: true, altar: true, fragments: FIVE, puzzle: true, key: true }, // ir a la caja
+  done: { active: true, objects: ALL, clue: true, altar: true, fragments: FIVE, puzzle: true, key: true, done: true }, // completado
 };

@@ -25,6 +25,7 @@ const STR = {
     hintRotateKeys: 'Arrastra o usa las flechas para girar los fragmentos',
     hintTakeKey: 'Toma la llave',
     hintBox: 'Ve a la caja en Inicio',
+    hintDone: 'Abriste la caja del Cholo',
 
     // instrucciones de cada etapa (lib/notice.js)
     tipObjects: 'Encuentra los 5 objetos del Cholo en todas las ventanas de la página.',
@@ -72,6 +73,7 @@ const STR = {
     hintRotateKeys: 'Drag or use the arrow keys to turn the fragments',
     hintTakeKey: 'Take the key',
     hintBox: 'Go to the box on the Home page',
+    hintDone: 'You opened Cholo’s box',
 
     tipObjects: 'Find Cholo’s 5 objects in every window of the site.',
     tipAltar: 'Place the objects in the right order. The notebook holds the clue.',
