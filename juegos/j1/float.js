@@ -269,6 +269,9 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
     el,
     get shown() { return state === 'shown' && !shy && !collecting; },
     setLabel(text) { hit.setAttribute('aria-label', text); },
+    // el cuarto lo tapa: no se dibuja mientras tanto
+    pause() { loop.pause('room'); },
+    resume() { loop.resume('room'); },
     // Se despide sin ser recolectado (rotación): se encoge y se desvanece. Después hay que llamar destroy().
     leave() {
       if (collecting || gone) return Promise.resolve();

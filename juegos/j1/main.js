@@ -186,8 +186,8 @@ function ensureRoom() {
       g.room = m.createRoomUI({
         reduced: g.reduced,
         onProgress: () => { refreshButton(); if (g.box && progress.load().key) g.box.armKey(); },
-        onOpen: () => { if (g.box) g.box.pause('room'); if (g.float) g.float.pause && g.float.pause(); },
-        onClose: () => { if (g.box) g.box.resume('room'); if (g.float) g.float.resume && g.float.resume(); mountFragment().catch(g.log); refreshButton(); },
+        onOpen: () => { if (g.box) g.box.pause('room'); if (g.float) g.float.pause(); },
+        onClose: () => { if (g.box) g.box.resume('room'); if (g.float) g.float.resume(); mountFragment().catch(g.log); refreshButton(); },
       });
       requestAnimationFrame(tidyGlobals);
     }

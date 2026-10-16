@@ -224,7 +224,11 @@ export function createClue({ mount, onClose } = {}) {
     else tl.to(pageEl, { rotateY: -105, x: -20, duration: 0.6, ease: 'power2.in' }, 0).to(shade, { opacity: 1, duration: 0.5 }, 0).to(cover, { opacity: 0, duration: 0.4 }, 0).to(dim, { opacity: 0, duration: 0.4 }, 0.3);
   }
   xBtn.onclick = close;
-  dim.onclick = close;
+  // el fondo cierra solo si el toque empezó en él: al abrir la hoja con un toque, el click que sigue cae sobre el fondo
+  // recién mostrado y la cerraría al instante (pasaba en pantallas táctiles)
+  let dimDown = false;
+  dim.addEventListener('pointerdown', () => { dimDown = true; });
+  dim.onclick = () => { if (dimDown) close(); dimDown = false; };
   return {
     el, open, close, ready,
     bind(h) { hooks = h; },
