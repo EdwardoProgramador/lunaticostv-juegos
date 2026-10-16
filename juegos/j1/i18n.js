@@ -3,7 +3,7 @@
 // Las fuentes del juego no traen → ni ✓: no usarlos en estos textos.
 const STR = {
   es: {
-    activate: 'Activar el juego del Cholo',
+    activate: 'Activar el juego del Cholo', // también en gate.js (LABEL): cambiar en los dos
     hudLabel: 'Objetos del Cholo',
     collect: (name) => `Recolectar: ${name}`,
     got: 'conseguido',

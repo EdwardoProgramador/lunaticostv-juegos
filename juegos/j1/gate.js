@@ -16,6 +16,7 @@ const STYLE = `
 .lj1-activator:focus{outline:none}
 .lj1-activator:focus-visible{outline:2px solid #FF9A3C;outline-offset:2px}
 .lj1-activator--fixed{position:fixed;z-index:101}`;
+// Copia de i18n.js → activate (aquí en línea para no descargar todos los textos antes de activar el juego).
 const LABEL = { es: 'Activar el juego del Cholo', en: 'Start the Cholo game' };
 const lang = () => (document.documentElement.lang === 'en' ? 'en' : 'es');
 
