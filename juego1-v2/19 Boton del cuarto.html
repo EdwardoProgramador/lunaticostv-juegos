@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>19 Botón del cuarto · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<link rel="stylesheet" href="lib/reward-stage.css">
+<link rel="stylesheet" href="lib/room.css">
+</head>
+<body>
+<script type="module">
+import { roomPage } from './lib/room-page.js';
+import { TEXT } from './lib/level2-text.js';
+
+const group = document.createElement('div'); group.className = 'seg'; group.setAttribute('role', 'group');
+const STATES = ['hidden', 'appear', 'normal', 'new'];
+let cur = 'appear';
+STATES.forEach(s => { const b = document.createElement('button'); b.textContent = TEXT.buttonStates[s]; b.dataset.s = s; b.onclick = () => set(s); group.appendChild(b); });
+const P = roomPage({ page: '19', room: false, controls: [group] });
+const btn = P.site.room;
+function set(s) { cur = s; group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.s === s)); btn.setState(s); }
+P.onReplay(() => set(cur));
+P.onView(() => setTimeout(() => set(cur), 30));
+set('hidden'); setTimeout(() => set('appear'), 700);
+</script>
+</body>
+</html>

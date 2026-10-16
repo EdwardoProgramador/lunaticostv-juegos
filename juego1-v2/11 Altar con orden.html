@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>11 Altar con orden · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<link rel="stylesheet" href="lib/reward-stage.css">
+<link rel="stylesheet" href="lib/room.css">
+</head>
+<body>
+<script type="module">
+import { roomPage } from './lib/room-page.js';
+import { createRoom } from './lib/room.js';
+import { createTray } from './lib/tray.js';
+import { createAltarOrder } from './lib/altar-order.js';
+import { createClue } from './lib/notebook-clue.js';
+import { createCrystal } from './lib/crystal.js';
+import { playRiseShatter } from './lib/crystal-fx.js';
+import { TEXT } from './lib/level2-text.js';
+
+const P = roomPage({ page: '11' });
+const room = createRoom({ stage: P.stage, canvas: P.canvas });
+const crystal = createCrystal(); crystal.group.visible = false;
+let clue, order, seq = null;
+const tray = createTray({ mount: P.ui, onRead: () => clue.open() });
+clue = createClue({ mount: P.ui });
+order = createAltarOrder({ room, page: P, tray, clue, onSolved: () => {
+  tray.hide(); room.setPads({ top: 76, bottom: 40 }); P.setHintBottom(34);
+  seq = playRiseShatter(room, crystal, P);   // → page 14
+} });
+
+function start() {
+  if (seq) seq.kill(); seq = null;
+  P.hideBig(); clue.close(); crystal.group.visible = false;
+  order.reset(); tray.show();
+  room.setPaintingLight(0.08);
+  room.setPads({ top: P.isMobile() ? 64 : 76, bottom: tray.height() + 10 }); P.setHintBottom(tray.height() + 18);
+  room.setFocus('altar', 0); order.enable(true);
+  P.hint(P.isMobile() ? TEXT.hintPlaceTap : TEXT.hintPlace, { delay: 0.4 });
+}
+P.onReplay(start);
+P.onView(() => setTimeout(start, 30));
+await room.ready;
+start();
+window.__p11 = { room, order, tray };
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>16B Puzzle de sombras - lunas · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<link rel="stylesheet" href="lib/reward-stage.css">
+<link rel="stylesheet" href="lib/room.css">
+</head>
+<body>
+<script type="module">
+import { roomPage, button } from './lib/room-page.js';
+import { createRoom } from './lib/room.js';
+import { createTray } from './lib/tray.js';
+import { createAltarOrder } from './lib/altar-order.js';
+import { createCrystal } from './lib/crystal.js';
+import { createShadowPuzzle } from './lib/shadow-puzzle.js';
+import { TEXT, ALTAR_ORDER } from './lib/level2-text.js';
+
+let puzzle;
+const P = roomPage({ page: '16B', controls: [button(TEXT.demo.solve, () => puzzle.solveNow())] });
+const room = createRoom({ stage: P.stage, canvas: P.canvas });
+const tray = createTray({ mount: P.ui }); tray.hide(true);
+const order = createAltarOrder({ room, page: P, tray });
+const crystal = createCrystal();
+puzzle = createShadowPuzzle({ room, crystal, page: P, variant: 'lunas' });
+
+function start() {
+  room.resetLights(); order.fill(ALTAR_ORDER, { lit: true }); room.setPaintingLight(0.42);
+  room.setPads({ top: P.isMobile() ? 64 : 76, bottom: 60 }); P.setHintBottom(30);
+  room.setFocus('painting', 0);
+  puzzle.start();
+}
+P.onReplay(start);
+P.onView(() => setTimeout(start, 30));
+await room.ready;
+start();
+window.__puzzle = { room, puzzle, crystal };
+</script>
+</body>
+</html>

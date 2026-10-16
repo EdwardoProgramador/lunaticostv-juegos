@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>13 Fragmentos de cristal · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<style>
+  .ch-page{position:relative;z-index:1}
+  #gl{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;display:block}
+  .c13{position:relative;z-index:1;flex:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,420px);min-height:0}
+  .c13-stage{position:sticky;top:0;align-self:start;height:min(680px,calc(100vh - 170px));min-height:380px;cursor:grab;touch-action:none}
+  .c13-stage:active{cursor:grabbing}
+  .c13-hint{position:absolute;left:28px;bottom:22px;color:#6f6474;pointer-events:none}
+  .c13-side{border-left:1px solid rgba(184,121,106,.18);padding:24px 26px;display:flex;flex-direction:column;gap:18px}
+  .c13-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+  .c13-list li{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:end;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(184,121,106,.12)}
+  .c13-list figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .c13-list figcaption{font:600 11px/1 var(--f-ui);letter-spacing:.18em;color:#8c7f8e}
+  .c13-view{outline:1px dashed rgba(184,121,106,.28);outline-offset:3px}
+  .c13-meta{display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0}
+  .c13-name{font:600 16px/1 var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--c-peach)}
+  .c13-notes{margin:0;font:400 16px/1.45 var(--f-ui);color:#b9aab4;text-wrap:pretty;max-width:40ch}
+  .c13.is-mobile{grid-template-columns:1fr;max-width:390px;width:100%;margin:20px auto;border:9px solid #15121b;border-radius:30px;box-shadow:0 0 0 1px rgba(184,121,106,.3);overflow:hidden}
+  .c13.is-mobile .c13-stage{min-height:420px}
+  .c13.is-mobile .c13-side{border-left:0;border-top:1px solid rgba(184,121,106,.18);padding:18px}
+  @media (max-width:820px){.c13{grid-template-columns:1fr}.c13-stage{min-height:58vh}.c13-side{border-left:0;border-top:1px solid rgba(184,121,106,.18)}}
+</style>
+</head>
+<body>
+<div class="ch-page">
+  <header class="ch-head">
+    <div style="display:flex;flex-direction:column;gap:6px"><span class="ch-label" id="label"></span><h1 class="ch-title" id="title" style="font-size:clamp(36px,5vw,56px)"></h1></div>
+    <div class="ch-row">
+      <div class="seg" role="group" id="mode"><button aria-pressed="true" data-m="0"></button><button aria-pressed="false" data-m="1"></button></div>
+      <button class="ch-btn ch-btn--sm" id="replay"></button>
+      <button class="ch-btn ch-btn--sm ch-btn--ghost" id="glbAll"></button>
+      <div class="seg" role="group" id="view"><button aria-pressed="true" data-v="desk"></button><button aria-pressed="false" data-v="mob"></button></div>
+    </div>
+  </header>
+  <main class="c13" id="main">
+    <section class="c13-stage" id="stage"><span class="ch-label c13-hint" id="hint"></span></section>
+    <aside class="c13-side">
+      <div class="ch-label" id="sizes"></div>
+      <ol class="c13-list" id="list"></ol>
+      <p class="c13-notes" id="notes"></p>
+    </aside>
+  </main>
+</div>
+<canvas id="gl"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { setupRenderer, makeEnv, addLights, glowSprite, runLoop, exportGLB, triCount } from './lib/cholo-objects.js';
+import { createCrystal, createFragment, crystalReady } from './lib/crystal.js';
+import { TEXT } from './lib/level2-text.js';
+
+const $ = id => document.getElementById(id);
+$('label').textContent = TEXT.pages[13]; $('title').textContent = $('title').dataset.text = TEXT.pages[13].split('· ')[1];
+$('replay').textContent = TEXT.replay; $('glbAll').textContent = TEXT.demo.glbAll; $('hint').textContent = TEXT.demo.drag;
+$('sizes').textContent = TEXT.sizeOnWeb; $('notes').textContent = TEXT.notes[13];
+const [mA, mB] = $('mode').querySelectorAll('button'); mA.textContent = TEXT.demo.assembled; mB.textContent = TEXT.demo.exploded;
+const [vD, vM] = $('view').querySelectorAll('button'); vD.textContent = TEXT.desktop; vM.textContent = TEXT.mobile;
+
+const canvas = $('gl');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+setupRenderer(renderer); renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setClearColor(0x060814, 1);
+const resize = () => renderer.setSize(innerWidth, innerHeight, false); resize(); addEventListener('resize', resize);
+const env = makeEnv(renderer);
+const mkScene = () => { const s = new THREE.Scene(); s.environment = env; addLights(s); const h = glowSprite(0x6a48b0, 2.6, 0.22); h.position.z = -0.8; s.add(h); return s; };
+const mkCam = r => { const c = new THREE.PerspectiveCamera(30, 1, 0.01, 50), d = r / Math.sin(THREE.MathUtils.degToRad(15)) * 1.05; c.position.set(0, d * 0.08, d); c.lookAt(0, 0, 0); return c; };
+
+// main view: the full shard
+const mainScene = mkScene(), crystal = createCrystal();
+const spin = new THREE.Group(); spin.add(crystal.group); mainScene.add(spin);
+const mainCam = mkCam(0.62);
+const controls = new OrbitControls(mainCam, $('stage')); controls.enableDamping = true; controls.enablePan = false; controls.minDistance = 1; controls.maxDistance = 5;
+const views = [{ el: $('stage'), scene: mainScene, cam: mainCam }];
+
+// one card per fragment: 120 px + 80 px
+const frags = [0, 1, 2, 3, 4].map(i => {
+  const li = document.createElement('li');
+  li.innerHTML = `<figure><div class="c13-view" style="width:120px;height:120px"></div><figcaption>120 PX</figcaption></figure><figure><div class="c13-view" style="width:80px;height:80px"></div><figcaption>80 PX</figcaption></figure>
+    <div class="c13-meta"><span class="c13-name">${TEXT.fragment} ${i + 1}</span><span class="ch-label" style="font-size:11px;color:#8c7f8e"></span><button class="ch-btn ch-btn--sm ch-btn--ghost">${TEXT.demo.glb}</button></div>`;
+  $('list').appendChild(li);
+  const g = createFragment(i), r = new THREE.Box3().setFromObject(g).getBoundingSphere(new THREE.Sphere()).radius;
+  const pivot = new THREE.Group(); pivot.add(g); const scene = mkScene(); scene.add(pivot);
+  const [e120, e80] = li.querySelectorAll('.c13-view');
+  views.push({ el: e120, scene, cam: mkCam(r) }, { el: e80, scene, cam: mkCam(r) });
+  li.querySelector('.ch-label').textContent = `${triCount(g).toLocaleString('es-MX')} ${TEXT.triangles}`;
+  li.querySelector('button').onclick = () => exportGLB(g, `fragmento-${i + 1}.glb`);
+  return { g, pivot, seed: i * 1.7 };
+});
+
+const mode = { k: 0 };
+const dirs = crystal.fragments.map((f, i) => f.home.clone().setZ(0).normalize().multiplyScalar(0.2).setZ((i % 2 ? 1 : -1) * 0.08));
+function applyMode() { crystal.fragments.forEach((f, i) => { f.group.position.copy(f.home).addScaledVector(dirs[i], mode.k); f.group.rotation.set(0, mode.k * (i % 2 ? 0.35 : -0.35), mode.k * (i - 2) * 0.06); }); }
+const setMode = m => { [mA, mB].forEach((b, i) => b.setAttribute('aria-pressed', i === m)); gsap.to(mode, { k: m, duration: 0.9, ease: 'power3.inOut', onUpdate: applyMode }); };
+mA.onclick = () => setMode(0); mB.onclick = () => setMode(1);
+$('glbAll').onclick = async () => { const k = mode.k; mode.k = 0; applyMode(); await exportGLB(crystal.group, 'cristal-completo.glb'); mode.k = k; applyMode(); };
+[vD, vM].forEach(b => b.onclick = () => { [vD, vM].forEach(x => x.setAttribute('aria-pressed', x === b)); $('main').classList.toggle('is-mobile', b === vM); });
+
+let tl;
+function intro() {
+  if (tl) tl.kill();
+  tl = gsap.timeline();
+  crystal.fragments.forEach((f, i) => {
+    const a = i / 5 * Math.PI * 2;
+    tl.fromTo(f.group.position, { x: f.home.x + Math.cos(a) * 1.4, y: f.home.y + Math.sin(a) * 1.2, z: 1.2 }, { x: f.home.x + dirs[i].x * mode.k, y: f.home.y + dirs[i].y * mode.k, z: dirs[i].z * mode.k, duration: 1.3, ease: 'power3.out' }, i * 0.08)
+      .fromTo(f.group.rotation, { x: 2, y: -3, z: 1 }, { x: 0, y: mode.k * (i % 2 ? 0.35 : -0.35), z: mode.k * (i - 2) * 0.06, duration: 1.4, ease: 'power3.out' }, i * 0.08);
+  });
+  tl.fromTo(crystal.materials.crack, { emissiveIntensity: 5 }, { emissiveIntensity: 1.1, duration: 1.2 }, 1.1);
+  frags.forEach((f, i) => tl.fromTo(f.pivot.scale, { x: 0.01, y: 0.01, z: 0.01 }, { x: 1, y: 1, z: 1, duration: 0.7, ease: 'back.out(1.6)' }, 0.3 + i * 0.1));
+}
+$('replay').onclick = intro;
+
+await crystalReady();
+intro();
+runLoop((t, dt) => {
+  crystal.tick(t);
+  spin.rotation.y = Math.sin(t * 0.3) * 0.6; spin.position.y = Math.sin(t * 1.1) * 0.015;
+  frags.forEach(f => { f.pivot.rotation.y = t * 0.5 + f.seed; f.pivot.position.y = Math.sin(t * 1.3 + f.seed) * 0.01; });
+  controls.update();
+  renderer.setScissorTest(false); renderer.clear(); renderer.setScissorTest(true);
+  for (const v of views) {
+    const r = v.el.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight || r.width < 2) continue;
+    v.cam.aspect = r.width / r.height; v.cam.updateProjectionMatrix();
+    const y = innerHeight - r.bottom;
+    renderer.setViewport(r.left, y, r.width, r.height); renderer.setScissor(r.left, y, r.width, r.height);
+    renderer.render(v.scene, v.cam);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>09 Completado 5/5 · Los objetos del Cholo</title>
+<link rel="stylesheet" href="lib/cholo.css">
+<script src="lib/vendor.js"></script>
+<link rel="stylesheet" href="lib/reward-stage.css">
+<link rel="stylesheet" href="lib/room.css">
+<style>
+  /* 5/5 moment */
+  .c9-glow{position:absolute;left:50%;top:50%;width:560px;height:560px;margin:-280px 0 0 -280px;border-radius:50%;pointer-events:none;opacity:0;z-index:59;
+    background:radial-gradient(circle,rgba(255,214,160,.75) 0%,rgba(255,154,60,.42) 22%,rgba(184,121,106,.18) 45%,rgba(184,121,106,0) 68%)}
+  .c9-sflash{position:absolute;inset:-18px;border-radius:50%;pointer-events:none;opacity:0;z-index:2;mix-blend-mode:screen;
+    background:radial-gradient(circle,rgba(255,240,210,.95) 0%,rgba(255,170,80,.6) 28%,rgba(255,120,40,0) 66%)}
+  .c9-flash{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;pointer-events:none;opacity:0;z-index:80;
+    background:radial-gradient(circle,#FFF6E6 0%,rgba(255,226,180,.98) 14%,rgba(255,170,90,.75) 32%,rgba(255,120,40,.25) 52%,rgba(255,120,40,0) 70%)}
+  .c9-dim{z-index:50;pointer-events:none}
+</style>
+</head>
+<body>
+<script type="module">
+// 09 · 5/5: the HUD collects the last object, breathes three times, a candlelight flash — and the room opens
+// in state 2 (objects ready to place on the altar). Everything after the flash is the shared room (lib/room.js …).
+import { roomPage } from './lib/room-page.js';
+import { createHUD } from './lib/hud.js';
+import { createRoom } from './lib/room.js';
+import { createTray } from './lib/tray.js';
+import { createAltarOrder } from './lib/altar-order.js';
+import { createClue } from './lib/notebook-clue.js';
+import { createCrystal } from './lib/crystal.js';
+import { playRiseShatter } from './lib/crystal-fx.js';
+import { TEXT } from './lib/level2-text.js';
+
+const P = roomPage({ page: '09' });
+const stage = P.stage;
+const room = createRoom({ stage: P.stage, canvas: P.canvas });
+const crystal = createCrystal(); crystal.group.visible = false;
+let clue, order, seq = null;
+const tray = createTray({ mount: P.ui, onRead: () => clue.open() });
+clue = createClue({ mount: P.ui });
+order = createAltarOrder({ room, page: P, tray, clue, onSolved: () => {
+  tray.hide(); room.setPads({ top: 76, bottom: 40 }); P.setHintBottom(34);
+  seq = playRiseShatter(room, crystal, P);
+} });
+
+const mk = (cls, z) => { const d = document.createElement('div'); d.className = cls; stage.appendChild(d); return d; };
+const dim = mk('dim c9-dim'), flash = mk('c9-flash');
+let hud, panel, slots, countEl, glow, tl;
+function mountHUD() {
+  if (hud) hud.el.remove();
+  hud = createHUD({ mount: stage, mode: 'absolute', holdMs: Infinity, collected: [0, 1, 2, 3] });
+  panel = hud.el.querySelector('.chud'); countEl = hud.el.querySelector('.chud-count');
+  slots = [...hud.el.querySelectorAll('.chud-slot')];
+  slots.forEach(s => { const f = document.createElement('span'); f.className = 'c9-sflash'; s.appendChild(f); });
+  if (glow) glow.remove();
+  glow = document.createElement('div'); glow.className = 'c9-glow'; stage.insertBefore(glow, hud.el);
+}
+function closeRoom() { gsap.killTweensOf(P.roomEl); P.roomEl.classList.add('is-closed'); gsap.set(P.roomEl, { opacity: 0 }); }
+// the room in state 2: objects in the tray, altar ready. The room has been preparing in the background since the page
+// loaded; if it isn't ready yet, the room's loading screen shows and play starts once it is.
+function openRoom() {
+  P.open(true); P.site.room.setState('normal');
+  P.hideBig(); clue.close(); crystal.group.visible = false;
+  const run = tl;
+  room.ready.then(() => {
+    if (run !== tl) return; // replayed meanwhile
+    order.reset(); tray.show();
+    room.setPaintingLight(0.08); room.setVoid(0, 0); room.setPaintingOpen(false);
+    room.setPads({ top: P.isMobile() ? 64 : 76, bottom: tray.height() + 10 }); P.setHintBottom(tray.height() + 18);
+    room.setFocus('altar', 0); order.enable(true);
+    P.hint(P.isMobile() ? TEXT.hintPlaceTap : TEXT.hintPlace, { delay: 0.8 });
+  });
+}
+
+function play() {
+  if (tl) tl.kill();
+  if (seq) seq.kill(); seq = null;
+  if (hud) gsap.killTweensOf([hud.el, panel, glow, flash, dim, countEl, ...slots]);
+  order.enable(false); tray.hide(true); P.hint(''); closeRoom(); P.site.room.setState('hidden');
+  mountHUD();
+  gsap.set(dim, { opacity: 0 }); gsap.set(flash, { opacity: 0, scale: 0.15 });
+  const sflash = slots.map(s => s.querySelector('.c9-sflash')), imgs = slots.map(s => s.querySelector('.chud-col'));
+  let dx = 0, dy = 0, S = 1.5;
+  const C = 0.3; // 5th object collected → HUD slides in
+  tl = gsap.timeline();
+  tl.call(() => hud.collect(4), null, C);
+
+  // chain: slots light up one by one
+  const chain = C + 1.05;
+  slots.forEach((s, i) => {
+    const at = chain + i * 0.15;
+    tl.fromTo(sflash[i], { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1.15, duration: 0.12, ease: 'power2.out' }, at)
+      .to(sflash[i], { opacity: 0, scale: 0.8, duration: 0.32, ease: 'power2.in' }, at + 0.12)
+      .fromTo(imgs[i], { filter: 'brightness(2.1)' }, { filter: 'brightness(1)', duration: 0.45, ease: 'power2.out' }, at);
+  });
+  const chainEnd = chain + 4 * 0.15;
+  tl.fromTo(countEl, { scale: 1.45, color: '#FF9A3C' }, { scale: 1, color: '#F2D2BC', duration: 0.5, ease: 'power2.out' }, chainEnd);
+
+  // move to center and scale up
+  const mv = chainEnd + 0.12;
+  tl.call(() => {
+    const sr = stage.getBoundingClientRect(), pr = panel.getBoundingClientRect();
+    const k = sr.width / stage.offsetWidth || 1; // page zoom/transform-safe
+    dx = (sr.left + sr.width / 2 - (pr.left + pr.width / 2)) / k;
+    dy = (sr.top + sr.height / 2 - (pr.top + pr.height / 2)) / k;
+    S = Math.min(1.8, Math.max(1.12, (sr.width * 0.86) / pr.width), (sr.width * 0.94) / (1.14 * pr.width)); // peak breath stays inside the screen
+    const rr = hud.el.getBoundingClientRect();
+    gsap.set(hud.el, { transformOrigin: `${(pr.left + pr.width / 2 - rr.left) / k}px ${(pr.top + pr.height / 2 - rr.top) / k}px` });
+  }, null, mv - 0.01)
+    .to(hud.el, { x: () => dx, y: () => dy, scale: () => S, duration: 0.5, ease: 'power3.inOut' }, mv)
+    .to(dim, { opacity: 0.45, duration: 0.5, ease: 'power1.out' }, mv)
+    .fromTo(glow, { opacity: 0, scale: 0.5 }, { opacity: 0.35, scale: 0.8, duration: 0.5 }, mv);
+
+  // breathe ×3, glow grows each time
+  const br = mv + 0.5, Pd = 0.36;
+  [[1.07, 0.6, 1.1], [1.1, 0.8, 1.45], [1.14, 1, 1.9]].forEach(([k, go, gs], i) => {
+    const at = br + i * Pd;
+    tl.to(hud.el, { scale: () => S * k, filter: `brightness(${1 + i * 0.12})`, duration: Pd * 0.45, ease: 'sine.out' }, at)
+      .to(glow, { opacity: go, scale: gs, duration: Pd * 0.45, ease: 'sine.out' }, at);
+    if (i < 2) tl.to(hud.el, { scale: () => S, filter: 'brightness(1)', duration: Pd * 0.55, ease: 'sine.in' }, at + Pd * 0.45)
+      .to(glow, { opacity: go * 0.55, scale: gs * 0.85, duration: Pd * 0.55, ease: 'sine.in' }, at + Pd * 0.45);
+  });
+
+  // last pulse: dim to near black, candlelight flash, the room opens behind it
+  const last = br + 2 * Pd;
+  tl.to(dim, { opacity: 0.97, duration: 0.3, ease: 'power2.in' }, last)
+    .to(flash, { opacity: 1, scale: 1.6, duration: 0.24, ease: 'power2.out' }, last + 0.08)
+    .to([hud.el, glow], { opacity: 0, duration: 0.18 }, last + 0.2)
+    .call(openRoom, null, last + 0.3)
+    .to(flash, { opacity: 0, scale: 2.4, duration: 0.7, ease: 'power2.in' }, last + 0.32)
+    .to(dim, { opacity: 0, duration: 0.9, ease: 'power2.out' }, last + 0.45);
+}
+
+P.onReplay(play);
+P.onView(() => setTimeout(play, 30));
+mountHUD();
+play(); // Level 1's last moment plays right away; the room prepares behind it (room.ready)
+window.__p09 = { room, order, tray, get tl() { return tl; } };
+</script>
+</body>
+</html>
