@@ -9,8 +9,9 @@
 // activeGame: 'j1' activa "Los objetos del Cholo" (niveles 1 y 2). null = no se carga nada: el sitio queda como el original.
 //
 // Juego 1 (j1):
-//   pages        páginas donde se carga el juego (luna que parpadea, botón del cuarto, HUD). Tienda, catálogo y cualquier
-//                página de la tienda NO van aquí.
+//   pages        páginas donde se carga el juego (luna que parpadea, botón del cuarto, HUD). La portada de la Tienda (tienda)
+//                sí; el catálogo (catalogo) y cualquier página de producto, carrito o pago NO van aquí. En la Tienda el juego
+//                queda siempre por debajo del carrito (botón 900, fondo 1099, cajón 1100) y no tapa sus botones.
 //   objectMode   'random': cada partida reparte los 5 objetos del nivel 1 entre las páginas de objectPages, como máximo uno
 //                por página (con 6 páginas, una se queda sin objeto). 'fixed': usa siempre el mapeo de objects.
 //   objectPages  páginas que pueden tener objeto en modo 'random' (mínimo 5; deben estar también en pages).
@@ -42,7 +43,7 @@ export const activeGame = 'j1';
 
 export const games = {
   j1: {
-    pages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'alonso-ortiz'],
+    pages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'tienda', 'alonso-ortiz'],
     objectMode: 'random',
     objectPages: ['index', 'estudio', 'proyectos', 'talento', 'contacto', 'tienda'],
     objects: {

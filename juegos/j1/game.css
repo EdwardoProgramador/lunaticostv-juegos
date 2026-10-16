@@ -1,10 +1,10 @@
 /* LunáticosTv · Juego 1 · Los objetos del Cholo (niveles 1 y 2)
    Todo lleva prefijo .lj1- y nada toca elementos globales. Solo se descarga al activar el juego.
-   Capas respecto al sitio (nav 100–102, scrim del menú 90/98, intro de video 10000):
+   Capas respecto al sitio (nav 100–102, scrim del menú 90/98, carrito de la tienda 900/1099/1100, intro de video 10000):
      fragmento 40 · caja 44 · objeto flotante 45  → debajo del nav y del menú móvil
-     HUD 85                                        → debajo del scrim y del nav (no recibe clics)
+     HUD 85 · instrucciones 86                     → debajo del scrim y del nav (el HUD no recibe clics)
      bandeja de la llave 1045 · cuarto 1050 · secuencia 5/5 1060 · pantalla final 1070 → encima del nav (son pantalla
-     completa), debajo de la intro. El botón del cuarto vive dentro del nav. */
+     completa), debajo del fondo y el cajón del carrito y de la intro. El botón del cuarto vive dentro del nav. */
 
 /* Fuentes (lj1 Grenze Gotisch 700, lj1 Barlow Condensed 600/700): las declara main.js con la versión del juego en la URL. */
 
