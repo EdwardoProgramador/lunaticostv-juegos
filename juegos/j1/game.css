@@ -229,6 +229,26 @@
   .nav.is-menu-open .lj1-rbtn { visibility: hidden; }
 }
 
+/* ── Instrucciones de cada etapa (lib/notice.js) ─────────────────────────── */
+/* En la página: capa fija abajo al centro, encima del HUD y debajo del menú (86). En el cuarto: arriba, bajo el título.
+   Solo el texto recibe clics (lo cierra). El fondo es un velo radial que se apaga antes del borde (legible sobre blanco). */
+.lj1-notice {
+  position: absolute; left: 0; right: 0; top: calc(86px + env(safe-area-inset-top, 0px)); z-index: 7; margin: 0 auto;
+  width: fit-content; max-width: min(640px, calc(100% - 32px)); padding: 26px 44px; cursor: pointer; pointer-events: auto;
+  text-align: center; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none;
+}
+.lj1-notice::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(closest-side, rgba(8,6,14,.82) 0%, rgba(8,6,14,.62) 52%, rgba(8,6,14,0) 100%);
+}
+.lj1-notice--page { position: fixed; top: auto; bottom: calc(9vh + env(safe-area-inset-bottom, 0px)); z-index: 86; }
+.lj1-notice__text { font-size: clamp(21px, 2.3vw, 30px); line-height: 1.16; text-wrap: balance; max-width: 26ch; margin: 0 auto; }
+@media (max-width: 640px) {
+  .lj1-notice { padding: 20px 26px; top: calc(66px + env(safe-area-inset-top, 0px)); }
+  .lj1-notice--page { top: auto; bottom: calc(7vh + env(safe-area-inset-bottom, 0px)); }
+  .lj1-notice__text { font-size: 21px; }
+}
+
 /* ── Secuencia 5/5 → cuarto (página 09) ─────────────────────────────────── */
 .lj1-complete { position: fixed; inset: 0; z-index: 1060; pointer-events: none; overflow: hidden; container-type: inline-size; }
 .lj1-complete__dim { position: fixed; left: 0; right: 0; top: -120px; bottom: -120px; opacity: 0; background: radial-gradient(ellipse at 50% 60%, #0a0814 0%, #020206 70%); }

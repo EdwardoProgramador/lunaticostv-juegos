@@ -26,6 +26,13 @@ const STR = {
     hintTakeKey: 'Toma la llave',
     hintBox: 'Ve a la caja en Inicio',
 
+    // instrucciones de cada etapa (lib/notice.js)
+    tipObjects: 'Encuentra los 5 objetos del Cholo en todas las ventanas de la página.',
+    tipAltar: 'Coloca los objetos en el orden correcto. La libreta guarda la pista.',
+    tipFragments: 'Navega por todas las ventanas de la página para encontrar los fragmentos escondidos.',
+    tipPuzzle: 'Gira los fragmentos hasta que su sombra encaje en el cuadro.',
+    tipBox: 'Ve a la caja en Inicio.',
+
     trayLabel: 'Objetos del Cholo',
     placeLabel: 'Lugar del altar',
     inventoryLabel: 'Inventario',
@@ -65,6 +72,12 @@ const STR = {
     hintRotateKeys: 'Drag or use the arrow keys to turn the fragments',
     hintTakeKey: 'Take the key',
     hintBox: 'Go to the box on the Home page',
+
+    tipObjects: 'Find Cholo’s 5 objects in every window of the site.',
+    tipAltar: 'Place the objects in the right order. The notebook holds the clue.',
+    tipFragments: 'Browse every window of the site to find the hidden fragments.',
+    tipPuzzle: 'Turn the fragments until their shadow fits the painting.',
+    tipBox: 'Go to the box on the Home page.',
 
     trayLabel: 'Cholo’s objects',
     placeLabel: 'Altar place',

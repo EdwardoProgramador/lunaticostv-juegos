@@ -266,7 +266,9 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', onS
     center: C, pivot,
     reset,
     start() {
-      const k = ++startTok, go = () => { if (k !== startTok) return; reset(); S.enabled = true; el.style.cursor = 'grab'; room.setVoid(0.5); page.hint('hintRotate', { delay: 0.6 }); drawShadows(); };
+      const k = ++startTok, go = () => { if (k !== startTok) return; reset(); S.enabled = true; el.style.cursor = 'grab'; room.setVoid(0.5); drawShadows();
+        if (!(page.tip && page.tip('tipPuzzle', { delay: 0.4, then: 'hintRotateKeys' }))) page.hint('hintRotate', { delay: 0.6 });
+      };
       room.has('crystal') ? go() : room.need('crystal').then(go);
     },
     stop() { S.enabled = false; el.style.cursor = ''; },

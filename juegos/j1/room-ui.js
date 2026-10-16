@@ -12,7 +12,7 @@
 import * as THREE from './vendor/three-0.184.0/three.module.min.js';
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, { createTray }, { createAltarOrder }, { createClue }, { createCrystal }, { createShadowPuzzle }, { playRiseShatter, crystalFX }, { buildKey }, { ALTAR_ORDER }, { sparks, flyIcon }, { asset }] = await Promise.all([
+const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, { createTray }, { createAltarOrder }, { createClue }, { createCrystal }, { createShadowPuzzle }, { playRiseShatter, crystalFX }, { buildKey }, { ALTAR_ORDER }, { sparks, flyIcon }, { asset }, { tip, hideTip }] = await Promise.all([
   import(`./progress.js${V}`),
   import(`./i18n.js${V}`),
   import(`./lib/room.js${V}`),
@@ -26,6 +26,7 @@ const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, {
   import(`./lib/level2-data.js${V}`),
   import(`./lib/dom.js${V}`),
   import(`./lib/paths.js${V}`),
+  import(`./lib/notice.js${V}`),
 ]);
 
 export const prefetch = () => prefetchRoom();
@@ -70,6 +71,12 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
       return tl.fromTo(bigEl, reduced ? { opacity: 0 } : { opacity: 0, y: 24, filter: 'blur(8px)' }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.0, ease: 'power2.out' }, at);
     },
     hideBig() { bigKey = ''; gsap.killTweensOf(bigEl); gsap.set(bigEl, { opacity: 0 }); },
+    // instrucción de la etapa (una vez por partida); then = pista de abajo que aparece cuando la instrucción se va (o ya, si no hay)
+    tip(key, { delay = 0, then = null } = {}) {
+      const st = state, after = () => { if (then && isOpen && state === st) P.hint(then); };
+      if (!tip(key, { mount: ui, delay, onHide: after })) { if (then) P.hint(then, { delay }); return false; }
+      return true;
+    },
   };
 
   // ── el cuarto y sus piezas ──
@@ -166,7 +173,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
       .to(key.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.35, ease: 'power2.in' }, 0)
       .to(room.niche.light, { intensity: 0.9, duration: 1 }, 0)
       .to(room.niche.glow.material, { opacity: 0.22, duration: 1 }, 0)
-      .add(flyIcon(ui, KEY_ICON, from, keyTray.center('key'), { dur: 0.75, size: 90, lift: 60, onComplete: () => { key.visible = false; keyTray.set('key', true); keyTray.flash('key'); P.hint('hintBox'); } }), 0.15);
+      .add(flyIcon(ui, KEY_ICON, from, keyTray.center('key'), { dur: 0.75, size: 90, lift: 60, onComplete: () => { key.visible = false; keyTray.set('key', true); keyTray.flash('key'); P.tip('tipBox', { then: 'hintBox' }); } }), 0.15);
   }
   keyHit.addEventListener('click', takeKey);
 
@@ -192,11 +199,12 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
       order.reset({ clueTorn: s.clue }); tray.show(reduced); pads(tray.height() + 10); P.setHintBottom(tray.height() + 18);
       room.setPaintingLight(0.08); room.setFocus('altar', 0); order.enable(true);
       P.hint(P.isMobile() ? 'hintPlaceTap' : 'hintPlace', { delay: 0.6 });
+      if (!autoSolve) P.tip('tipAltar', { delay: 0.9 });
       if (autoSolve) gsap.delayedCall(0.8, () => order.solveNow());
       return;
     }
     tray.hide(true); order.fill(ALTAR_ORDER, { lit: true }); pads(40); P.setHintBottom(34);
-    if (st === 'fragments') { room.setPaintingLight(0.22); room.setVoid(1); room.setFocus('painting', keepBig ? 1.2 : 0); P.hint('hintFragments', { delay: keepBig ? 2.5 : 0 }); }
+    if (st === 'fragments') { room.setPaintingLight(0.22); room.setVoid(1); room.setFocus('painting', keepBig ? 1.2 : 0); if (keepBig) P.tip('tipFragments', { delay: 2.8, then: 'hintFragments' }); else P.hint('hintFragments'); }
     else if (st === 'puzzle') { room.setPaintingLight(0.4); room.setFocus('painting', 0); P.setHintBottom(30); puzzle.start(); }
     else if (st === 'key') {
       room.setPaintingLight(0.4); room.setPaintingOpen(true); room.setFocus('niche', 0);
@@ -260,6 +268,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     isOpen = false;
     document.removeEventListener('keydown', onKey, true);
     if (clue.isOpen) clue.close();
+    hideTip();
     order.enable(false); puzzle.stop();
     if (openTw) openTw.kill();
     openTw = gsap.to(root, { opacity: 0, duration: reduced ? 0.3 : 0.45, ease: 'power2.in', onComplete: () => {

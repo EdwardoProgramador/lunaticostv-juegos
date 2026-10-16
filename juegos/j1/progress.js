@@ -7,7 +7,7 @@
 export const ITEMS = ['cassette', 'microphone', 'candle', 'notebook', 'medallion'];
 const KEY = 'lunaticos_j1_v2';
 const OLD = ['lunaticos_j1_v1', 'lunaticos_j1_last']; // versiones anteriores: se borran
-const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false };
+const EMPTY = { active: false, objects: [], clue: false, altar: false, fragments: [], puzzle: false, key: false, tips: [] };
 let memory = { ...EMPTY };
 
 const clean = (s) => ({
@@ -18,6 +18,7 @@ const clean = (s) => ({
   fragments: [0, 1, 2, 3, 4].filter((i) => Array.isArray(s.fragments) && s.fragments.includes(i)),
   puzzle: !!s.puzzle,
   key: !!s.key,
+  tips: Array.isArray(s.tips) ? [...new Set(s.tips.filter((k) => typeof k === 'string'))].slice(0, 32) : [], // instrucciones ya mostradas (lib/notice.js)
 });
 
 // ¿Esta carga es una entrada nueva al sitio (o una recarga) y no un paso de una página a otra?

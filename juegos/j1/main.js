@@ -18,6 +18,8 @@ const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { c
 const CSS_URL = new URL(`./game.css${V}`, import.meta.url).href;
 const PREFETCH_KEY = 'lunaticos_j1_prefetch';
 let G = null; // el juego en marcha en esta página
+let noticeMod = null;
+const notice = () => (noticeMod = noticeMod || import(`./lib/notice.js${V}`)); // instrucciones de cada etapa
 
 // Las fuentes del juego se declaran aquí (no en game.css) para que su URL lleve la versión, igual que todo lo demás.
 const FONTS = [['lj1 Grenze Gotisch', 700, 'grenze-gotisch-700'], ['lj1 Barlow Condensed', 600, 'barlow-condensed-600'], ['lj1 Barlow Condensed', 700, 'barlow-condensed-700']];
@@ -93,6 +95,7 @@ export async function start(ctx) {
   if (ctx.activated) {
     if (g.button) { g.button.setState('appear'); g.button.settle(buttonState()); }
     hud().reveal();
+    notice().then((m) => { if (G === g) m.tip('tipObjects', { delay: 1.6 }); }).catch(g.log);
   } else if (g.button) g.button.settle(buttonState());
 
   if (g.page === 'index') mountBox(ctx.activated).catch(g.log);
@@ -294,6 +297,7 @@ function teardown() {
   G = null;
   if (g.floatWait) g.floatWait.cancel();
   g.offs.forEach((off) => off());
+  if (noticeMod) noticeMod.then((m) => m.hideTip()).catch(() => {});
   for (const k of ['float', 'fragment', 'hud', 'fhud', 'box', 'room', 'button']) {
     if (g[k]) { try { g[k].destroy(); } catch (e) { g.log(e); } g[k] = null; }
   }
