@@ -59,13 +59,14 @@ function afterIntro() {
 const between = ([a, b]) => (a + Math.random() * Math.max(0, b - a)) * 1000;
 const idle = (fn, timeout = 2000) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout }) : setTimeout(fn, 300));
 
-// Espera ms de tiempo "útil" (solo con la pestaña visible). .cancel() la corta (resuelve false).
+// Espera ms de tiempo "útil" (solo con la pestaña visible y sin la intro de video de Inicio encima). .cancel() la corta
+// (resuelve false).
 function wait(ms) {
   let left = ms, last = performance.now(), done;
   const p = new Promise((r) => { done = r; });
   const id = setInterval(() => {
     const now = performance.now();
-    if (!document.hidden) left -= now - last;
+    if (!document.hidden && !document.documentElement.classList.contains('has-intro')) left -= now - last;
     last = now;
     if (left <= 0) { clearInterval(id); done(true); }
   }, 200);
@@ -89,6 +90,7 @@ export async function start(ctx) {
   const alive = () => G === g;
   await addStylesheet(CSS_URL);
   if (!alive()) return;
+  scheduleObject(ctx.activated).catch(g.log); // antes de la intro: el objeto se prepara mientras se ve el video
   await afterIntro();
   if (!alive()) return;
 
@@ -101,7 +103,6 @@ export async function start(ctx) {
   } else if (g.button) g.button.settle(buttonState());
 
   if (g.page === 'index') mountBox(ctx.activated).catch(g.log);
-  scheduleObject(ctx.activated).catch(g.log);
   mountFragment().catch(g.log);
   maybePrepare();
   handleHomeLinks();
@@ -153,15 +154,18 @@ function objectFor(page) {
 async function scheduleObject(activatedNow) {
   const g = G, key = objectFor(g.page);
   if (!key || progress.stage() !== 'objects' || progress.load().objects.includes(key) || g.float || g.floatWait) return;
-  g.floatWait = wait(activatedNow ? 1400 : between(g.config.objectDelay || [2, 4]));
-  const ok = await g.floatWait; g.floatWait = null;
-  if (!ok || G !== g || progress.load().objects.includes(key) || progress.stage() !== 'objects') return;
-  const { createFloat } = await import(`./float.js${V}`);
-  if (G !== g) return;
-  const tx = t();
-  const fl = await createFloat({ key, label: tx.collect(tx.names[key]), reduced: g.reduced, onCollect: () => collectObject(fl).catch(g.log) });
-  fl.key = key;
-  if (G !== g) { fl.destroy(); return; }
+  // La espera (objectDelay) corre a la vez que se descargan Three.js, el objeto y sus texturas y se compilan sus shaders:
+  // al terminar, el objeto entra enseguida. createFloat no lo muestra hasta que `ready` se cumple (false = cancelada).
+  const ready = g.floatWait = wait(activatedNow ? 1400 : between(g.config.objectDelay || [2, 4]));
+  let fl = null;
+  try {
+    const { createFloat } = await import(`./float.js${V}`);
+    const tx = t();
+    fl = await createFloat({ key, label: tx.collect(tx.names[key]), reduced: g.reduced, ready, onCollect: () => collectObject(fl).catch(g.log) });
+  } finally { if (g.floatWait === ready) g.floatWait = null; }
+  if (!fl) return;
+  if (G !== g || progress.load().objects.includes(key) || progress.stage() !== 'objects') { fl.destroy(); return; }
+  fl.key = key; fl.setLabel(t().collect(t().names[key])); // por si el idioma cambió durante la espera
   g.float = fl;
   requestAnimationFrame(tidyGlobals);
 }

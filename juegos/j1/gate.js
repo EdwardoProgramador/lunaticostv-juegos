@@ -25,11 +25,13 @@ const lang = () => (document.documentElement.lang === 'en' ? 'en' : 'es');
 
 let ctx = null, main = null, armed = null;
 
+// Con el juego ya activo (al pasar de una página a otra): basta con el DOM listo y un respiro. No se espera a 'load': las
+// imágenes grandes del sitio lo retrasan varios segundos en el teléfono.
 function whenIdle() {
   return new Promise((resolve) => {
-    const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(() => resolve(), { timeout: 2500 }) : setTimeout(resolve, 400));
-    if (document.readyState === 'complete') idle();
-    else addEventListener('load', idle, { once: true });
+    const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(() => resolve(), { timeout: 500 }) : setTimeout(resolve, 200));
+    if (document.readyState !== 'loading') idle();
+    else addEventListener('DOMContentLoaded', idle, { once: true });
   });
 }
 

@@ -31,7 +31,9 @@ function noise(seed) {
   return (t) => n(t) * 0.7 + n(t * 2.13 + 17.3) * 0.3;
 }
 
-export async function createFloat({ key, label, reduced = false, onCollect }) {
+// ready (opcional): promesa; el objeto se prepara entero (texturas, shaders) y solo aparece cuando se cumple. Si resuelve
+// false, se libera todo y createFloat devuelve null.
+export async function createFloat({ key, label, reduced = false, ready = null, onCollect }) {
   const mobile = () => innerWidth < 640;
   const box = mobile() ? 140 : 176; // lienzo; el modelo ocupa ~62 % (≈ 87 / 109 px)
   const vis = Math.round(box * 0.62); // tamaño visible del objeto
@@ -240,8 +242,8 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
 
   // pausa si el objeto sale de la pantalla (p. ej. al cambiar el tamaño del viewport)
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(([e]) => (e.isIntersecting ? loop.resume('offscreen') : loop.pause('offscreen'))) : null;
-  // mientras está oculto por falta de espacio, se revisa a menudo si ya hay hueco (reaparece enseguida)
-  const idleCheck = setInterval(() => { if (state === 'away' && !loop.running && !collecting && !gone) { readObstacles(); if (freeSpot(null)) loop.resume('away'); } }, 250);
+  let idleCheck = 0; // se arranca al mostrarse
+  const checkIdle = () => { if (state === 'away' && !loop.running && !collecting && !gone) { readObstacles(); if (freeSpot(null)) loop.resume('away'); } };
   const onResize = () => { markDirty(); if (state === 'shown') nextPick = 0; };
   addEventListener('scroll', markDirty, { passive: true });
   addEventListener('resize', onResize, { passive: true });
@@ -280,18 +282,7 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
   }
   hit.addEventListener('click', collect);
 
-  // ── arranque ──
-  await texturesReady();
-  document.body.appendChild(el);
-  readObstacles();
-  draw(0, 0); // primer cuadro (compila shaders) antes de mostrarlo
-  if (io) io.observe(el);
-  loop.start(); // state 'away': el primer cuadro lo coloca en un punto libre y lo hace aparecer
-  if (reduced) S.scale = 1;
-  else gsap.to(S, { scale: 1, duration: 0.9, ease: 'back.out(1.6)', delay: 0.15 });
-  if (!reduced) pulse = gsap.fromTo(glow, { opacity: 0.18, scale: 0.9 }, { opacity: 0.5, scale: 1.08, duration: 1.8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
-
-  return {
+  const api = {
     el,
     get shown() { return state === 'shown' && !shy && !collecting; },
     setLabel(text) { hit.setAttribute('aria-label', text); },
@@ -325,4 +316,19 @@ export async function createFloat({ key, label, reduced = false, onCollect }) {
       el.remove();
     },
   };
+
+  // ── arranque ──
+  await texturesReady();
+  draw(0, 0); // primer cuadro (compila shaders) antes de mostrarlo
+  if (ready && (await ready) === false) { api.destroy(); return null; }
+  if (gone) return null;
+  document.body.appendChild(el);
+  readObstacles();
+  if (io) io.observe(el);
+  idleCheck = setInterval(checkIdle, 250); // mientras está oculto por falta de espacio, revisa a menudo si ya hay hueco
+  loop.start(); // state 'away': el primer cuadro lo coloca en un punto libre y lo hace aparecer
+  if (reduced) S.scale = 1;
+  else gsap.to(S, { scale: 1, duration: 0.9, ease: 'back.out(1.6)', delay: 0.15 });
+  if (!reduced) pulse = gsap.fromTo(glow, { opacity: 0.18, scale: 0.9 }, { opacity: 0.5, scale: 1.08, duration: 1.8, ease: 'sine.inOut', yoyo: true, repeat: -1 });
+  return api;
 }

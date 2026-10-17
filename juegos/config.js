@@ -40,7 +40,7 @@
 //   rewardLink   destino del botón "Ver contenido exclusivo de CHOLO" de la caja ('#' = todavía sin destino: no hace nada).
 //                Si es de otro dominio, abre en pestaña nueva.
 
-export const version = '2026-10-16.2';
+export const version = '2026-10-16.3';
 
 export const debug = false;
 
@@ -58,7 +58,7 @@ export const games = {
       talento: 'medallion',
       contacto: 'candle',
     },
-    objectDelay: [1, 2],
+    objectDelay: [0.5, 1],
     // 1.º estudio · 2.º proyectos · 3.º talento · 4.º contacto · 5.º tienda (Inicio no lleva fragmento).
     // Escondites de arriba a abajo; los últimos de cada lista están cerca del final de la página.
     fragments: {
