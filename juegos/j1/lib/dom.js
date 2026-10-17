@@ -1,4 +1,4 @@
-// Ayudas DOM compartidas por el cuarto y la caja (de juego1-v2/lib/room-page.js, sin la cabecera de demo).
+// Ayudas DOM compartidas por el cuarto y la caja.
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
 const { hudIcon } = await import(`./paths.js${V}`);

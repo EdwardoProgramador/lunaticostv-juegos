@@ -1,7 +1,7 @@
 # Juego 1 · Nivel 2 "El Cuarto del Cholo" — plan de integración
 
-Fuente: `/juego1-v2` (export de Claude Design, niveles 1 + 2). Se deja intacta como referencia; aquí solo se porta
-el código reutilizable de `lib/` y los assets que de verdad se usan.
+Fuente: el export de Claude Design de los niveles 1 + 2 (fuera de este proyecto). Aquí solo se portó el código
+reutilizable de su `lib/` y los assets que de verdad se usan.
 
 ## Flujo en el sitio
 
@@ -21,7 +21,7 @@ el código reutilizable de `lib/` y los assets que de verdad se usan.
 6. Con 5 fragmentos el botón del cuarto pulsa → puzzle de sombras (lunas gemelas) → el cristal se funde, se abre el
    cuadro, se toma la llave → "Ve a la caja en Inicio".
 7. Caja en Inicio: sin llave tiembla ("Cerrada"); con llave gira, se abre y muestra "Ver contenido exclusivo de CHOLO"
-   (enlace de `config.js`, hoy `#`). Al cerrar esa pantalla final el juego se reinicia y la luna vuelve a parpadear.
+   (enlace de `config.js`, hoy `#`). Desde ahí el juego queda completado hasta recargar (ver `../README.md`).
 
 ## Estado
 
@@ -34,7 +34,7 @@ navegar entre páginas lo conserva (misma regla que el nivel 1). Sin checkpoints
 - `gate.js` (pre-activación), `main.js` (orquesta), `progress.js`, `i18n.js` (ES/EN), `game.css` (todo `.lj1-`).
 - `float.js` (objeto flotante, se conserva), `complete.js` (5/5 → cuarto), `room-ui.js` (overlay + estados del cuarto),
   `room-button.js`, `fragments.js` (fragmentos en el sitio), `box.js` (caja + pantalla final).
-- `lib/`: port de `juego1-v2/lib` (objects, room, room-render, surfaces, altar, altar-order, tray, notebook-clue,
+- `lib/`: port del `lib/` del Design (objects, room, room-render, surfaces, altar, altar-order, tray, notebook-clue,
   crystal-shape, crystal, crystal-fx, shadow-puzzle, key, chest, hud, fragment-hud, loop, level2-data, dom).
   No se portan: páginas demo, site-header (sitio falso), room-page (cabecera de demo, Repetir, Escritorio/Móvil,
   selects), object-viewer, vendor.js (CDN/import map), cholo.css/reward-stage.css (estilos globales), `uploads/`.

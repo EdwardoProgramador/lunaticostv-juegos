@@ -1,4 +1,4 @@
-// HUD de fragmentos (nivel 2, port de juego1-v2/lib/fragment-hud.js): el contorno del cristal dividido en sus 5 piezas.
+// HUD de fragmentos (nivel 2): el contorno del cristal dividido en sus 5 piezas.
 // Falta = contorno oscuro vacío · recogido = la pieza llena su lugar (textura del cristal) con brillo de cobre. Contador "2/5".
 // Mismo comportamiento que el HUD de objetos (lib/hud.js): oculto, entra al recoger, sale a los ~3 s; debajo del nav del
 // sitio, centrado arriba en ≤ 640 px. Sin Three.js (SVG + GSAP). Estilos en game.css (.lj1-fhud*).

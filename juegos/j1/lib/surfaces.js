@@ -1,4 +1,4 @@
-// Aged PBR surfaces for the room, the altar, the painting frame and the key (not the 5 objects: they keep cholo-objects.js).
+// Aged PBR surfaces for the room, the altar, the painting frame and the key (not the 5 objects: they keep objects.js).
 // Every map is a pre-baked WebP in assets/tex/room/ (colour + roughness + bump, + metalness for copper/iron; drawn from one
 // shared random pass so grain, scratches and grime line up). 1024 px set for High, assets/tex/room/512/ for Low / phones.
 //   const S = surfaces();  S.woodBox (worn edges at the uv borders: boxes), S.woodBevel (wear on bevels, shader), S.wood,
@@ -6,15 +6,16 @@
 //   setSurfaceRes(1024 | 512) swaps every tiered map in place (no shader recompile), one upload per frame.
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ loadTexture, reloadTexture }, { asset }] = await Promise.all([
+const [{ loadTexture, reloadTexture }, { asset }, { forcedQuality }] = await Promise.all([
   import(`./objects.js${V}`),
   import(`./paths.js${V}`),
+  import(`./debug.js${V}`),
 ]);
 
 const DIR = 'tex/room/';
 const HAS_512 = new Set(['wood-col', 'wood-rough', 'wood-bump', 'woodbox-col', 'woodbox-rough', 'woodbox-bump', 'copper-col', 'copper-rough', 'copper-bump', 'copper-metal', 'canvas-rough', 'canvas-bump', 'painting']);
-const q = new URLSearchParams(location.search).get('calidad');
-let RES = q === 'alta' ? 1024 : q === 'baja' || q === 'minima' || matchMedia('(pointer: coarse)').matches ? 512 : 1024;
+const forced = forcedQuality(); // ?calidad=… solo con debug
+let RES = forced === 'high' ? 1024 : forced || matchMedia('(pointer: coarse)').matches ? 512 : 1024;
 const tiered = new Map();
 const url = (name, res = RES) => asset(DIR + (res === 512 && HAS_512.has(name) ? '512/' : '') + name + '.webp');
 // tile: seamless maps decode as ImageBitmap; the painting is oriented (<img>, flipY)

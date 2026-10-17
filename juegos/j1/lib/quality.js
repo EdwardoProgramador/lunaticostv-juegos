@@ -1,12 +1,13 @@
-// Calidad inicial del dispositivo (de juego1-v2/lib/room-render.js, separada para que el objeto flotante y la caja la usen
+// Calidad inicial del dispositivo (separada del render del cuarto para que el objeto flotante y la caja la usen
 // sin cargar el post-proceso del cuarto).
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const { forcedQuality } = await import(`./debug.js${V}`);
 // ---------- adaptive quality ----------
-// detectQuality(renderer) → the starting level: 'high' | 'low' | 'minimal'. URL ?calidad=alta|baja|minima forces it.
+// detectQuality(renderer) → the starting level: 'high' | 'low' | 'minimal'. URL ?calidad=alta|baja|minima forces it (only with config.js → debug: true).
 // Software GPUs, max texture < 4096, or phones with < 4 cores / < 3 GB → minimal; every other phone/tablet → low (the room's
 // frame-rate watch steps it up when the device can take it); desktops with < 4 cores, < 4 GB or max texture < 8192 → low; else high.
 export function detectQuality(renderer) {
-  const q = new URLSearchParams(location.search).get('calidad');
-  if (q === 'alta') return 'high'; if (q === 'baja') return 'low'; if (q === 'minima') return 'minimal';
+  const forced = forcedQuality(); if (forced) return forced;
   const gl = renderer.getContext(); let gpu = '';
   // RENDERER primero: Firefox ya da ahí el nombre real (y avisa en consola si se pide la extensión); Chrome/Safari dan uno
   // genérico, y solo entonces se pide WEBGL_debug_renderer_info

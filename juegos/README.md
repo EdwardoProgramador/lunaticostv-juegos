@@ -24,6 +24,7 @@ fecha + número, p. ej. `'2026-10-16.2'`) y el navegador descargará todo de nue
 | Campo | Qué hace |
 | --- | --- |
 | `version` | Versión del juego; se añade como `?v=` a todos sus archivos. Cámbiala en cada publicación. |
+| `debug` | `false` en producción: ningún atajo de prueba en la URL y nada en la consola. `true` (solo para probar) activa los atajos de la sección Depuración y los errores del juego en la consola. |
 | `activeGame` | `'j1'` activa "Los objetos del Cholo" (niveles 1 y 2). `null` lo apaga todo. |
 | `games.j1.pages` | Páginas donde se carga el juego (luna, botón del cuarto, HUD). Incluye la portada de la Tienda (`tienda`); el catálogo y cualquier página de producto, carrito o pago no van aquí. |
 | `games.j1.objectMode` | `'random'` (por defecto): cada partida reparte los 5 objetos entre las páginas de `objectPages`, como máximo uno por página. `'fixed'`: usa siempre `objects`. |
@@ -32,7 +33,6 @@ fecha + número, p. ej. `'2026-10-16.2'`) y el navegador descargará todo de nue
 | `games.j1.objectDelay` | Segundos `[mín, máx]` hasta que aparece el objeto al entrar a la página. |
 | `games.j1.fragments` | Página → lista (pool) de escondites del fragmento de cristal (nivel 2). Un fragmento por página (Inicio no lleva). Cada partida elige un escondite al azar por página; si no cabe en esa pantalla o taparía algo interactivo, se usa el siguiente. Cada escondite: `anchor` (selector CSS), `x`/`y` (% dentro del ancla; pueden salir de 0–100), `size` (px), `rotate` (grados), `tuck` opcional (`top`/`bottom`/`left`/`right`: asoma por ese borde del ancla). El orden de las páginas es el número de fragmento. |
 | `games.j1.rewardLink` | Destino del botón "Ver contenido exclusivo de CHOLO" de la caja. `'#'` = sin destino. Otro dominio = pestaña nueva. |
-| `games.j1.debug` | `params`: acepta `?j1reset`, `?j1stage`, `?calidad`. `console`: muestra en consola los errores del juego (también con `?j1debug`). |
 
 ### Cómo editar los escondites de los fragmentos
 
@@ -40,7 +40,7 @@ En `config.js` → `games.j1.fragments`, cada página tiene su lista. Para mover
 del ancho / alto del elemento `anchor`; valores cerca de 0 o 100 lo pegan a un borde, el fragmento nunca sale de la página)
 o cambia `anchor` por otra sección (`.quote-band`, `.foot`…). Para añadir un escondite añade otra línea; para quitarlo,
 bórrala. Repártelos a distintas alturas (incluido cerca del final) para que haya que hacer scroll. Pruébalos con
-`?j1stage=fragments` (cada partida nueva elige otro al azar). El juego nunca lo pone bajo el menú, fuera del documento ni
+`debug: true` y `?j1stage=fragments` (cada partida nueva elige otro al azar). El juego nunca lo pone bajo el menú, fuera del documento ni
 encima de enlaces, botones, formularios o controles de la tienda: si el escondite no sirve en una pantalla, usa el siguiente.
 
 ### Cómo fijar o cambiar el reparto de los objetos
@@ -62,7 +62,7 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 
 | Archivo | Qué hace |
 | --- | --- |
-| `gate.js` | Antes de activar: luna que parpadea + botón accesible encima de la luna. `?j1reset`, `?j1stage`. |
+| `gate.js` | Antes de activar: luna que parpadea + botón accesible encima de la luna. Atajos de depuración (solo con `debug: true`). |
 | `progress.js` | Progreso en `sessionStorage["lunaticos_j1_v2"]` (borra `v1`). Dura la visita: navegar lo conserva; recargar, volver a entrar o cerrar la pestaña lo reinicia. Sin checkpoints. |
 | `main.js` | Orquesta una página: botón, HUD, reparto y objeto de la página, fragmento (escondite al azar), caja, preparación del cuarto, atrás/adelante. |
 | `i18n.js` | Todos los textos ES/EN. Sigue `<html lang>` / `ltv:languagechange` del sitio. |
@@ -73,7 +73,7 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 | `fragments.js` | Fragmento de cristal escondido en la página (SVG 2D, sin WebGL). Solo se dibuja cerca de la pantalla. |
 | `box.js` | Caja en Inicio y pantalla final. Abierta, se queda abierta hasta recargar; un clic vuelve a mostrar la pantalla final. |
 | `game.css` | Todos los estilos, prefijo `.lj1-` (las `@font-face` las declara `main.js`, con `?v=`). Capas: fragmento 40, caja 44, objeto 45, HUD 85, instrucciones 86 (debajo del menú del sitio y del carrito 900); cuarto 1050, secuencia 5/5 1060, pantalla final 1070 (pantalla completa, debajo del fondo/cajón del carrito 1099/1100 y de la intro de video). |
-| `lib/` | Port de `/juego1-v2/lib` (modelos, cuarto, render, superficies, altar, bandeja, hoja, cristal, puzzle + reunión de fragmentos, llave, caja, HUDs) y `notice.js` (instrucciones). |
+| `lib/` | Modelos, cuarto, render, superficies, altar, bandeja, hoja, cristal, puzzle + reunión de fragmentos, llave, caja, HUDs, `notice.js` (instrucciones) y `debug.js` (interruptor de los atajos de prueba). |
 | `vendor/` | `three-0.184.0/` (Three.js + addons de post-proceso) y `gsap-3.12.5/`, servidos desde el sitio, sin modificar (en los addons solo cambia la ruta del import de `three`). La carpeta lleva la versión de la librería. |
 | `assets/` | Texturas WebP (1024 y 512 px), iconos del HUD, icono de la llave, fuentes WOFF2 recortadas. |
 
@@ -88,7 +88,10 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 - Todo lo 3D sobre el sitio es transparente de verdad: lienzos con alfa y máscara radial (los halos se apagan antes del
   borde) y el bloom del cuarto suma luz sin sumar opacidad.
 
-### Depuración (con `debug.params: true`)
+### Depuración (solo con `debug: true` en `config.js`)
+
+Con `debug: false` (producción) ninguno de estos parámetros hace nada y el juego no escribe en la consola.
+
 
 - `?j1reset` — borra el progreso.
 - `?j1stage=room` — 5 objetos: abre el cuarto con los objetos listos para el altar.
@@ -97,9 +100,9 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 - `?j1stage=puzzle` — 5 fragmentos: abre el cuarto en el puzzle de sombras.
 - `?j1stage=box` — con la llave: ve a Inicio y toca la caja.
 - `?j1stage=done` — juego completado: caja abierta en Inicio, cuarto en su estado final.
-- `?calidad=alta|baja|minima` — fuerza la calidad del cuarto.
-- `?j1debug` — errores del juego en consola.
+- `?calidad=alta|baja|minima` — fuerza la calidad gráfica (cuarto, objeto flotante y caja).
+- Los errores del juego se muestran en la consola.
 
 `?j1stage` se aplica en la página donde se escribe; para seguir jugando, navega con los enlaces del sitio (recargar reinicia).
 
-Plan e historial de la integración del nivel 2: `j1/INTEGRATION-N2.md`. Fuente original: `/juego1-v2` (no se usa en el sitio).
+Plan e historial de la integración del nivel 2: `j1/INTEGRATION-N2.md`.

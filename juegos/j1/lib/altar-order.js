@@ -160,9 +160,9 @@ export function createAltarOrder({ room, page, tray, clue, onSolved, onClueTorn 
     readNotebook() { if (clue) readNotebook(); },
     reset({ clueTorn = false } = {}) { busy = false; done = false; clearSel(); room.clearObjects(); room.resetLights(); tray.setAll(ITEMS); if (clue) { clue.reset(); tray.showPage(false); if (clueTorn) { clue.restoreTorn(); tray.showPage(true, true); } } },
     relang() { zones.forEach((z, i) => z.setAttribute('aria-label', `${t().placeLabel} ${i + 1}`)); },
-    // demo: put everything down at once (order = list of keys by place)
+    // estado final: todo en su sitio a la vez (order = list of keys by place)
     fill(order = ALTAR_ORDER, { lit = false } = {}) { room.clearObjects(); order.forEach((k, i) => room.putObject(k, i, { animate: false })); tray.setAll([]); if (lit) room.places.forEach(p => { p.ring.material.emissiveIntensity = 1.6; p.glow.material.opacity = 0.25; p.eng.material.emissiveIntensity = 1.9; }); },
-    // ?j1stage=altar: los 5 objetos en su sitio y se comprueba (acierto → onSolved)
+    // solo depuración (debug: true + ?j1stage=altar): los 5 objetos en su sitio y se comprueba (acierto → onSolved)
     solveNow() { if (done || busy) return; clearSel(); ALTAR_ORDER.forEach((k, i) => room.putObject(k, i, { animate: false })); tray.setAll([]); check(); },
     get solved() { return done; },
   };

@@ -1,5 +1,4 @@
-// Loop de render del juego (adaptado de juego1-v2/lib/loop.js para el sitio).
-// Diferencias con el Design: con la pestaña oculta el loop se detiene (en el sitio no hay secuencia que deba avanzar en
+// Loop de render del juego. Con la pestaña oculta el loop se detiene (en el sitio no hay secuencia que deba avanzar en
 // segundo plano; GSAP también se pausa y retoma donde iba) y se puede pausar por motivos propios ('offscreen', 'closed'…).
 // Al volver, dt se limita a 50 ms para que nada salte.
 //   const loop = runLoop((t, dt) => { … });  loop.pause('offscreen');  loop.resume('offscreen');  loop.dispose();

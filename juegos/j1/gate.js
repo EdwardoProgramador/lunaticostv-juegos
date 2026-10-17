@@ -4,9 +4,10 @@
 //   llevando a Inicio) activa el juego. Es un <button> real: funciona con ratón, toque, teclado y lector de pantalla.
 // · Activado (o si ya estaba activado en esta visita), se carga main.js. Terminado el juego sigue activo (completado) hasta
 //   recargar o volver a entrar al sitio: entonces el progreso se borra y la luna vuelve a parpadear.
-// Depuración (si config.debug.params): ?j1reset borra el progreso · ?j1stage=room|altar|fragments|puzzle|box|done salta a esa etapa.
+// Depuración (solo con config.js → debug: true): ?j1reset borra el progreso · ?j1stage=room|altar|fragments|puzzle|box|done
+// salta a esa etapa · ?calidad=alta|baja|minima · errores en la consola. Con debug: false no se lee ningún parámetro.
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const progress = await import(`./progress.js${V}`);
+const [progress, { setDebug }] = await Promise.all([import(`./progress.js${V}`), import(`./lib/debug.js${V}`)]);
 
 const STYLE = `
 @keyframes lj1-moon-blink{0%,70%,100%{opacity:1;filter:none}79%{opacity:.35;filter:none}87%{opacity:1;filter:drop-shadow(0 0 5px rgba(255,154,60,.95)) drop-shadow(0 0 12px rgba(255,154,60,.5))}94%{opacity:1;filter:drop-shadow(0 0 2px rgba(255,154,60,.4))}}
@@ -88,14 +89,15 @@ export function disarm({ lit = false } = {}) {
   if (lit) { mark.classList.add('lj1-moon', 'is-lit'); setTimeout(() => mark.classList.remove('lj1-moon', 'is-lit'), 900); }
 }
 
-export function init({ page, config }) {
-  const q = new URLSearchParams(location.search), dbg = config.debug || {};
-  const log = (e) => { if (dbg.console || q.has('j1debug')) console.error(e); };
+export function init({ page, config, debug = false }) {
+  setDebug(debug);
+  const q = debug ? new URLSearchParams(location.search) : null;
+  const log = debug ? (e) => console.error(e) : () => {};
   // recargar o entrar de nuevo al sitio = juego nuevo; pasar de una página a otra conserva el progreso
-  if ((dbg.params && q.has('j1reset')) || progress.isFreshVisit()) progress.reset();
-  const stage = dbg.params ? q.get('j1stage') : null;
-  if (stage && progress.DEBUG_STAGES[stage]) { progress.reset(); progress.save(progress.DEBUG_STAGES[stage]); }
-  ctx = { page, config, log, debugStage: stage && progress.DEBUG_STAGES[stage] ? stage : null };
+  if ((q && q.has('j1reset')) || progress.isFreshVisit()) progress.reset();
+  const stage = q && progress.DEBUG_STAGES[q.get('j1stage')] ? q.get('j1stage') : null;
+  if (stage) { progress.reset(); progress.save(progress.DEBUG_STAGES[stage]); }
+  ctx = { page, config, log, debugStage: stage };
 
   if (progress.load().active) whenIdle().then(() => run(false));
   else arm();

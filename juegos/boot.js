@@ -13,14 +13,14 @@ function pageKey() {
   return last.replace(/\.html$/i, '') || 'index';
 }
 
-const debugParam = /[?&]j1debug\b/.test(location.search);
+// El juego es un extra: si algo falla, el sitio sigue intacto y no se escribe nada en la consola (salvo con debug: true).
 import(`./config.js?t=${Date.now()}`)
-  .then(({ activeGame, games, version }) => {
+  .then(({ activeGame, games, version, debug = false }) => {
     const game = activeGame && games[activeGame];
     const page = pageKey();
     if (!game || !GATES[activeGame] || !Array.isArray(game.pages) || !game.pages.includes(page)) return null;
     return GATES[activeGame](version ? `?v=${encodeURIComponent(version)}` : '')
-      .then((mod) => mod.init({ page, config: game }))
-      .catch((e) => { if ((game.debug && game.debug.console) || debugParam) console.error(e); }); // el juego es un extra: si falla, el sitio sigue intacto
+      .then((mod) => mod.init({ page, config: game, debug: debug === true }))
+      .catch((e) => { if (debug === true) console.error(e); });
   })
-  .catch((e) => { if (debugParam) console.error(e); });
+  .catch(() => {});

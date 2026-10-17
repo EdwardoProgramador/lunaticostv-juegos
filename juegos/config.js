@@ -6,6 +6,11 @@
 //          la fecha + un número: '2026-10-16.2'). Las librerías de vendor/ no lo necesitan: su carpeta lleva su propia
 //          versión (three-0.184.0, gsap-3.12.5) y nunca cambian de contenido.
 //
+// debug:   false en producción: el juego no acepta ningún atajo de prueba en la URL y no escribe nada en la consola.
+//          true (solo para probar) activa: ?j1reset (borra el progreso), ?j1stage=room|altar|fragments|puzzle|box|done
+//          (salta a esa etapa), ?calidad=alta|baja|minima (fuerza la calidad gráfica) y los errores del juego en la consola.
+//          Antes de publicar, déjalo en false.
+//
 // activeGame: 'j1' activa "Los objetos del Cholo" (niveles 1 y 2). null = no se carga nada: el sitio queda como el original.
 //
 // Juego 1 (j1):
@@ -34,10 +39,10 @@
 //                documento. Para mover un escondite cambia x / y (o el anchor); para añadir uno, añade una línea a la lista.
 //   rewardLink   destino del botón "Ver contenido exclusivo de CHOLO" de la caja ('#' = todavía sin destino: no hace nada).
 //                Si es de otro dominio, abre en pestaña nueva.
-//   debug        params: acepta ?j1reset, ?j1stage=… y ?calidad=… en la URL · console: muestra en consola los errores del juego
-//                (también con ?j1debug).
 
-export const version = '2026-10-16.1';
+export const version = '2026-10-16.2';
+
+export const debug = false;
 
 export const activeGame = 'j1';
 
@@ -89,6 +94,5 @@ export const games = {
       ],
     },
     rewardLink: '#',
-    debug: { params: true, console: false },
   },
 };

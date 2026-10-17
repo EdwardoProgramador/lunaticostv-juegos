@@ -1,5 +1,5 @@
 // El Cuarto del Cholo en el sitio: overlay a pantalla completa (la X y Esc lo cierran) con el cuarto 3D y sus estados.
-// La parte de página de "10 El Cuarto del Cholo" + 09/11/12/14/16B/17 del Design, sin la cabecera de demo ni el sitio falso.
+// Altar, hoja de la libreta, explosión del cristal, puzzle de sombras, cuadro y llave.
 // El estado sale de progress.js:
 //   objects   → altar vacío, "Reúne los objetos del Cholo"
 //   altar     → bandeja con los 5 objetos (y la hoja arrancada si ya se leyó), colocar en orden
@@ -53,7 +53,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
   bindText(xBtn, 'close', 'aria-label');
   root.__lj1Keep = true;
 
-  // ── la "página" que esperan las librerías del Design (room-page.js) ──
+  // ── la "página" que usan las librerías del cuarto ──
   let hintKey = '', hintTw = null, bigKey = '';
   const P = {
     ui, canvas, roomEl: root,

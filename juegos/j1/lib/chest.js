@@ -2,7 +2,7 @@
 //   const box = createChest({ mount });  box.shake() (sin llave: "Cerrada")  ·  box.armKey(); box.unlock({ from, keySrc, layer, onOpen }):
 //   key flies to the keyhole, turns, lid opens with warm light, then the final screen (../box.js) covers the screen.
 //   box.setOpen(): ya abierta (juego completado), sin animación: tapa abierta, luz dentro, la llave puesta en la cerradura.
-// Port (juego1-v2/lib/chest.js): Three/GSAP locales, estilos en game.css (.lj1-box*), el render se pausa con la caja fuera
+// Three/GSAP locales, estilos en game.css (.lj1-box*), el render se pausa con la caja fuera
 // de pantalla, la pestaña oculta o pause('room'); pixel ratio según la calidad del dispositivo; el vuelo de la llave va en
 // coordenadas de viewport (layer = capa fija a pantalla completa); textos de ../i18n.js. La pantalla final vive en ../box.js.
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';

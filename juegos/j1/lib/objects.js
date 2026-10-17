@@ -1,4 +1,4 @@
-// LunaticosTv · Los objetos del Cholo — librería de los 5 objetos 3D (port de juego1-v2/lib/cholo-objects.js).
+// LunaticosTv · Los objetos del Cholo — librería de los 5 objetos 3D.
 // Cambios del port: Three local (vendor/), rutas de texturas relativas a este módulo (asset()), materiales perezosos
 // (un objeto flotante solo crea y descarga los materiales que usa; el cuarto los pide todos), sin exportadores GLB,
 // disposeTree() para liberar la geometría del objeto flotante. El loop de render vive en loop.js.

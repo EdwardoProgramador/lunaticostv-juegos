@@ -1,4 +1,4 @@
-// HUD de objetos (port de juego1-v2/lib/hud.js): DOM + GSAP, sin framework.
+// HUD de objetos: DOM + GSAP, sin framework.
 //   const hud = createHUD({ collected: ['cassette'], text }); hud.collect('microphone');
 // Entra deslizando, el objeto nuevo aparece con un parpadeo "glitch" y sale a los holdMs.
 // holdMs: Infinity lo deja en pantalla (secuencia 5/5). Arriba a la derecha, debajo del nav del sitio;

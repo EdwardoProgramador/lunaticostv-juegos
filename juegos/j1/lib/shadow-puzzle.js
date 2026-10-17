@@ -81,7 +81,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
   // pieces of the silhouette per fragment
   const pieces = T.cells.map(cell => T.shapes.map(s => clipConvex(s, cell)).filter(p => p.length > 2 && Math.abs(area(p)) > 1e-5));
   const wallPoint = pieces.map((ps, i) => {
-    if (!ps.length) { console.warn('shadow puzzle: empty cell', i + 1); return toWorld(centroid(T.cells[i]).map(x => Math.min(0.9, Math.max(0.1, x)))); }
+    if (!ps.length) { return toWorld(centroid(T.cells[i]).map(x => Math.min(0.9, Math.max(0.1, x)))); }
     const big = ps.reduce((a, b) => Math.abs(area(b)) > Math.abs(area(a)) ? b : a); return toWorld(centroid(big));
   });
   const Pw = wallPoint.map((W, i) => L.clone().lerp(W, DEPTH[i]));
@@ -335,8 +335,6 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
     stop() { if (introTl) { introTl.kill(); introTl = null; S.intro = false; } S.enabled = false; el.style.cursor = ''; },
     // teclado: girar un paso (radianes) en cada eje
     nudge(dYaw, dPitch) { if (!S.enabled || S.locked || S.drag) return; S.vy = S.vp = 0; S.yaw += dYaw; S.pitch = Math.max(-1.45, Math.min(1.45, S.pitch + dPitch)); },
-    // demo: glide to the answer, then lock like a player would
-    solveNow() { if (S.locked) return; S.enabled = true; S.vy = S.vp = 0; S.yaw = Math.atan2(Math.sin(S.yaw), Math.cos(S.yaw)); gsap.to(S, { yaw: S.yaw > 0 ? 0.1 : -0.1, pitch: 0.05, duration: 1.4, ease: 'power2.inOut' }); },
     hide() { startTok++; reset(); S.enabled = false; crystal.fragments.forEach(f => (f.group.visible = false)); clearCanvases(); },
     get locked() { return S.locked; },
   };

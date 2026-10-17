@@ -1,4 +1,4 @@
-// Botón "El Cuarto del Cholo" en el menú del sitio (de juego1-v2/lib/room-button.js).
+// Botón "El Cuarto del Cholo" en el menú del sitio.
 // Estados: hidden · appear (se materializa con luz de vela) · normal · new (pulso suave: hay algo nuevo que hacer en el cuarto).
 // Escritorio (> 960 px): al final de los enlaces del menú. Móvil (≤ 960 px, cuando el sitio muestra la hamburguesa): junto a
 // la hamburguesa, nunca dentro del menú desplegable. Nombre corto ("El Cuarto" / "Room") en ≤ 640 px.

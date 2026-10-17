@@ -3,13 +3,13 @@
 //   room.setFocus('altar' | 'full' | 'painting' | 'niche' | 'crystal', seconds);  room.onTick(fn);  room.toScreen(v3)
 // Pieces: back wall with a hidden niche, worn wood floor, the shared altar (altar.js) with 5 places for the objects (a moon phase carved in the wood under each, lit in copper while an object stands there),
 // the main candle (the light that casts the puzzle shadows), the ornate painting (a door on a hinge), smoke, dust.
-// Port (juego1-v2/lib/room.js): Three/GSAP locales; el loop duerme mientras el cuarto está cerrado y ya liberó la GPU
+// Three/GSAP locales; el loop duerme mientras el cuarto está cerrado y ya liberó la GPU
 // (room.wake() al abrir); sin preserveDrawingBuffer; createRoom({ reduced }) = sin parallax ni sacudidas y los cambios
 // de encuadre son un corte con fundido; textos de ../i18n.js; estilos en game.css (.lj1-room-load*).
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ OBJECTS, materials, setupRenderer, makeEnv, addLights, glowSprite, glowTexture, smokeTexture, spriteBatch, makeFlame, crescentGeo, mergeGeos, framed, texturesReady, textureProgress, startTextures, groupProgress, WARM }, { runLoop }, { prepareCrystalFX }, { buildAltar }, { MOON_PHASE, ALTAR_ORDER }, { bindText }, { moonLitPath }, { surfaces, surfaceUrls, laterSurfaceUrls, surfaceRes, setSurfaceRes }, { createRoomRenderer, detectQuality, BAKE, bakeVertexLight, bakedMaterial, bakeLightMap }] = await Promise.all([
+const [{ OBJECTS, materials, setupRenderer, makeEnv, addLights, glowSprite, glowTexture, smokeTexture, spriteBatch, makeFlame, crescentGeo, mergeGeos, framed, texturesReady, textureProgress, startTextures, groupProgress, WARM }, { runLoop }, { prepareCrystalFX }, { buildAltar }, { MOON_PHASE, ALTAR_ORDER }, { bindText }, { moonLitPath }, { surfaces, surfaceUrls, laterSurfaceUrls, surfaceRes, setSurfaceRes }, { createRoomRenderer, detectQuality, BAKE, bakeVertexLight, bakedMaterial, bakeLightMap }, { forcedQuality }] = await Promise.all([
   import(`./objects.js${V}`),
   import(`./loop.js${V}`),
   import(`./crystal-fx.js${V}`),
@@ -19,6 +19,7 @@ const [{ OBJECTS, materials, setupRenderer, makeEnv, addLights, glowSprite, glow
   import(`./notebook-clue.js${V}`),
   import(`./surfaces.js${V}`),
   import(`./room-render.js${V}`),
+  import(`./debug.js${V}`),
 ]);
 
 export const WALL_Z = -0.62;
@@ -201,7 +202,7 @@ export function createRoom({ stage, canvas, reduced = false }) {
   // off the altar): placing an object never changes the number of lights, so no shader recompiles
   const objLights = [];
   function buildObject(o) {
-    const cfg = ON_PLACE[o.def.key], obj = o.def.build({ lod: true }), fit = framed(obj, cfg.size, false); // room detail (cholo-objects.js)
+    const cfg = ON_PLACE[o.def.key], obj = o.def.build({ lod: true }), fit = framed(obj, cfg.size, false); // room detail (objects.js)
     const tmp = new THREE.Group(); tmp.rotation.set(...cfg.rot); tmp.add(fit); tmp.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(tmp); o.pose.add(fit); o.pose.position.y = -box.min.y + 0.001;
     o.obj = obj; o.top = box.max.y - box.min.y;
@@ -393,7 +394,7 @@ export function createRoom({ stage, canvas, reduced = false }) {
   // Margin: the gap between those thresholds, 1 s settle after every change, and a level that had to be left for being
   // slow is never tried again, so it never flips back and forth. All three are compiled in the warm-up (no recompiles).
   const LEVELS = ['minimal', 'low', 'high'];
-  const DPR = devicePixelRatio || 1, forced = { alta: 'high', baja: 'low', minima: 'minimal' }[new URLSearchParams(location.search).get('calidad')];
+  const DPR = devicePixelRatio || 1, forced = forcedQuality(); // ?calidad=… solo con debug
   const Q = { detected: detectQuality(renderer), mode: forced || 'auto', level: '', ceil: 2, probe: 0, warm: 0, acc: 0, n: 0, janks: 0, fast: 0, slow: 0, last: performance.now(), fns: [] };
   function setLevel(level) {
     const hi = level === 'high', min = level === 'minimal'; Q.level = level;
@@ -444,10 +445,9 @@ export function createRoom({ stage, canvas, reduced = false }) {
   // work budget per frame: 8 ms while the room prepares out of sight (the page keeps its frame rate), 30 ms while the loading
   // screen is up (its flame and line are compositor animations, so they stay smooth)
   const slice = async (force) => { if (force || performance.now() - sliceT > (shown() ? 30 : 8)) { await later(); sliceT = performance.now(); } };
-  const load = { progress: 0, log: [], t0: performance.now() };
-  const step = (label, p) => { load.progress = p; load.log.push([label, Math.round(performance.now() - load.t0)]); };
+  const load = { progress: 0 };
+  const step = (label, p) => { load.progress = p; }; // label: solo nombra el paso
   let warmed = false;
-  room.loading = load; // { progress 0…1, log: [[step, ms since createRoom]] }
   // compile one level's programs: the scene state is switched and restored in the same synchronous block (no frame sees it);
   // the compile itself finishes in the driver's threads (KHR_parallel_shader_compile)
   const compiled = new Set();

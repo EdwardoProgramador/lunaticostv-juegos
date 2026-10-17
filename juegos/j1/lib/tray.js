@@ -1,4 +1,4 @@
-// Inventory tray (level 2): the objects HUD turned into a tray at the bottom of the room (port de juego1-v2/lib/tray.js).
+// Inventory tray (level 2): the objects HUD turned into a tray at the bottom of the room.
 // Same slot look as the HUD (.lj1-hud__slot: silhouette when empty, colour when held). Optional extra items (the key).
 // With onRead: a hidden "page" slot (the torn clue page) after a separator; tray.showPage(true) reveals it, tapping it calls onRead.
 //   const tray = createTray({ mount, has: ['candle', …], onRead });  tray.set('candle', false)
