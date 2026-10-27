@@ -59,9 +59,11 @@ en una subcarpeta, usa `/juegos/boot.js`.
 ### Nada más del sitio cambió
 
 Comparado con el sitio original, **lo único distinto es esa línea en esas 8 páginas** (verificado con git contra el
-commit "Base: sitio original"). `styles.css`, `script.js`, `shop.js`, `season-config.js`, `vercel.json`,
-`_redirects`, las imágenes y la estructura de las páginas están exactamente igual. Todos los estilos del juego llevan
-el prefijo `.lj1-` y el juego no crea variables globales.
+commit "Base: sitio original"). `styles.css`, `script.js`, `season-config.js`, `vercel.json`, `_redirects`, las
+imágenes que usan las páginas y su estructura están exactamente igual. Todos los estilos del juego llevan el prefijo
+`.lj1-` y el juego no crea variables globales. (En esta copia además se quitaron los archivos que ninguna página cargaba:
+variantes e imágenes de prueba, `shop.js`, `assets/` y documentos del sitio. No afecta a la integración, que solo copia
+`juegos/`; siguen en el historial de git.)
 
 ## 3. Ajustes en `juegos/config.js`
 
@@ -79,7 +81,7 @@ Para quitar el juego de una página concreta sin tocar el HTML, sácala de `game
 ### Cambiar la versión en cada publicación
 
 ```js
-export const version = '2026-10-26.2';
+export const version = '2026-10-27.1';
 ```
 
 **Cada vez que publiques cualquier cambio dentro de `juegos/`, cambia este valor** (cualquier texto distinto vale;
@@ -189,7 +191,7 @@ Con `debug: false`, en Chrome (sin ventana, caché desactivada) a 1440 px y 390 
 - `?j1stage`, `?j1reset`, `?calidad` y `?j1debug` no hacen nada, ni al cargar ni navegando entre páginas.
 - La luna activa el juego en todas las páginas del juego. En el catálogo el juego no carga.
 
-Actualización (versión `2026-10-26.2`), en Chrome a 1366 px y 390 px: el video del premio se reproduce solo y con
+Actualización (versión `2026-10-26.2`, vigente en `2026-10-27.1`), en Chrome a 1366 px y 390 px: el video del premio se reproduce solo y con
 sonido, el carrusel avanza y al cerrar la pantalla final todo vuelve a la normalidad; la pista "Vuelve al cuarto"
 aparece con los 5 fragmentos; los efectos de sonido se disparan en su momento (luna, objetos, 5/5, caja). Cero errores.
 - Prueba de control con `debug: true`: los atajos sí funcionan.

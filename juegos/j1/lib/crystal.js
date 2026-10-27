@@ -4,14 +4,13 @@
 //   c.fragments[i].group  →  'fragmento_1'…'fragmento_5' (position = its place in the full shard)
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ materials, crescentGeo, mergeGeos, texturesReady, prewarm, startTextures }, { IMG, FRAGMENTS, ORNAMENTS, centroid }, { tieredTexture }] = await Promise.all([
+const [{ materials, crescentGeo, mergeGeos, prewarm }, { IMG, FRAGMENTS, ORNAMENTS, centroid }, { tieredTexture }] = await Promise.all([
   import(`./objects.js${V}`),
   import(`./crystal-shape.js${V}`),
   import(`./surfaces.js${V}`),
 ]);
 
 // the crystal's own stage: its texture downloads only when this (or the room's 'crystal' stage) asks for it
-export const crystalReady = () => startTextures('crystal').then(() => texturesReady());
 const K = 1 / IMG.height, DEPTH = 0.034;
 export const toShard = ([x, y]) => [(x - IMG.cx) * K, (IMG.cy - y) * K];
 const mtx = (x, y, z, rz = 0, sx = 1, sy = sx, sz = sx) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, rz)), new THREE.Vector3(sx, sy, sz));
@@ -88,8 +87,6 @@ function buildFragment(P, i, M) {
 }
 
 // one fragment on its own, centred (13: previews + GLB per fragment)
-export function createFragment(i) { const g = buildFragment(FRAGMENTS[i], i, crystalMaterials()); g.position.set(0, 0, 0); return g; }
-
 export function createCrystal() {
   const M = crystalMaterials();
   const group = new THREE.Group(); group.name = 'cristal';

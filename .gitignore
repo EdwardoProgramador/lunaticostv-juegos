@@ -27,7 +27,3 @@ node_modules/
 dist/
 build/
 .cache/
-
-# Local dev tools (no se deployan)
-dev-server.mjs
-upload-shopify.ps1

@@ -57,7 +57,6 @@ export function startTextures(group) {
   return Promise.all(G.wait);
 }
 export function groupProgress(group) { const G = groups[group]; return G && G.items.length ? G.done / G.items.length : 1; }
-export const groupStarted = group => !!(groups[group] && groups[group].wait);
 let texDone = 0;
 export function texturesReady() { return Promise.all(texWait); }
 export function textureProgress() { return texWait.length ? texDone / texWait.length : 1; } // 0…1, for loading screens
