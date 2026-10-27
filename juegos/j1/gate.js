@@ -1,5 +1,6 @@
 // Juego 1 · la "puerta": lo único que se carga antes de activar el juego (boot.js → gate.js + progress.js).
-// · La luna del logo (svg.nav__mark) parpadea suave cada pocos segundos.
+// · La luna del logo (svg.nav__mark) brilla siempre con un halo cálido y cada pocos segundos parpadea y se enciende en color
+//   vela (más fuerte que el resto del menú: tiene que notarse sobre el hero oscuro y sobre la barra blanca).
 // · Un botón transparente encima de la luna (insertado en el <nav>, fuera del enlace del logo: el texto "LunáticosTv" sigue
 //   llevando a Inicio) activa el juego. Es un <button> real: funciona con ratón, toque, teclado y lector de pantalla.
 // · Activado (o si ya estaba activado en esta visita), se carga main.js. Terminado el juego sigue activo (completado) hasta
@@ -10,11 +11,11 @@ const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el
 const [progress, { setDebug }] = await Promise.all([import(`./progress.js${V}`), import(`./lib/debug.js${V}`)]);
 
 const STYLE = `
-@keyframes lj1-moon-blink{0%,70%,100%{opacity:1;filter:none}79%{opacity:.35;filter:none}87%{opacity:1;filter:drop-shadow(0 0 5px rgba(255,154,60,.95)) drop-shadow(0 0 12px rgba(255,154,60,.5))}94%{opacity:1;filter:drop-shadow(0 0 2px rgba(255,154,60,.4))}}
-.lj1-moon{animation:lj1-moon-blink 4.6s ease-in-out 1s infinite}
-.lj1-moon.is-lit{animation:none;filter:drop-shadow(0 0 7px rgba(255,154,60,1)) drop-shadow(0 0 16px rgba(255,154,60,.6))}
-.lj1-activator:hover~.nav__brand .lj1-moon,.lj1-activator:focus-visible~.nav__brand .lj1-moon{filter:drop-shadow(0 0 5px rgba(255,154,60,.9))}
-@media (prefers-reduced-motion:reduce){.lj1-moon{animation-duration:7s}}
+@keyframes lj1-moon-blink{0%,58%,100%{opacity:1;transform:scale(1);filter:drop-shadow(0 0 4px rgba(255,170,90,.9)) drop-shadow(0 0 12px rgba(255,154,60,.6)) drop-shadow(0 0 22px rgba(255,140,50,.25))}68%{opacity:.45;transform:scale(.94);filter:drop-shadow(0 0 2px rgba(255,170,90,.4)) drop-shadow(0 0 5px rgba(255,154,60,.2)) drop-shadow(0 0 8px rgba(255,140,50,0))}78%,86%{opacity:1;color:#FFB45C;transform:scale(1.14);filter:drop-shadow(0 0 6px rgba(255,200,120,1)) drop-shadow(0 0 18px rgba(255,154,60,1)) drop-shadow(0 0 38px rgba(255,140,50,.8))}}
+.lj1-moon{overflow:visible;transform-origin:50% 50%;animation:lj1-moon-blink 3.4s ease-in-out .6s infinite;filter:drop-shadow(0 0 4px rgba(255,170,90,.9)) drop-shadow(0 0 12px rgba(255,154,60,.6)) drop-shadow(0 0 22px rgba(255,140,50,.25))}
+.lj1-moon.is-lit{animation:none;color:#FFB45C;transform:scale(1.14);filter:drop-shadow(0 0 8px rgba(255,200,120,1)) drop-shadow(0 0 22px rgba(255,154,60,1)) drop-shadow(0 0 44px rgba(255,140,50,.8))}
+.lj1-activator:hover~.nav__brand .lj1-moon,.lj1-activator:focus-visible~.nav__brand .lj1-moon{animation-play-state:paused;color:#FFB45C;filter:drop-shadow(0 0 6px rgba(255,200,120,1)) drop-shadow(0 0 18px rgba(255,154,60,1)) drop-shadow(0 0 32px rgba(255,140,50,.6))}
+@media (prefers-reduced-motion:reduce){.lj1-moon{animation-duration:6s}}
 .lj1-activator{position:absolute;z-index:2;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;appearance:none;-webkit-appearance:none}
 .lj1-activator:focus{outline:none}
 .lj1-activator:focus-visible{outline:2px solid #FF9A3C;outline-offset:2px}
@@ -68,8 +69,14 @@ export function arm() {
   addEventListener('resize', place, { passive: true });
   if (!inside) addEventListener('scroll', place, { passive: true });
   document.addEventListener('ltv:languagechange', label);
+  // sonido (lib/sfx.js): se descarga al acercarse a la luna; el audio se crea dentro del clic (Safari lo exige)
+  const loadSfx = () => import(`./lib/sfx.js${V}`);
+  ['pointerenter', 'focus', 'touchstart'].forEach((ev) => btn.addEventListener(ev, () => { loadSfx().catch(() => {}); }, { once: true, passive: true }));
   const onClick = (e) => {
     e.preventDefault(); e.stopPropagation();
+    let ac = null;
+    try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) { ac = new AC(); const r = ac.resume && ac.resume(); if (r && r.catch) r.catch(() => {}); } } catch (err) { ac = null; }
+    loadSfx().then((m) => { m.adopt(ac); m.play('start'); }).catch(() => {});
     progress.save({ active: true });
     disarm({ lit: true });
     run(true);

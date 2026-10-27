@@ -1,5 +1,6 @@
 // Botón "El Cuarto del Cholo" en el menú del sitio.
 // Estados: hidden · appear (se materializa con luz de vela) · normal · new (pulso suave: hay algo nuevo que hacer en el cuarto).
+// callout(true): además cuelga debajo una etiqueta "Vuelve al cuarto" con flecha (con los 5 fragmentos, hasta entrar al cuarto).
 // Escritorio (> 960 px): al final de los enlaces del menú. Móvil (≤ 960 px, cuando el sitio muestra la hamburguesa): junto a
 // la hamburguesa, nunca dentro del menú desplegable. Nombre corto ("El Cuarto" / "Room") en ≤ 640 px.
 //   const b = createRoomButton({ onClick, onIntent });  b.setState('appear');  b.destroy()
@@ -14,15 +15,16 @@ export function createRoomButton({ onClick, onIntent, reduced = false } = {}) {
   if (!nav) return null;
   const el = document.createElement('button');
   el.type = 'button'; el.className = 'lj1-scope lj1-rbtn'; el.hidden = true;
-  el.innerHTML = '<span class="lj1-rbtn__glow" aria-hidden="true"></span><span class="lj1-title lj1-rbtn__full" aria-hidden="true"></span><span class="lj1-title lj1-rbtn__short" aria-hidden="true"></span><span class="lj1-rbtn__dot" aria-hidden="true"></span>';
+  el.innerHTML = '<span class="lj1-rbtn__glow" aria-hidden="true"></span><span class="lj1-title lj1-rbtn__full" aria-hidden="true"></span><span class="lj1-title lj1-rbtn__short" aria-hidden="true"></span><span class="lj1-rbtn__dot" aria-hidden="true"></span><span class="lj1-rbtn__callout" aria-hidden="true" hidden></span>';
   const glow = el.querySelector('.lj1-rbtn__glow'), dot = el.querySelector('.lj1-rbtn__dot'), full = el.querySelector('.lj1-rbtn__full'), short = el.querySelector('.lj1-rbtn__short');
-  const texts = [full, short];
-  let tl = null, cur = 'hidden';
+  const texts = [full, short], tag = el.querySelector('.lj1-rbtn__callout');
+  let tl = null, cur = 'hidden', bounce = null;
 
   const relang = () => {
     const tx = t();
     full.textContent = tx.roomButton; full.dataset.text = tx.roomButton;
     short.textContent = tx.roomButtonShort; short.dataset.text = tx.roomButtonShort;
+    tag.textContent = tx.roomCallout;
     el.setAttribute('aria-label', cur === 'new' ? `${tx.roomButton}, ${tx.roomNew}` : tx.roomButton);
   };
   relang();
@@ -81,11 +83,21 @@ export function createRoomButton({ onClick, onIntent, reduced = false } = {}) {
         .fromTo(dot, { opacity: 0.6, scale: 0.85 }, { opacity: 1, scale: 1.15, duration: 1.3, ease: 'sine.inOut' }, 0);
     }
   }
+  function callout(on) {
+    if (on === !tag.hidden) return;
+    if (bounce) { bounce.kill(); bounce = null; }
+    gsap.killTweensOf(tag);
+    tag.hidden = !on;
+    if (!on) return;
+    if (reduced) { gsap.fromTo(tag, { opacity: 0 }, { opacity: 1, duration: 0.5 }); return; }
+    gsap.fromTo(tag, { opacity: 0, y: -8 }, { opacity: 1, y: 0, duration: 0.5, ease: 'back.out(2)' });
+    bounce = gsap.to(tag, { y: 5, duration: 0.6, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: 0.5 });
+  }
   return {
-    el, setState,
+    el, setState, callout,
     get state() { return cur; },
     // 'normal' o 'new' sin interrumpir la materialización si está en curso
     settle(s) { if (cur === 'appear' && tl) tl.eventCallback('onComplete', () => { cur = 'normal'; tl = null; setState(s); }); else setState(s); },
-    destroy() { stop(); mq.removeEventListener('change', place); offLang(); el.remove(); },
+    destroy() { stop(); callout(false); mq.removeEventListener('change', place); offLang(); el.remove(); },
   };
 }

@@ -37,10 +37,11 @@
 //                           que queda fuera de ese borde se oculta, como si estuviera metido detrás
 //                Nunca se coloca bajo el menú, encima de enlaces, botones, formularios o controles de la tienda, ni fuera del
 //                documento. Para mover un escondite cambia x / y (o el anchor); para añadir uno, añade una línea a la lista.
-//   rewardLink   destino del botón "Ver contenido exclusivo de CHOLO" de la caja ('#' = todavía sin destino: no hace nada).
-//                Si es de otro dominio, abre en pestaña nueva.
+//   rewardLink   al abrir la caja se ve el contenido exclusivo dentro del juego (video de Alonso Ortiz + carrusel de fotos,
+//                archivos en j1/assets/reward/). Si además pones aquí un destino, debajo del carrusel aparece el botón
+//                "Ver contenido exclusivo de CHOLO" que lleva ahí ('#' = sin botón). Si es de otro dominio, abre en pestaña nueva.
 
-export const version = '2026-10-16.3';
+export const version = '2026-10-26.2';
 
 export const debug = false;
 

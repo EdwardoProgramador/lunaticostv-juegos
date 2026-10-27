@@ -32,8 +32,9 @@ function noise(seed) {
 }
 
 // ready (opcional): promesa; el objeto se prepara entero (texturas, shaders) y solo aparece cuando se cumple. Si resuelve
-// false, se libera todo y createFloat devuelve null.
-export async function createFloat({ key, label, reduced = false, ready = null, onCollect }) {
+// false, se libera todo y createFloat devuelve null. onAppear: la primera vez que se deja ver (sonido "pop"). onTap: en el
+// mismo clic que lo recoge (sonido de campana), antes de la animación; onCollect: al terminar la animación.
+export async function createFloat({ key, label, reduced = false, ready = null, onCollect, onAppear, onTap }) {
   const mobile = () => innerWidth < 640;
   const box = mobile() ? 140 : 176; // lienzo; el modelo ocupa ~62 % (≈ 87 / 109 px)
   const vis = Math.round(box * 0.62); // tamaño visible del objeto
@@ -167,7 +168,7 @@ export async function createFloat({ key, label, reduced = false, ready = null, o
   const nx = noise(Math.random() * 100), ny = noise(Math.random() * 100 + 50);
   const A = { x: 0, y: 0, vx: 0, vy: 0 }; // ancla con resorte críticamente amortiguado
   const OMEGA = 1.7, OMEGA_ESCAPE = 4; // ~2 s para deslizarse a un punto nuevo; ~0.9 s para apartarse
-  let W = null, nextPick = 0, state = 'away', fading = false, shy = false, escaping = false, collecting = false, gone = false;
+  let W = null, nextPick = 0, state = 'away', fading = false, shy = false, escaping = false, collecting = false, gone = false, appeared = false;
   const pos = { x: 0, y: 0 };
   let lastScroll = scrollY, scrolled = 0;
 
@@ -187,6 +188,7 @@ export async function createFloat({ key, label, reduced = false, ready = null, o
     nextPick = reduced ? Infinity : nextAt(performance.now());
     el.classList.remove('is-shy');
     gsap.to(el, { opacity: 1, duration: reduced ? 0.4 : 0.45, ease: 'power2.out', overwrite: 'auto' });
+    if (!appeared) { appeared = true; if (onAppear) onAppear(); } // solo la primera vez (no al reubicarse)
   }
 
   function step(t, dt) {
@@ -260,6 +262,7 @@ export async function createFloat({ key, label, reduced = false, ready = null, o
   function collect() {
     if (collecting || gone || shy || state !== 'shown') return;
     collecting = true; hit.disabled = true;
+    if (onTap) onTap();
     if (pulse) pulse.kill();
     gsap.killTweensOf(el);
     gsap.set(el, { opacity: 1 });

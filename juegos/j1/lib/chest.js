@@ -8,13 +8,14 @@
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ materials, crescentGeo, mergeGeos, glowSprite, setupRenderer, makeEnv, addLights, loadTexture }, { runLoop }, { detectQuality, PIXEL_RATIO }, { buildKey }, { t }, { flyIcon }] = await Promise.all([
+const [{ materials, crescentGeo, mergeGeos, glowSprite, setupRenderer, makeEnv, addLights, loadTexture }, { runLoop }, { detectQuality, PIXEL_RATIO }, { buildKey }, { t }, { flyIcon }, sfx] = await Promise.all([
   import(`./objects.js${V}`),
   import(`./loop.js${V}`),
   import(`./quality.js${V}`),
   import(`./key.js${V}`),
   import(`../i18n.js${V}`),
   import(`./dom.js${V}`),
+  import(`./sfx.js${V}`),
 ]);
 
 const M4 = (x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)), new THREE.Vector3(sx, sy, sz));
@@ -102,6 +103,7 @@ export function createChest({ mount, reduced = false }) {
   };
   function shake() {
     gsap.killTweensOf([C.group.rotation, tag]);
+    sfx.play('locked');
     gsap.timeline().to(C.group.rotation, { z: 0.08, duration: 0.05, repeat: 7, yoyo: true, ease: 'none' }).set(C.group.rotation, { z: 0 })
       .fromTo(C.lid.rotation, { x: 0 }, { x: -0.06, duration: 0.05, repeat: 5, yoyo: true }, 0).set(C.lid.rotation, { x: 0 });
     gsap.timeline().fromTo(tag, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.25 }).to(tag, { opacity: 0, duration: 0.4, delay: 1.2 });
@@ -111,6 +113,11 @@ export function createChest({ mount, reduced = false }) {
     const tl = gsap.timeline();
     const to = keyholeScreen();
     tl.add(flyIcon(layer, keySrc, from, to, { dur: 0.8, size: 64, lift: 120 }), 0);
+    // sonido: la llave vuela, entra y gira (clic, clac), la tapa rechina al abrirse y sale la luz
+    tl.call(() => sfx.play('whoosh', { dur: 0.8, vol: 0.08 }), null, 0)
+      .call(() => sfx.play('lock'), null, 1.1)
+      .call(() => sfx.play('creak', { dur: 1.1, lo: 140, hi: 420, vol: 0.5 }), null, 1.7)
+      .call(() => sfx.play('sparkle', { n: 14 }), null, 1.95);
     // 3D key in the keyhole: bit first (+y → −z), then pushed in and turned
     const hole = C.keyhole.clone().applyMatrix4(C.group.matrixWorld);
     const dir = new THREE.Vector3(0, 0, 1).applyQuaternion(C.group.quaternion);

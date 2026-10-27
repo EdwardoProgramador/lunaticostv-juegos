@@ -7,7 +7,7 @@
 // botón del cuarto, cuarto en su estado final) hasta recargar la página o volver a entrar al sitio: cerrar la pantalla final
 // ya no reinicia nada.
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { createHUD }, { prefersReduced }, { asset }] = await Promise.all([
+const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { createHUD }, { prefersReduced }, { asset }, sfx] = await Promise.all([
   import(`./progress.js${V}`),
   import(`./i18n.js${V}`),
   import(`./gate.js${V}`),
@@ -15,6 +15,7 @@ const [progress, { t, onLangChange }, { arm, disarm }, { createRoomButton }, { c
   import(`./lib/hud.js${V}`),
   import(`./lib/dom.js${V}`),
   import(`./lib/paths.js${V}`),
+  import(`./lib/sfx.js${V}`), // efectos de sonido (y enciende el audio con el primer gesto de la página)
 ]);
 
 const CSS_URL = new URL(`./game.css${V}`, import.meta.url).href;
@@ -100,7 +101,11 @@ export async function start(ctx) {
     if (g.button) { g.button.setState('appear'); g.button.settle(buttonState()); }
     hud().reveal();
     notice().then((m) => { if (G === g) m.tip('tipObjects', { delay: 1.6 }); }).catch(g.log);
-  } else if (g.button) g.button.settle(buttonState());
+  } else if (g.button) {
+    refreshButton();
+    // al llegar a otra página con los 5 fragmentos sin haber vuelto al cuarto: recordatorio abajo
+    if (roomCallout()) notice().then((m) => { if (G === g) m.remind('tipRoom', { delay: 1.2 }); }).catch(g.log);
+  }
 
   if (g.page === 'index') mountBox(ctx.activated).catch(g.log);
   mountFragment().catch(g.log);
@@ -116,7 +121,9 @@ function buttonState() {
   const st = progress.stage();
   return st === 'altar' || st === 'puzzle' || st === 'key' ? 'new' : 'normal';
 }
-function refreshButton() { if (G && G.button) G.button.settle(buttonState()); }
+// Con los 5 fragmentos y sin haber vuelto al cuarto: etiqueta "Vuelve al cuarto" bajo el botón.
+const roomCallout = () => progress.stage() === 'puzzle' && !progress.load().gathered;
+function refreshButton() { if (G && G.button) { G.button.settle(buttonState()); G.button.callout(roomCallout()); } }
 
 function hud() {
   const g = G;
@@ -161,7 +168,12 @@ async function scheduleObject(activatedNow) {
   try {
     const { createFloat } = await import(`./float.js${V}`);
     const tx = t();
-    fl = await createFloat({ key, label: tx.collect(tx.names[key]), reduced: g.reduced, ready, onCollect: () => collectObject(fl).catch(g.log) });
+    fl = await createFloat({
+      key, label: tx.collect(tx.names[key]), reduced: g.reduced, ready,
+      onAppear: () => sfx.play('pop'),
+      onTap: () => sfx.play('collect', { n: progress.load().objects.length + 1 }), // campana, más aguda con cada objeto
+      onCollect: () => collectObject(fl).catch(g.log),
+    });
   } finally { if (g.floatWait === ready) g.floatWait = null; }
   if (!fl) return;
   if (G !== g || progress.load().objects.includes(key) || progress.stage() !== 'objects') { fl.destroy(); return; }
@@ -206,6 +218,7 @@ async function collectFragment(idx) {
   const g = G; if (!g) return;
   const before = progress.load().fragments.filter((i) => i !== idx);
   const s = progress.collectFragment(idx);
+  sfx.play('fragment');
   const frag = g.fragment; g.fragment = null;
   if (frag) frag.collect().then(() => frag.destroy());
   const { createFragmentHUD } = await import(`./lib/fragment-hud.js${V}`);
@@ -214,7 +227,9 @@ async function collectFragment(idx) {
   g.fhud = createFragmentHUD({ collected: before, reduced: g.reduced });
   g.fhud.collect(idx);
   refreshButton();
-  if (s.fragments.length === 5) prepareRoom(); else maybePrepare();
+  if (s.fragments.length < 5) { maybePrepare(); return; }
+  prepareRoom();
+  notice().then((m) => { if (G === g) m.tip('tipRoom', { delay: g.reduced ? 1 : 2.4 }); }).catch(g.log); // tras el brillo del HUD
 }
 
 // ───────────────────────────────────────────── cuarto ─────────────────────────────────────────────

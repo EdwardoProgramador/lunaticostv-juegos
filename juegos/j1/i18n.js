@@ -14,6 +14,7 @@ const STR = {
     roomButton: 'El Cuarto del Cholo',
     roomButtonShort: 'El Cuarto',
     roomNew: 'hay algo nuevo',
+    roomCallout: 'Vuelve al cuarto',
     roomLoading: 'Encendiendo el cuarto',
 
     hintGather: 'Reúne los objetos del Cholo',
@@ -31,6 +32,7 @@ const STR = {
     tipObjects: 'Encuentra los 5 objetos del Cholo en todas las ventanas de la página.',
     tipAltar: 'Coloca los objetos en el orden correcto. La libreta guarda la pista.',
     tipFragments: 'Navega por todas las ventanas de la página para encontrar los fragmentos escondidos.',
+    tipRoom: 'Tienes los 5 fragmentos. Vuelve al Cuarto del Cholo para terminar.',
     tipPuzzle: 'Gira los fragmentos hasta que su sombra encaje en el cuadro.',
     tipBox: 'Ve a la caja en Inicio.',
 
@@ -49,6 +51,18 @@ const STR = {
     locked: 'Cerrada',
     revealTitle: 'Abriste la caja del Cholo',
     revealButton: 'Ver contenido exclusivo de CHOLO',
+
+    // contenido exclusivo al terminar (reward.js): video de Alonso Ortiz y carrusel de fotos
+    rewardTitle: 'Contenido exclusivo de CHOLO',
+    rewardSkip: 'Saltar video',
+    rewardSound: 'Activar sonido',
+    rewardPlay: 'Reproducir video',
+    rewardPause: 'Pausar video',
+    rewardReplay: 'Ver el video otra vez',
+    rewardSwipe: 'Desliza para ver las fotos',
+    rewardPrev: 'Foto anterior',
+    rewardNext: 'Foto siguiente',
+    rewardPhoto: (n, total) => `Foto ${n} de ${total}`,
   },
   en: {
     activate: 'Start the Cholo game',
@@ -62,6 +76,7 @@ const STR = {
     roomButton: 'Cholo’s Room',
     roomButtonShort: 'Room',
     roomNew: 'something new',
+    roomCallout: 'Back to the room',
     roomLoading: 'Lighting the room',
 
     hintGather: 'Gather the Cholo’s objects',
@@ -78,6 +93,7 @@ const STR = {
     tipObjects: 'Find Cholo’s 5 objects in every window of the site.',
     tipAltar: 'Place the objects in the right order. The notebook holds the clue.',
     tipFragments: 'Browse every window of the site to find the hidden fragments.',
+    tipRoom: 'You have all 5 fragments. Go back to Cholo’s Room to finish.',
     tipPuzzle: 'Turn the fragments until their shadow fits the painting.',
     tipBox: 'Go to the box on the Home page.',
 
@@ -96,6 +112,17 @@ const STR = {
     locked: 'Locked',
     revealTitle: 'You opened Cholo’s box',
     revealButton: 'See exclusive CHOLO content',
+
+    rewardTitle: 'Exclusive CHOLO content',
+    rewardSkip: 'Skip video',
+    rewardSound: 'Turn sound on',
+    rewardPlay: 'Play video',
+    rewardPause: 'Pause video',
+    rewardReplay: 'Watch the video again',
+    rewardSwipe: 'Swipe to see the photos',
+    rewardPrev: 'Previous photo',
+    rewardNext: 'Next photo',
+    rewardPhoto: (n, total) => `Photo ${n} of ${total}`,
   },
 };
 

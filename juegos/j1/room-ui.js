@@ -14,7 +14,7 @@
 import * as THREE from './vendor/three-0.184.0/three.module.min.js';
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, { createTray }, { createAltarOrder }, { createClue }, { createCrystal }, { createShadowPuzzle }, { playRiseShatter, crystalFX }, { buildKey }, { ALTAR_ORDER }, { sparks, flyIcon }, { asset }, { tip, hideTip }] = await Promise.all([
+const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, { createTray }, { createAltarOrder }, { createClue }, { createCrystal }, { createShadowPuzzle }, { playRiseShatter, crystalFX }, { buildKey }, { ALTAR_ORDER }, { sparks, flyIcon }, { asset }, { tip, hideTip }, sfx] = await Promise.all([
   import(`./progress.js${V}`),
   import(`./i18n.js${V}`),
   import(`./lib/room.js${V}`),
@@ -29,6 +29,7 @@ const [progress, { t, bindText }, { createRoom, prefetchRoom, PAINT, WALL_Z }, {
   import(`./lib/dom.js${V}`),
   import(`./lib/paths.js${V}`),
   import(`./lib/notice.js${V}`),
+  import(`./lib/sfx.js${V}`),
 ]);
 
 export const prefetch = () => prefetchRoom();
@@ -150,11 +151,12 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
     const tl = seq = gsap.timeline({ delay: 0.4 });
     tl.to(crystal.materials.crack, { emissiveIntensity: 3, duration: 0.6, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 0)
       .fromTo(FX.light.light, { intensity: 0 }, { intensity: 2, duration: 0.6 }, 0)
+      .call(() => sfx.play('whoosh', { dur: 1.1, vol: 0.1 }), null, 1.0)
       .to(g.position, { x: target.x, y: target.y, z: target.z, duration: 1.1, ease: 'power2.inOut' }, 1.0)
       .to(g.rotation, { y: reduced ? 0 : Math.PI * 2, duration: 1.1, ease: 'power2.inOut' }, 1.0)
       .to(g.scale, { x: 0.3, y: 0.3, z: 0.3, duration: 1.1, ease: 'power2.inOut' }, 1.0)
       .to(FX.light.light.position, { x: target.x, y: target.y, z: target.z + 0.2, duration: 1.1, ease: 'power2.inOut' }, 1.0)
-      .call(() => { frameGlow(); room.shake(0.025, 0.4); }, null, 2.1)
+      .call(() => { frameGlow(); room.shake(0.025, 0.4); sfx.play('impact'); }, null, 2.1)
       .set(g, { visible: false }, 2.15)
       .fromTo(FX.light.flash.material, { opacity: 0 }, { opacity: 0.7, duration: 0.1 }, 2.1)
       .to(FX.light.flash.material, { opacity: 0, duration: 0.8 }, 2.2)
@@ -164,12 +166,15 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
       .call(() => room.setFocus('niche', 1.8), null, 2.6);
     room.flare(tl, 2.1);
     room.openPainting(tl, 2.7, 1.7);
-    tl.set(key, { visible: true }, 3.3)
+    tl.call(() => sfx.play('creak', { dur: 1.8, lo: 90, hi: 320, vol: 0.55 }), null, 2.7) // la puerta del cuadro rechina
+      .call(() => sfx.play('sparkle', { n: 10 }), null, 3.3)
+      .set(key, { visible: true }, 3.3)
       .to(key.scale, { x: 0.52, y: 0.52, z: 0.52, duration: 0.9, ease: 'back.out(1.6)' }, 3.3)
       .call(() => { showKey(true); P.hint('hintTakeKey'); }, null, 4.1);
   }
   function takeKey() {
     if (!canTake) return; showKey(false);
+    sfx.play('key');
     progress.save({ key: true }); if (onProgress) onProgress();
     keyCenter.set(0, 0, 0); keyHolder.localToWorld(keyCenter); const from = room.toScreen(keyCenter);
     sparks(ui, from.x, from.y, 18, 80);

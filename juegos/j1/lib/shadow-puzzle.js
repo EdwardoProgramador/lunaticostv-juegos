@@ -15,11 +15,12 @@
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ clipConvex, area, centroid }, { PUZZLE_SCALE, playFuse, crystalFX }, { toShard }, { glowSprite }] = await Promise.all([
+const [{ clipConvex, area, centroid }, { PUZZLE_SCALE, playFuse, crystalFX }, { toShard }, { glowSprite }, sfx] = await Promise.all([
   import(`./crystal-shape.js${V}`),
   import(`./crystal-fx.js${V}`),
   import(`./crystal.js${V}`),
   import(`./objects.js${V}`),
+  import(`./sfx.js${V}`),
 ]);
 
 // ---------- targets (painting uv: u 0…1 left→right, v 0…1 top→bottom) ----------
@@ -246,7 +247,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
       .to(room.candle, { calm: 1, duration: 0.4 }, 0)
       .fromTo(GL.mat, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.5)
       .to(GL.mat, { opacity: 0.55, duration: 0.25, yoyo: true, repeat: 3 }, 0.85)
-      .call(() => room.shake(0.012, 0.3), null, 0.5);
+      .call(() => { room.shake(0.012, 0.3); sfx.play('confirm', { big: true }); }, null, 0.5);
     room.flare(tl, 0.5);
     const F = 2.0;
     tl.call(() => { S.done = true; }, null, F)
@@ -288,6 +289,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
         gsap.timeline().fromTo(sp.material, { opacity: 0 }, { opacity: 0.95, duration: 0.09 }).to(sp.material, { opacity: 0, duration: 0.6, ease: 'power2.out' });
         gsap.fromTo(sp.scale, { x: 0.12, y: 0.12 }, { x: 0.55, y: 0.55, duration: 0.65, ease: 'power2.out' });
         if (!reduced) FX.trail.emit(_w, 12, 0.14);
+        sfx.play('arrive', { n });
         gsap.timeline().to(room.candle.flame.state, { flare: 1.35, duration: 0.12, ease: 'power2.out' }).to(room.candle.flame.state, { flare: 1, duration: 0.5 });
         gsap.timeline().to(room.candle, { base: 8, duration: 0.12 }).to(room.candle, { base: 6.5, duration: 0.6 });
       };
@@ -298,6 +300,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
       ctrl.add(_a.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize().multiplyScalar(from.distanceTo(end) * 0.28));
       const q0 = new THREE.Quaternion().setFromEuler(new THREE.Euler((Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 4));
       tl.set(g, { visible: true }, at)
+        .call(() => sfx.play('whoosh', { dur: DUR, vol: 0.06 }), null, at)
         .to({}, { duration: DUR, ease: 'power3.out', onUpdate() {
           const k = this.ratio, u = 1 - k;
           g.position.set(u * u * from.x + 2 * u * k * ctrl.x + k * k * end.x, u * u * from.y + 2 * u * k * ctrl.y + k * k * end.y, u * u * from.z + 2 * u * k * ctrl.z + k * k * end.z);

@@ -210,6 +210,20 @@
 .lj1-rbtn:hover .lj1-title { filter: brightness(1.12); }
 .lj1-rbtn:focus { outline: none; }
 .lj1-rbtn:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: 2px; }
+/* etiqueta "Vuelve al cuarto" colgando bajo el botón, con flecha hacia él (5 fragmentos, hasta entrar al cuarto) */
+.lj1-rbtn__callout {
+  position: absolute; left: 50%; top: calc(100% + 12px); margin-left: -80px; width: 160px; padding: 8px 10px; pointer-events: none; text-align: center;
+  font: 700 13px/1.1 var(--lj1-f-ui); letter-spacing: .16em; text-transform: uppercase; white-space: normal; color: #F2D2BC;
+  background: #140f1c; border: 1px solid rgba(255,154,60,.75); border-radius: 4px; box-shadow: 0 0 18px rgba(255,154,60,.45), 0 6px 16px rgba(0,0,0,.45);
+}
+.lj1-rbtn__callout[hidden] { display: none; }
+.lj1-rbtn__callout::before {
+  content: ""; position: absolute; left: 50%; bottom: 100%; margin-left: -7px;
+  border: 7px solid transparent; border-top: 0; border-bottom: 8px solid rgba(255,154,60,.9);
+}
+/* en móvil el botón va pegado a la derecha: la etiqueta se alinea a su borde derecho para no salirse de la pantalla */
+@media (max-width: 960px) { .lj1-rbtn__callout { left: auto; right: -6px; margin-left: 0; } .lj1-rbtn__callout::before { left: auto; right: 22px; margin-left: 0; } }
+.nav.is-menu-open .lj1-rbtn__callout { visibility: hidden; }
 .lj1-rbtn__ember { position: absolute; left: 50%; top: 60%; width: 4px; height: 4px; margin: -2px; border-radius: 50%; background: #FFD6A0; box-shadow: 0 0 6px 2px rgba(255,154,60,.8); pointer-events: none; }
 /* nombre corto donde no cabe el largo: entre 961 y 1040 px (los enlaces se partirían en dos filas) y en ≤ 640 px */
 @media (min-width: 961px) and (max-width: 1040px), (max-width: 640px) {
@@ -413,4 +427,85 @@
 @container (max-width: 640px) {
   .lj1-btn { font-size: 15px; letter-spacing: .14em; padding: 10px 18px; }
   .lj1-reveal__cta { max-width: 100%; }
+}
+
+/* ── Contenido exclusivo (reward.js): video de Alonso Ortiz → carrusel de fotos, dentro de la pantalla final ── */
+.lj1-reveal__inner[hidden], .lj1-reward[hidden], .lj1-reward__stage[hidden], .lj1-reward .lj1-btn[hidden] { display: none; }
+.lj1-reward { width: 100%; display: flex; justify-content: center; }
+.lj1-reward__stage { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.lj1-reward__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.lj1-reward .lj1-btn { min-height: 44px; padding: 8px 18px; font-size: 14px; }
+/* video vertical (9:16) con marco de cobre; alto = pantalla menos los botones, sin pasar del ancho (88vw: la pantalla final deja 6% a cada lado) */
+.lj1-reward__frame {
+  position: relative; height: min(calc(100vh - 170px), calc(88vw * 16 / 9)); max-height: 860px; aspect-ratio: 9 / 16; max-width: 100%; overflow: hidden;
+  border: 2px solid transparent; background: #000 padding-box, linear-gradient(135deg, #F2D2BC, #B8796A 40%, #5a3a33 60%, #B8796A) border-box;
+  box-shadow: 0 0 0 1px var(--lj1-ink), 0 0 60px rgba(255,154,60,.28), 0 16px 40px rgba(0,0,0,.6);
+}
+@supports (height: 1dvh) { .lj1-reward__frame { height: min(calc(100dvh - 170px), calc(88vw * 16 / 9)); } }
+.lj1-reward__frame video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+.lj1-reward__toggle {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer;
+  appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
+}
+.lj1-reward__toggle:focus { outline: none; }
+.lj1-reward__toggle:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: -4px; }
+.lj1-reward__toggle span { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; margin: -38px 0 0 -38px; border-radius: 50%; opacity: 0; transition: opacity .25s; background: rgba(12,10,20,.72); box-shadow: 0 0 0 2px rgba(242,210,188,.7), 0 0 30px rgba(255,154,60,.5); }
+.lj1-reward__toggle span::before { content: ""; position: absolute; left: 30px; top: 22px; border-style: solid; border-width: 16px 0 16px 26px; border-color: transparent transparent transparent #F2D2BC; }
+.lj1-reward__toggle.is-paused span { opacity: 1; }
+.lj1-reward__bar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(242,210,188,.18); pointer-events: none; }
+.lj1-reward__bar i { display: block; height: 100%; background: var(--lj1-candle); transform: scaleX(0); transform-origin: 0 50%; }
+/* carrusel: cada foto (vertical 2:3) se centra; las vecinas asoman a los lados. Desliza con el dedo, arrastra con el ratón. */
+.lj1-reward__title { font-size: clamp(28px, 4.4cqi, 56px); text-align: center; max-width: 24ch; text-wrap: balance; }
+.lj1-reward__gallery { --lj1-w: min(70vw, 38vh); }
+@supports (height: 1dvh) { .lj1-reward__gallery { --lj1-w: min(70vw, 38dvh); } }
+.lj1-reward__carousel { position: relative; width: 100vw; max-width: 1400px; }
+.lj1-reward__track {
+  display: flex; gap: 18px; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scroll-snap-type: x mandatory;
+  padding: 10px calc(50% - var(--lj1-w) / 2); scrollbar-width: none; -webkit-overflow-scrolling: touch; touch-action: pan-x; cursor: grab;
+}
+.lj1-reward__track::-webkit-scrollbar { display: none; }
+.lj1-reward__track.is-dragging { cursor: grabbing; scroll-snap-type: none; }
+.lj1-reward__track.is-dragging * { pointer-events: none; }
+.lj1-reward__track:focus { outline: none; }
+.lj1-reward__track:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: -2px; }
+.lj1-reward__slide {
+  flex: none; width: var(--lj1-w); aspect-ratio: 2 / 3; scroll-snap-align: center; overflow: hidden; background: #140f1c;
+  border: 2px solid transparent; background: #140f1c padding-box, linear-gradient(135deg, #F2D2BC, #B8796A 40%, #5a3a33 60%, #B8796A) border-box;
+  box-shadow: 0 0 0 1px var(--lj1-ink), 0 12px 30px rgba(0,0,0,.55);
+}
+.lj1-reward__slide picture, .lj1-reward__slide img { display: block; width: 100%; height: 100%; }
+.lj1-reward__slide img { object-fit: cover; -webkit-user-select: none; user-select: none; }
+.lj1-reward__arrow {
+  position: absolute; top: 50%; z-index: 2; width: 48px; height: 48px; margin: -24px 0 0; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent; background: linear-gradient(#140f1c, #0c0a14) padding-box, linear-gradient(135deg, #F2D2BC, #B8796A 40%, #5a3a33 60%, #B8796A) border-box;
+  box-shadow: 0 0 0 1px #1E1A22, 0 6px 18px rgba(0,0,0,.5); transition: box-shadow .25s, opacity .25s;
+  appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent;
+}
+.lj1-reward__arrow--prev { left: calc(50% - var(--lj1-w) / 2 - 66px); }
+.lj1-reward__arrow--next { right: calc(50% - var(--lj1-w) / 2 - 66px); }
+.lj1-reward__arrow::before { content: ""; position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -4px; border: solid #F2D2BC; border-width: 0 0 2px 2px; transform: rotate(45deg); }
+.lj1-reward__arrow--next::before { margin-left: -8px; transform: rotate(-135deg); }
+.lj1-reward__arrow:hover { box-shadow: 0 0 0 1px #1E1A22, 0 0 22px rgba(255,154,60,.4); }
+.lj1-reward__arrow:disabled { opacity: .3; cursor: default; box-shadow: 0 0 0 1px #1E1A22; }
+.lj1-reward__arrow:focus { outline: none; }
+.lj1-reward__arrow:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: 3px; }
+.lj1-reward__dots { display: flex; justify-content: center; gap: 4px; }
+.lj1-reward__dots button { width: 28px; height: 28px; margin: 0; padding: 0; border: 0; background: none; cursor: pointer; appearance: none; -webkit-appearance: none; -webkit-tap-highlight-color: transparent; }
+.lj1-reward__dots i { display: block; width: 9px; height: 9px; margin: auto; border-radius: 50%; background: rgba(242,210,188,.3); transition: background .25s, transform .25s; }
+.lj1-reward__dots button[aria-current] i { background: var(--lj1-candle); transform: scale(1.3); box-shadow: 0 0 8px rgba(255,154,60,.7); }
+.lj1-reward__dots button:focus { outline: none; }
+.lj1-reward__dots button:focus-visible { outline: 2px solid var(--lj1-candle); outline-offset: -2px; border-radius: 50%; }
+.lj1-reward__swipe { display: none; margin: -6px 0 0; font: 600 13px/1.2 var(--lj1-f-ui); letter-spacing: .18em; text-transform: uppercase; color: var(--lj1-muted); }
+/* táctil: se desliza con el dedo; sin flechas que tapen las fotos */
+@media (hover: none) and (pointer: coarse) {
+  .lj1-reward__arrow { display: none; }
+  .lj1-reward__swipe { display: block; }
+}
+@media (max-width: 640px) { .lj1-reward__arrow { display: none; } .lj1-reward__swipe { display: block; } .lj1-reward__track { gap: 12px; } }
+/* pantallas bajitas (móvil horizontal): sin título, todo más compacto */
+@media (max-height: 520px) {
+  .lj1-reward__title, .lj1-reward__swipe { display: none; }
+  .lj1-reward__stage { gap: 8px; }
+  .lj1-reward__frame { height: calc(100vh - 110px); }
+  .lj1-reward__gallery { --lj1-w: min(70vw, 42vh); }
 }

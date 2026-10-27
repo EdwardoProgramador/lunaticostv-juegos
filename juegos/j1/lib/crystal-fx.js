@@ -4,7 +4,7 @@
 import * as THREE from '../vendor/three-0.184.0/three.module.min.js';
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const { glowSprite, glowTexture } = await import(`./objects.js${V}`);
+const [{ glowSprite, glowTexture }, sfx] = await Promise.all([import(`./objects.js${V}`), import(`./sfx.js${V}`)]);
 
 export const CRYSTAL_SCALE = 0.42;   // rising from the altar (14)
 export const PUZZLE_SCALE = 0.72;    // floating in front of the painting (16, 17)
@@ -112,7 +112,7 @@ export function playRiseShatter(room, crystal, page, { reduced = false } = {}) {
   // Callers that nest this timeline in their own must await room.need('crystal') first (page 14 does).
   const wait = !room.has('crystal'), tl = gsap.timeline({ onComplete: off, paused: wait });
   if (wait) room.need('crystal').then(() => tl.parent && tl.play()); // killed meanwhile: stays stopped
-  tl.call(() => room.setFocus('crystal', 1.4), null, 0)
+  tl.call(() => { room.setFocus('crystal', 1.4); sfx.play('rise', { dur: 2.3 }); }, null, 0)
     .to(g.position, { x: top.x, y: top.y, z: top.z, duration: 1.25, ease: 'power3.out' }, 0)
     .to(g.scale, { x: CRYSTAL_SCALE, y: CRYSTAL_SCALE, z: CRYSTAL_SCALE, duration: 1.15, ease: 'back.out(1.4)' }, 0)
     .to(g.rotation, { y: 0, duration: 1.4, ease: 'power3.out' }, 0)
@@ -126,6 +126,7 @@ export function playRiseShatter(room, crystal, page, { reduced = false } = {}) {
   tl.call(() => {
     sh.a = 0; g.position.copy(top); g.rotation.z = 0;
     P.burst(top); room.shake(0.07, 0.6);
+    sfx.play('shatter'); sfx.play('whoosh', { dur: 1.0, vol: 0.12 });
   }, null, B)
     .fromTo(L.flash.material, { opacity: 0 }, { opacity: 1, duration: 0.08 }, B)
     .to(L.flash.material, { opacity: 0, duration: 0.7, ease: 'power2.out' }, B + 0.1)
@@ -168,7 +169,7 @@ export function playFuse(room, crystal, center, tl = gsap.timeline(), at = 0, sc
     .fromTo(L.glow.material, { opacity: 0 }, { opacity: 0.6, duration: 0.3 }, E)
     .to(L.glow.material, { opacity: 0.25, duration: 1.4 }, E + 0.3)
     .fromTo(L.light, { intensity: 6 }, { intensity: 1.2, duration: 1.4 }, E)
-    .call(() => room.shake(0.02, 0.4), null, E)
+    .call(() => { room.shake(0.02, 0.4); sfx.play('fuse'); }, null, E)
     .to(crystal.materials.crack, { emissiveIntensity: 0.35, duration: 1.6, ease: 'power2.out' }, E + 0.1);
   return tl;
 }

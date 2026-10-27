@@ -1,16 +1,18 @@
 // Altar with order (level 2): place the 5 objects from the tray on the 5 altar places.
 // Desktop: drag. Mobile: tap an object, then tap a place (drag works too). Objects can be moved until all 5 are down.
 // All 5 placed → wrong: tremble + cold candle + back to the tray · right: places light up one by one, candle flares, onSolved(tl).
+// Sonido: golpecito al apoyar cada objeto; incorrecto = trueno; correcto = una campana por lugar y el acierto al avivarse la vela.
 //   const order = createAltarOrder({ room, page, tray, clue, onSolved });  order.enable(true)
 // Port: textos de ../i18n.js (page.hint recibe la clave), teclado (Enter/Espacio en ranuras y lugares = tocar),
 // onClueTorn para guardar que la hoja ya se arrancó, reset({ clueTorn }) para reabrir el cuarto con la hoja en la bandeja.
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
-const [{ t }, { ALTAR_ORDER, ITEMS }, { sparks, flyIcon }, { hudIcon }] = await Promise.all([
+const [{ t }, { ALTAR_ORDER, ITEMS }, { sparks, flyIcon }, { hudIcon }, sfx] = await Promise.all([
   import(`../i18n.js${V}`),
   import(`./level2-data.js${V}`),
   import(`./dom.js${V}`),
   import(`./paths.js${V}`),
+  import(`./sfx.js${V}`),
 ]);
 
 const icon = k => hudIcon(k);
@@ -53,6 +55,7 @@ export function createAltarOrder({ room, page, tray, clue, onSolved, onClueTorn 
     if (occ && occ !== key) { if (typeof from === 'number' && from >= 0) room.putObject(occ, from); else toTray(occ, i); }
     room.putObject(key, i); tray.set(key, false);
     sparks(ui, scr[i].x, scr[i].y, 12, 50);
+    sfx.play('place');
     check();
   }
   function toTray(key, fromPlace = room.objects[key].place, animate = true) {
@@ -69,6 +72,7 @@ export function createAltarOrder({ room, page, tray, clue, onSolved, onClueTorn 
   }
   function wrong() {
     const tl = gsap.timeline();
+    sfx.play('thunder');
     room.places.forEach(p => {
       const h = room.objects[p.key].holder, x0 = h.position.x;
       tl.to(h.position, { x: () => x0 + gsap.utils.random(-0.008, 0.008), duration: 0.045, repeat: 13, yoyo: true, ease: 'none', repeatRefresh: true }, 0).set(h.position, { x: x0 }, 0.66);
@@ -87,8 +91,9 @@ export function createAltarOrder({ room, page, tray, clue, onSolved, onClueTorn 
   function correct() {
     done = true; enable(false);
     const tl = gsap.timeline();
-    room.places.forEach((p, i) => room.lightPlace(i, tl, 0.1 + i * 0.32));
+    room.places.forEach((p, i) => { room.lightPlace(i, tl, 0.1 + i * 0.32); tl.call(() => sfx.play('chain', { i }), null, 0.1 + i * 0.32); });
     room.flare(tl, 1.75);
+    tl.call(() => sfx.play('confirm'), null, 1.75);
     tl.call(() => page.hint(''), null, 0.1);
     if (onSolved) tl.call(() => onSolved(), null, 2.3);
   }

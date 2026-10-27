@@ -3,6 +3,7 @@
 // segundos (según su largo) y se va. Una a la vez: la nueva sustituye a la anterior. Cada instrucción se muestra una sola
 // vez por partida (progress.tips).
 //   tip('tipAltar', { mount, delay, onHide })  → false si ya se mostró en esta partida
+//   remind('tipRoom', { delay })               → igual, pero puede repetirse (recordatorio en cada página)
 //   hideTip()                                  → cierra la que esté a la vista (p. ej. al cerrar el cuarto)
 // mount: document.body (en la página: capa fija abajo, debajo del menú) o la capa de UI del cuarto (arriba, bajo el título).
 import { gsap } from '../vendor/gsap-3.12.5/gsap.min.js';
@@ -52,5 +53,8 @@ export function tip(key, opts) {
   progress.save({ tips: shown.concat(key) });
   return show(key, opts);
 }
+
+// Recordatorio: la misma instrucción, pero se puede repetir (no queda registrada en progress.tips).
+export function remind(key, opts) { return show(key, opts); }
 
 export function hideTip() { if (current) current.hide(); }

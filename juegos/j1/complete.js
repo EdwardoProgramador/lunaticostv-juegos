@@ -2,8 +2,12 @@
 // al centro, respira tres veces y un destello de vela abre El Cuarto del Cholo en "objetos listos". Sustituye a la vieja
 // recompensa automática del altar. Una sola capa a pantalla completa, por encima del cuarto: el cuarto se abre detrás del
 // destello y esta capa se desvanece. Con movimiento reducido: fundidos, sin desplazamientos.
+// Sonido: una campanita por ranura, los objetos laten como corazón (tres latidos, cada uno más fuerte) y el destello suena
+// a acierto grande.
 //   playComplete({ hud, reduced, openRoom, onDone })
 import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
+const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
+const sfx = await import(`./lib/sfx.js${V}`);
 
 export function playComplete({ hud, reduced = false, openRoom, onDone }) {
   const root = document.createElement('div');
@@ -17,6 +21,7 @@ export function playComplete({ hud, reduced = false, openRoom, onDone }) {
 
   if (reduced) {
     return gsap.timeline()
+      .call(() => sfx.play('confirm', { big: true }), null, 1.4)
       .to(dim, { opacity: 0.9, duration: 0.6, ease: 'power1.inOut' }, 1.4)
       .to(hud.el, { opacity: 0, duration: 0.4 }, 1.8)
       .call(openRoom, null, 2.1)
@@ -35,7 +40,8 @@ export function playComplete({ hud, reduced = false, openRoom, onDone }) {
   const start = 1.05;
   slots.forEach((s, i) => {
     const at = start + i * 0.15;
-    tl.fromTo(sflash[i], { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1.15, duration: 0.12, ease: 'power2.out' }, at)
+    tl.call(() => sfx.play('chain', { i }), null, at)
+      .fromTo(sflash[i], { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1.15, duration: 0.12, ease: 'power2.out' }, at)
       .to(sflash[i], { opacity: 0, scale: 0.8, duration: 0.32, ease: 'power2.in' }, at + 0.12)
       .fromTo(imgs[i], { filter: 'brightness(2.1)' }, { filter: 'brightness(1)', duration: 0.45, ease: 'power2.out' }, at);
   });
@@ -52,6 +58,7 @@ export function playComplete({ hud, reduced = false, openRoom, onDone }) {
     const rr = hud.el.getBoundingClientRect();
     gsap.set(hud.el, { transformOrigin: `${pr.left + pr.width / 2 - rr.left}px ${pr.top + pr.height / 2 - rr.top}px` });
   }, null, mv - 0.01)
+    .call(() => sfx.play('whoosh', { dur: 0.5, vol: 0.07 }), null, mv)
     .to(hud.el, { x: () => dx, y: () => dy, scale: () => S, duration: 0.5, ease: 'power3.inOut' }, mv)
     .to(dim, { opacity: 0.45, duration: 0.5, ease: 'power1.out' }, mv)
     .fromTo(glow, { opacity: 0, scale: 0.5 }, { opacity: 0.35, scale: 0.8, duration: 0.5 }, mv);
@@ -60,7 +67,8 @@ export function playComplete({ hud, reduced = false, openRoom, onDone }) {
   const br = mv + 0.5, P = 0.36;
   [[1.07, 0.6, 1.1], [1.1, 0.8, 1.45], [1.14, 1, 1.9]].forEach(([k, go, gs], i) => {
     const at = br + i * P;
-    tl.to(hud.el, { scale: () => S * k, filter: `brightness(${1 + i * 0.12})`, duration: P * 0.45, ease: 'sine.out' }, at)
+    tl.call(() => sfx.play('heartbeat', { k: i }), null, at)
+      .to(hud.el, { scale: () => S * k, filter: `brightness(${1 + i * 0.12})`, duration: P * 0.45, ease: 'sine.out' }, at)
       .to(glow, { opacity: go, scale: gs, duration: P * 0.45, ease: 'sine.out' }, at);
     if (i < 2) tl.to(hud.el, { scale: () => S, filter: 'brightness(1)', duration: P * 0.55, ease: 'sine.in' }, at + P * 0.45)
       .to(glow, { opacity: go * 0.55, scale: gs * 0.85, duration: P * 0.55, ease: 'sine.in' }, at + P * 0.45);
@@ -69,6 +77,7 @@ export function playComplete({ hud, reduced = false, openRoom, onDone }) {
   // último pulso: casi negro, destello de vela, el cuarto se abre detrás
   const last = br + 2 * P;
   tl.to(dim, { opacity: 0.97, duration: 0.3, ease: 'power2.in' }, last)
+    .call(() => sfx.play('confirm', { big: true }), null, last + 0.08)
     .to(flash, { opacity: 1, scale: 1.6, duration: 0.24, ease: 'power2.out' }, last + 0.08)
     .to([hud.el, glow], { opacity: 0, duration: 0.18 }, last + 0.2)
     .call(openRoom, null, last + 0.3)
