@@ -17,7 +17,7 @@ estudio.html
 juegos/
   boot.js
   config.js
-  j1/            ← todo el juego (código, estilos, texturas, fuentes, Three.js y GSAP locales)
+  j1/            ← todo el juego (código, estilos, texturas, fuentes, sonido, video y fotos del premio, Three.js y GSAP locales)
 ```
 
 Después **borra de la copia** `juegos/README.md` y `juegos/j1/INTEGRATION-N2.md` (o no los subas al servidor). El
@@ -79,7 +79,7 @@ Para quitar el juego de una página concreta sin tocar el HTML, sácala de `game
 ### Cambiar la versión en cada publicación
 
 ```js
-export const version = '2026-10-16.2';
+export const version = '2026-10-26.2';
 ```
 
 **Cada vez que publiques cualquier cambio dentro de `juegos/`, cambia este valor** (cualquier texto distinto vale;
@@ -149,14 +149,25 @@ objects: {
 Objetos: `cassette`, `microphone`, `candle`, `notebook`, `medallion`, cada uno en una página distinta. Para sacar
 una página del sorteo, quítala de `objectPages` (tienen que quedar al menos 5).
 
-### Pendiente: el enlace del premio
+### El premio: video y fotos
+
+Al abrir la caja aparece "Abriste la caja del Cholo" y enseguida el contenido exclusivo, dentro del propio juego: el
+video de Alonso Ortiz se reproduce solo y al terminar (o con "Saltar video") sale un carrusel con 5 fotos. Los archivos
+están en `juegos/j1/assets/reward/` (video H.264 de ~3 MB y fotos AVIF con respaldo JPEG) y solo se descargan al abrir
+la caja. Para cambiarlos, `juegos/README.md` → "Contenido exclusivo" explica los nombres y los comandos.
 
 ```js
 rewardLink: '#',
 ```
 
-Es el destino del botón final "Ver contenido exclusivo de CHOLO". **Hoy es `'#'` (no hace nada): pon la URL real
-antes de publicar.** Si es de otro dominio, se abre en una pestaña nueva.
+Opcional: con una URL aquí, debajo del carrusel aparece además el botón "Ver contenido exclusivo de CHOLO" que lleva a
+ella (si es de otro dominio, en una pestaña nueva). Con `'#'` no hay botón.
+
+### Sonido
+
+El juego tiene efectos de sonido (campana, pop, latidos, trueno, puerta que rechina…), generados en el navegador sin
+archivos de audio. No hay nada que configurar. La lista de efectos y dónde suena cada uno está en `juegos/README.md` →
+"Sonido".
 
 ## 4. Archivos que no se publican
 
@@ -177,4 +188,8 @@ Con `debug: false`, en Chrome (sin ventana, caché desactivada) a 1440 px y 390 
   con `<link rel="preload">` en estudio, proyectos, contacto y tienda) y sale igual con el juego apagado.
 - `?j1stage`, `?j1reset`, `?calidad` y `?j1debug` no hacen nada, ni al cargar ni navegando entre páginas.
 - La luna activa el juego en todas las páginas del juego. En el catálogo el juego no carga.
+
+Actualización (versión `2026-10-26.2`), en Chrome a 1366 px y 390 px: el video del premio se reproduce solo y con
+sonido, el carrusel avanza y al cerrar la pantalla final todo vuelve a la normalidad; la pista "Vuelve al cuarto"
+aparece con los 5 fragmentos; los efectos de sonido se disparan en su momento (luna, objetos, 5/5, caja). Cero errores.
 - Prueba de control con `debug: true`: los atajos sí funcionan.

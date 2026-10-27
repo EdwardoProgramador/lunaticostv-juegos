@@ -6,22 +6,27 @@ reutilizable de su `lib/` y los assets que de verdad se usan.
 ## Flujo en el sitio
 
 1. Antes de activar: solo `boot.js` + `config.js` + `j1/gate.js` + `j1/progress.js` (pocos KB). La luna del logo
-   (`svg.nav__mark`) parpadea suave; un botón transparente encima de la luna (fuera del `<a>`, accesible con teclado)
-   activa el juego. El texto "LunáticosTv" sigue siendo el enlace a Inicio.
+   (`svg.nav__mark`) brilla con un halo cálido y destella en naranja; un botón transparente encima de la luna (fuera del
+   `<a>`, accesible con teclado) activa el juego con un sonido de campanas. El texto "LunáticosTv" sigue siendo el
+   enlace a Inicio.
 2. Al activar: se carga `j1/main.js` → HUD con 5 siluetas, botón "El Cuarto del Cholo" (se materializa), objeto de la
    página (mapeo original: index→cassette, estudio→micrófono, proyectos→libreta, talento→medalla, contacto→vela) y la
    caja cerrada solo en Inicio.
 3. Nivel 1: el 5.º objeto dispara la secuencia 5/5 (HUD respira + destello, página 09) y abre el cuarto en
-   "objetos listos". Sustituye a la recompensa automática del altar (`reward.js` se elimina).
+   "objetos listos". Sustituye a la recompensa automática del altar del export original (aquel `reward.js` se eliminó;
+   el `reward.js` actual es otra cosa: el video y las fotos del final, punto 7).
 4. Cuarto (overlay a pantalla completa, X y Esc cierran): hoja de la libreta como objeto propio de la bandeja, altar con
    fases lunares, orden correcto en `lib/level2-data.js`, error = tiembla y regresa, acierto = cristal sube y estalla,
    fragmentos salen de pantalla, "Encuentra los fragmentos".
 5. Nivel 2: un fragmento estático por página (2D, SVG con la textura del cristal, sin WebGL), posiciones en
    `config.js`, con destello ocasional; al recogerlo aparece el HUD de fragmentos.
-6. Con 5 fragmentos el botón del cuarto pulsa → puzzle de sombras (lunas gemelas) → el cristal se funde, se abre el
-   cuadro, se toma la llave → "Ve a la caja en Inicio".
-7. Caja en Inicio: sin llave tiembla ("Cerrada"); con llave gira, se abre y muestra "Ver contenido exclusivo de CHOLO"
-   (enlace de `config.js`, hoy `#`). Desde ahí el juego queda completado hasta recargar (ver `../README.md`).
+6. Con 5 fragmentos: aviso "Vuelve al Cuarto del Cholo" y etiqueta con flecha bajo el botón del cuarto (que pulsa)
+   hasta entrar → puzzle de sombras (lunas gemelas) → el cristal se funde, se abre el cuadro, se toma la llave →
+   "Ve a la caja en Inicio".
+7. Caja en Inicio: sin llave tiembla ("Cerrada"); con llave gira y se abre → "Abriste la caja del Cholo" → video de
+   Alonso Ortiz (automático) → carrusel de 5 fotos (`reward.js`, archivos en `assets/reward/`). Desde ahí el juego
+   queda completado hasta recargar (ver `../README.md`).
+8. Todo el recorrido tiene efectos de sonido sintetizados (`lib/sfx.js`; tabla en `../README.md` → "Sonido").
 
 ## Estado
 
