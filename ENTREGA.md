@@ -154,7 +154,7 @@ una página del sorteo, quítala de `objectPages` (tienen que quedar al menos 5)
 ### El premio: video y fotos
 
 Al abrir la caja aparece "Abriste la caja del Cholo" y enseguida el contenido exclusivo, dentro del propio juego: el
-video de Alonso Ortiz se reproduce solo y al terminar (o con "Saltar video") sale un carrusel con 5 fotos. Los archivos
+video de Alonso Ortiz se reproduce solo y al terminar (o con "Saltar video") sale un carrusel con 9 fotos. Los archivos
 están en `juegos/j1/assets/reward/` (video H.264 de ~3 MB y fotos AVIF con respaldo JPEG) y solo se descargan al abrir
 la caja. Para cambiarlos, `juegos/README.md` → "Contenido exclusivo" explica los nombres y los comandos.
 

@@ -72,7 +72,7 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 | `room-ui.js` | El cuarto a pantalla completa (X y Esc cierran) y sus estados según el progreso. |
 | `fragments.js` | Fragmento de cristal escondido en la página (SVG 2D, sin WebGL). Solo se dibuja cerca de la pantalla. |
 | `box.js` | Caja en Inicio y pantalla final. Abierta, se queda abierta hasta recargar; un clic vuelve a mostrar la pantalla final. |
-| `reward.js` | Contenido exclusivo de la pantalla final: el video de Alonso Ortiz se reproduce solo (si el navegador no deja sonar, arranca en silencio con "Activar sonido"; "Saltar video" va a las fotos) y luego un carrusel de 5 fotos (deslizar, arrastrar, flechas, puntos, teclado). El video empieza a descargarse en el clic que abre la caja, nunca antes. |
+| `reward.js` | Contenido exclusivo de la pantalla final: el video de Alonso Ortiz se reproduce solo (si el navegador no deja sonar, arranca en silencio con "Activar sonido"; "Saltar video" va a las fotos) y luego un carrusel de 9 fotos (deslizar, arrastrar, flechas, puntos, teclado). El video empieza a descargarse en el clic que abre la caja, nunca antes. |
 | `game.css` | Todos los estilos, prefijo `.lj1-` (las `@font-face` las declara `main.js`, con `?v=`). Capas: fragmento 40, caja 44, objeto 45, HUD 85, instrucciones 86 (debajo del menú del sitio y del carrito 900); cuarto 1050, secuencia 5/5 1060, pantalla final 1070 (pantalla completa, debajo del fondo/cajón del carrito 1099/1100 y de la intro de video). |
 | `lib/` | Modelos, cuarto, render, superficies, altar, bandeja, hoja, cristal, puzzle + reunión de fragmentos, llave, caja, HUDs, `notice.js` (instrucciones), `sfx.js` (efectos de sonido) y `debug.js` (interruptor de los atajos de prueba). |
 | `vendor/` | `three-0.184.0/` (Three.js + addons de post-proceso) y `gsap-3.12.5/`, servidos desde el sitio, sin modificar (en los addons solo cambia la ruta del import de `three`). La carpeta lleva la versión de la librería. |
@@ -84,8 +84,8 @@ abierto, cristal entero). Recargar o volver a entrar al sitio lo reinicia todo.
 | --- | --- |
 | `video.mp4` | H.264 + AAC, 720×1280 (vertical), `faststart` (empieza a sonar antes de bajar entero), ~3 MB. |
 | `poster.jpg` | Primer cuadro del video, mientras carga. |
-| `foto-1…5-800.avif`, `foto-1…5-1200.avif` | Las fotos en AVIF (el navegador elige el tamaño según la pantalla). |
-| `foto-1…5-1200.jpg` | Respaldo JPEG para navegadores sin AVIF. |
+| `foto-1…9-800.avif`, `foto-1…9-1200.avif` | Las fotos en AVIF (el navegador elige el tamaño según la pantalla). |
+| `foto-1…9-1200.jpg` | Respaldo JPEG para navegadores sin AVIF. |
 
 Para cambiar el video o las fotos, deja los originales **fuera** de la carpeta del sitio (si no, se publican) y genera los
 archivos con los mismos nombres. Desde la raíz del proyecto (`ffmpeg` + `sips` de macOS):

@@ -24,7 +24,7 @@ reutilizable de su `lib/` y los assets que de verdad se usan.
    hasta entrar → puzzle de sombras (lunas gemelas) → el cristal se funde, se abre el cuadro, se toma la llave →
    "Ve a la caja en Inicio".
 7. Caja en Inicio: sin llave tiembla ("Cerrada"); con llave gira y se abre → "Abriste la caja del Cholo" → video de
-   Alonso Ortiz (automático) → carrusel de 5 fotos (`reward.js`, archivos en `assets/reward/`). Desde ahí el juego
+   Alonso Ortiz (automático) → carrusel de 9 fotos (`reward.js`, archivos en `assets/reward/`). Desde ahí el juego
    queda completado hasta recargar (ver `../README.md`).
 8. Todo el recorrido tiene efectos de sonido sintetizados (`lib/sfx.js`; tabla en `../README.md` → "Sonido").
 

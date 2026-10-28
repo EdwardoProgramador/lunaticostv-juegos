@@ -1,5 +1,5 @@
 // Contenido exclusivo al terminar el juego (dentro de la pantalla final de box.js): primero el video de Alonso Ortiz, que se
-// reproduce solo, y al terminar (o con "Saltar video") un carrusel con las 5 fotos que se desliza con el dedo, flechas,
+// reproduce solo, y al terminar (o con "Saltar video") un carrusel con las 9 fotos que se desliza con el dedo, flechas,
 // puntos o el teclado.
 // · Archivos en assets/reward/: video.mp4 (H.264 720×1280, ~3 MB, se reproduce en cualquier navegador) + poster.jpg, y cada
 //   foto en AVIF (800 y 1200 px de ancho) con JPEG de respaldo (1200 px) para navegadores sin AVIF.
@@ -11,7 +11,7 @@ import { gsap } from './vendor/gsap-3.12.5/gsap.min.js';
 const V = new URL(import.meta.url).search; // ?v=… (config.js → version): el mismo en todos los archivos del juego
 const [{ asset }, { t, bindText }] = await Promise.all([import(`./lib/paths.js${V}`), import(`./i18n.js${V}`)]);
 
-const PHOTOS = 5;
+const PHOTOS = 9;
 const photo = (n) => `<picture><source type="image/avif" srcset="${asset(`reward/foto-${n}-800.avif`)} 800w, ${asset(`reward/foto-${n}-1200.avif`)} 1200w" sizes="(max-width: 640px) 70vw, 38vh"><img src="${asset(`reward/foto-${n}-1200.jpg`)}" width="1200" height="1800" alt="" decoding="async" loading="${n <= 2 ? 'eager' : 'lazy'}" draggable="false"></picture>`;
 
 export function createReward({ link = '#', reduced = false } = {}) {
