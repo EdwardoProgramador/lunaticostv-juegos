@@ -41,7 +41,7 @@
 //                archivos en j1/assets/reward/). Si además pones aquí un destino, debajo del carrusel aparece el botón
 //                "Ver contenido exclusivo de CHOLO" que lleva ahí ('#' = sin botón). Si es de otro dominio, abre en pestaña nueva.
 
-export const version = '2026-10-27.1';
+export const version = '2026-10-27.2';
 
 export const debug = false;
 

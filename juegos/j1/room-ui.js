@@ -58,7 +58,7 @@ export function createRoomUI({ reduced = false, onProgress, onOpen, onClose } = 
   let hintKey = '', hintTw = null, bigKey = '';
   const P = {
     ui, canvas, roomEl: root,
-    isMobile: () => root.clientWidth <= 640,
+    isMobile: () => root.clientWidth <= 640 || root.clientHeight <= 500, // teléfono, también en horizontal
     hint(key, { delay = 0 } = {}) {
       hintKey = key || '';
       if (hintTw) hintTw.kill();

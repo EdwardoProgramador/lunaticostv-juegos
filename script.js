@@ -111,7 +111,7 @@
       idx_l2: 'Proyectos propios y producción para terceros con el mismo cuidado visual.',
       idx_l3: 'Experimentos con IA cuando el concepto lo amerita — nunca como relleno.',
       idx_cap_link: 'Ver capacidades',
-      idx_work_deck: 'Placeholders hasta tener pósters finales. Sustituye poster-01.png … poster-06.png en img/.',
+      idx_work_deck: 'Placeholders hasta tener pósters finales. Sustituye poster-01.jpg … poster-06.png en img/.',
       idx_p1: 'Pieza en escritura',
       idx_p2: 'Pieza en rodaje',
       idx_p3: 'Pieza en post',
@@ -375,7 +375,7 @@
       idx_l2: 'Own projects and production for others with the same visual care.',
       idx_l3: 'AI experiments when the concept calls for it — never as filler.',
       idx_cap_link: 'See capabilities',
-      idx_work_deck: 'Placeholders until final posters land. Replace poster-01.png … poster-06.png in img/.',
+      idx_work_deck: 'Placeholders until final posters land. Replace poster-01.jpg … poster-06.png in img/.',
       idx_p1: 'In writing',
       idx_p2: 'In production',
       idx_p3: 'In post',
@@ -1120,7 +1120,7 @@
       { type: 'mustache', x: 512, y: 604, w: 225 },
       { type: 'star', x: 614, y: 568, w: 40 },
     ],
-    'tienda-hero-orange.png': [
+    'tienda-hero-orange.jpg': [
       { type: 'mustache', x: 808, y: 317, w: 138 },
       { type: 'crown', x: 798, y: 100, w: 190 },
     ],

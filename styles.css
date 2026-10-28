@@ -1793,24 +1793,24 @@ body.nav-open {
   background-color: var(--dark-2);
 }
 /* Fondos en CSS para primer pintado (antes de script.js) */
-[data-bg="img/quote-band.png"] { background-image: url("img/quote-band-orange.png"); }
-[data-bg="img/quote-band-orange.png"] { background-image: url("img/quote-band-orange.png"); }
-[data-bg="img/split-estudio.png"] { background-image: url("img/split-estudio.png"); }
-[data-bg="img/obra-01.png"] { background-image: url("img/obra-01.png"); }
-[data-bg="img/obra-02.png"] { background-image: url("img/obra-02.png"); }
-[data-bg="img/obra-03.png"] { background-image: url("img/obra-03.png"); }
-[data-bg="img/poster-01.png"] { background-image: url("img/poster-01.png"); }
-[data-bg="img/poster-02.png"] { background-image: url("img/poster-02.png"); }
-[data-bg="img/poster-03.png"] { background-image: url("img/poster-03.png"); }
-[data-bg="img/home-closer.png"] { background-image: url("img/home-closer.png"); }
-[data-bg="img/tienda-shop.png"] { background-image: url("img/tienda-shop.png"); }
-[data-bg="img/contacto-hero.png"] { background-image: url("img/contacto-hero.png"); }
-[data-bg="img/contacto-closer.png"] { background-image: url("img/contacto-closer.png"); }
-[data-bg="img/proyectos-hero.png"] { background-image: url("img/proyectos-hero.png"); }
-[data-bg="img/proyectos-quote.png"] { background-image: url("img/proyectos-quote.png"); }
-[data-bg="img/estudio-hero.png"] { background-image: url("img/estudio-hero.png"); }
-[data-bg="img/estudio-quote.png"] { background-image: url("img/estudio-quote.png"); }
-[data-bg="img/estudio-closer.png"] { background-image: url("img/estudio-closer.png"); }
+[data-bg="img/quote-band.jpg"] { background-image: url("img/quote-band-orange.jpg"); }
+[data-bg="img/quote-band-orange.jpg"] { background-image: url("img/quote-band-orange.jpg"); }
+[data-bg="img/split-estudio.jpg"] { background-image: url("img/split-estudio.jpg"); }
+[data-bg="img/obra-01.jpg"] { background-image: url("img/obra-01.jpg"); }
+[data-bg="img/obra-02.jpg"] { background-image: url("img/obra-02.jpg"); }
+[data-bg="img/obra-03.jpg"] { background-image: url("img/obra-03.jpg"); }
+[data-bg="img/poster-01.jpg"] { background-image: url("img/poster-01.jpg"); }
+[data-bg="img/poster-02.jpg"] { background-image: url("img/poster-02.jpg"); }
+[data-bg="img/poster-03.jpg"] { background-image: url("img/poster-03.jpg"); }
+[data-bg="img/home-closer.jpg"] { background-image: url("img/home-closer.jpg"); }
+[data-bg="img/tienda-shop.jpg"] { background-image: url("img/tienda-shop.jpg"); }
+[data-bg="img/contacto-hero.jpg"] { background-image: url("img/contacto-hero.jpg"); }
+[data-bg="img/contacto-closer.jpg"] { background-image: url("img/contacto-closer.jpg"); }
+[data-bg="img/proyectos-hero.jpg"] { background-image: url("img/proyectos-hero.jpg"); }
+[data-bg="img/proyectos-quote.jpg"] { background-image: url("img/proyectos-quote.jpg"); }
+[data-bg="img/estudio-hero.jpg"] { background-image: url("img/estudio-hero.jpg"); }
+[data-bg="img/estudio-quote.jpg"] { background-image: url("img/estudio-quote.jpg"); }
+[data-bg="img/estudio-closer.jpg"] { background-image: url("img/estudio-closer.jpg"); }
 /* Placeholders en cards/splits (no en heros full-bleed) */
 .split__media.asset-slot,
 .work-card__media.asset-slot {
@@ -2731,7 +2731,7 @@ body.page-shop .nav:not(.is-scrolled):not(.is-light) .nav__link.is-active {
   z-index: 0;
   background:
     linear-gradient(180deg, rgba(7, 3, 1, 0.15), rgba(7, 3, 1, 0.62)),
-    url("img/talent-hero-orange.png") center / cover no-repeat;
+    url("img/talent-hero-orange.jpg") center / cover no-repeat;
 }
 .talent-hero__overlay {
   position: absolute;
@@ -4984,12 +4984,12 @@ body.cart-open {
 }
 
 /* Seasonal image assets */
-[data-bg="img/split-estudio-orange.png"] { background-image: url("img/split-estudio-orange.png"); }
-[data-bg="img/home-closer-orange.png"] { background-image: url("img/home-closer-orange.png"); }
-[data-bg="img/estudio-hero-orange.png"] { background-image: url("img/estudio-hero-orange.png"); }
-[data-bg="img/proyectos-hero-orange.png"] { background-image: url("img/proyectos-hero-orange.png"); }
-[data-bg="img/contacto-hero-orange.png"] { background-image: url("img/contacto-hero-orange.png"); }
-[data-bg="img/tienda-hero-orange.png"] { background-image: url("img/tienda-hero-orange.png"); }
+[data-bg="img/split-estudio-orange.jpg"] { background-image: url("img/split-estudio-orange.jpg"); }
+[data-bg="img/home-closer-orange.jpg"] { background-image: url("img/home-closer-orange.jpg"); }
+[data-bg="img/estudio-hero-orange.jpg"] { background-image: url("img/estudio-hero-orange.jpg"); }
+[data-bg="img/proyectos-hero-orange.jpg"] { background-image: url("img/proyectos-hero-orange.jpg"); }
+[data-bg="img/contacto-hero-orange.jpg"] { background-image: url("img/contacto-hero-orange.jpg"); }
+[data-bg="img/tienda-hero-orange.jpg"] { background-image: url("img/tienda-hero-orange.jpg"); }
 
 @media (max-width: 820px) {
   .news-feed__head {

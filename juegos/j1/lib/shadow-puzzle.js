@@ -328,7 +328,7 @@ export function createShadowPuzzle({ room, crystal, page, variant = 'lunas', red
         const ready = () => {
           if (k !== startTok) return;
           S.enabled = true; el.style.cursor = 'grab'; drawShadows();
-          if (!(page.tip && page.tip('tipPuzzle', { delay: 0.2, then: 'hintRotateKeys' }))) page.hint('hintRotate', { delay: 0.6 });
+          if (!(page.tip && page.tip('tipPuzzle', { delay: 0.2, then: matchMedia('(hover: none)').matches ? 'hintRotateTouch' : 'hintRotateKeys' }))) page.hint('hintRotate', { delay: 0.6 });
         };
         if (intro) introTl = gather(() => { if (onIntroDone) onIntroDone(); ready(); });
         else { drawShadows(); ready(); }

@@ -24,7 +24,7 @@ window.LTV_SEASON = {
       },
       primary: { es: 'Platicar un proyecto', en: 'Start a conversation', href: '/contacto' },
       secondary: { es: 'Ver capacidades', en: 'See capabilities', href: '/estudio' },
-      image: 'img/hero-season-orange.png'
+      image: 'img/hero-season-orange.jpg'
     },
     {
       type: 'news',
@@ -54,7 +54,7 @@ window.LTV_SEASON = {
       },
       primary: { es: 'Seguir en Instagram', en: 'Follow on Instagram', href: 'https://www.instagram.com/oficial.lunaticos/' },
       secondary: { es: 'Ver teaser', en: 'Watch teaser', href: 'https://www.youtube.com/watch?v=SqasoWNdL8Y' },
-      image: 'img/hero-new-world.png'
+      image: 'img/hero-new-world.jpg'
     },
     {
       type: 'shop',
@@ -69,7 +69,7 @@ window.LTV_SEASON = {
       },
       primary: { es: 'Entrar a la tienda', en: 'Enter the shop', href: '/catalogo' },
       secondary: { es: 'Ver proyectos', en: 'See projects', href: '/proyectos' },
-      image: 'img/tienda-shop.png'
+      image: 'img/tienda-shop.jpg'
     }
   ],
   news: [
@@ -81,7 +81,7 @@ window.LTV_SEASON = {
         en: 'Everyone sees Cholo. Nobody knows his story. Follow images, previews and news from production.'
       },
       cta: { es: 'Seguir el rodaje', en: 'Follow production' },
-      image: 'img/news-cholo-production.png',
+      image: 'img/news-cholo-production.jpg',
       href: 'https://www.instagram.com/oficial.lunaticos/',
       featured: true
     },

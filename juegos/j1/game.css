@@ -359,6 +359,17 @@
 @container (max-width: 359px) {
   .lj1-tray.has-page .lj1-hud__slot { width: 43px; height: 43px; }
 }
+/* teléfono en horizontal: bandeja, título y textos compactos para que el altar quepa encima de la bandeja */
+@media (max-height: 500px) {
+  .lj1-room-title { font-size: 24px; top: calc(12px + env(safe-area-inset-top, 0px)); }
+  .lj1-room-x { top: calc(10px + env(safe-area-inset-top, 0px)); }
+  .lj1-room-hint { font-size: 12px; letter-spacing: .16em; }
+  .lj1-room-zone { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+  .lj1-tray { bottom: calc(8px + env(safe-area-inset-bottom, 0px)); padding: 6px 9px 7px; }
+  .lj1-tray-head { margin-bottom: 5px; }
+  .lj1-tray .lj1-hud__slot, .lj1-tray.has-page .lj1-hud__slot { width: 46px; height: 46px; }
+  .lj1-tray-slots { gap: 6px; }
+}
 
 /* ── Hoja de la libreta (notebook-clue.js) ───────────────────────────────── */
 .lj1-clue { position: absolute; inset: 0; z-index: 30; display: none; pointer-events: auto; }
